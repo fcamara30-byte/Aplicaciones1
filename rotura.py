@@ -1,3 +1,12 @@
+
+import streamlit as st
+
+st.title("Rotura por Fatiga")
+
+st.write("Inicio → propagación → rotura frágil")
+
+
+
 # Blender Python script to generate fatigue fracture animation
 import bpy
 
