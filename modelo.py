@@ -8,17 +8,17 @@ def area_metal(OD, ID):
 
 
 # =========================================
-# HOOP (psi)
+# HOOP STRESS (psi)
 # =========================================
 def hoop_stress(Pi, Po, OD, ID):
 
     t = (OD - ID) / 2
 
-    # criterio corregido
+    # thin wall (Barlow)
     if OD / t >= 20:
         return (Pi - Po) * OD / (2 * t)
 
-    # LAME (max en ri)
+    # thick wall (Lamé)
     ri = ID / 2
     ro = OD / 2
 
@@ -44,7 +44,7 @@ def torsion(T, OD, ID):
 
 
 # =========================================
-# AXIAL (psi) – CORRECTO CON z LOCAL
+# AXIAL CORREGIDO (FISICAMENTE CONSISTENTE)
 # =========================================
 def axial_load(
     OD, ID,
@@ -57,51 +57,43 @@ def axial_load(
     modo
 ):
 
+    # área metálica
     A = area_metal(OD, ID)
 
-    A_int = np.pi * ID**2 / 4
-    A_ext = np.pi * OD**2 / 4
-
-    # ------------------------
-    # peso tubing
-    # ------------------------
+    # -----------------------------------
+    # PESO TOTAL DEL ACERO
+    # -----------------------------------
     F_weight = peso_lbft * z_ft
 
-    # ------------------------
-    # empuje externo
-    # ------------------------
-    F_ext_buoy = rho_ext * fill_ext * z_ft * A_ext / 144
+    # -----------------------------------
+    # FLOTACION CORRECTA
+    # basada en volumen de acero
+    # -----------------------------------
+    rho_mix = rho_ext * fill_ext - rho_int * fill_int
 
-    # ------------------------
-    # fluido interno
-    # ------------------------
-    F_int_weight = rho_int * fill_int * z_ft * A_int / 144
+    F_buoy = rho_mix * z_ft * A / 144
 
-    # ------------------------
-    # presión axial
-    # ------------------------
+    # -----------------------------------
+    # PRESION AXIAL
+    # -----------------------------------
     if modo == "Libre":
         F_pressure = 0
 
     elif modo == "Anclado":
+        A_int = np.pi * ID**2 / 4
         F_pressure = (Pi - Po) * A_int
 
     elif modo == "Packer":
+        A_int = np.pi * ID**2 / 4
         F_pressure = (Pi - Po) * A_int
 
     else:
         F_pressure = 0
 
-    # ------------------------
-    # total
-    # ------------------------
-    F_total = (
-        F_weight
-        - F_ext_buoy
-        + F_int_weight
-        + F_pressure
-        + F_ext
-    )
+    # -----------------------------------
+    # FUERZA TOTAL
+    # -----------------------------------
+    F_total = F_weight - F_buoy + F_ext + F_pressure
 
     return F_total / A
 
@@ -120,17 +112,17 @@ def von_mises(sig_ax, sig_hoop, tau):
 
 
 # =========================================
-# API BURST (psi)
+# SAFETY FACTOR
 # =========================================
-def burst_api(smys_ksi, t, OD):
+def safety_factor(smys_ksi, vm):
 
     smys = smys_ksi * 1000
 
-    return 0.875 * 2 * smys * t / OD
+    return smys / vm
 
 
 # =========================================
-# UTILIZATION (%)
+# UTILIZACION (%)
 # =========================================
 def utilization(smys_ksi, vm):
 
@@ -149,3 +141,4 @@ def design_check(vm, smys_ksi):
     if vm > smys:
         return "FAIL"
     return "PASS"
+
