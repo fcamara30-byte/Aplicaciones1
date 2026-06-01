@@ -65,24 +65,43 @@ yield_ksi = grades[st.sidebar.selectbox("Grado", grades.keys())]
 # -----------------------------
 # FLUIDOS
 # -----------------------------
-rho_int = st.sidebar.number_input("ρ interno", value=1050)
-rho_ext = st.sidebar.number_input("ρ externo", value=1200)
+rho_int = st.sidebar.number_input(
+    "Densidad fluido interno [kg/m³]",
+    value=1050
+)
 
-fill_int = st.sidebar.slider("Fill interno", 0.0, 1.0, 1.0)
-fill_ext = st.sidebar.slider("Fill externo", 0.0, 1.0, 1.0)
+rho_ext = st.sidebar.number_input(
+    "Densidad fluido externo [kg/m³]",
+    value=1200
+)
+
+fill_int = st.sidebar.slider("Nivel de llenado interno [-]", 0.0, 1.0, 1.0)
+fill_ext = st.sidebar.slider("Nivel de llenado externo [-]", 0.0, 1.0, 1.0)
 
 # -----------------------------
 # PRESIONES
 # -----------------------------
-Pint = st.sidebar.number_input("P interna", value=1500.0)
-Pext = st.sidebar.number_input("P externa", value=0.0)
+
+Pint = st.sidebar.number_input(
+    "Presión interna en superficie [psi]",
+    value=1500.0
+)
+
+Pext = st.sidebar.number_input(
+    "Presión externa en superficie [psi]",
+    value=0.0
+)
+
 
 # -----------------------------
 # TORQUE
 # -----------------------------
-Torque = st.sidebar.number_input("Torque (lb-ft)", value=0.0)
 
-prof_max = st.sidebar.number_input("Profundidad", value=2000)
+Torque = st.sidebar.number_input(
+    "Torque aplicado [lb·ft]",
+    value=0.0
+)
+
 
 # -----------------------------
 # CALCULO PERFIL
@@ -126,10 +145,16 @@ sigma_hoop_bot = []
 
 for s in sigma_ax:
     disc = 4*yield_ksi**2 - 3*s**2
-    root = np.sqrt(max(disc, 0))
 
-    sigma_hoop_top.append((s + root)/2)
-    sigma_hoop_bot.append((s - root)/2)
+    if disc >= 0:   # ✅ CLAVE
+        root = np.sqrt(disc)
+
+        sigma_hoop_top.append((s + root)/2)
+        sigma_hoop_bot.append((s - root)/2)
+    else:
+        sigma_hoop_top.append(np.nan)
+        sigma_hoop_bot.append(np.nan)
+
 
 sigma_ax_full = np.concatenate([sigma_ax, sigma_ax[::-1]])
 sigma_hoop_full = np.concatenate([sigma_hoop_top, sigma_hoop_bot[::-1]])
