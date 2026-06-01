@@ -33,17 +33,18 @@ def tension_axial(z, OD, ID, rho_int, rho_ext):
     empuje = area_ext * rho_ext - area_int * rho_int
 
     fuerza = (masa - empuje) * g * z
+
     sigma = fuerza / area
 
     return sigma / 6894.76 / 1000  # ksi
 
 
 # ---------------------------
-# TORSION (shear stress)
+# TORSION
 # ---------------------------
 def tension_torsion(T_lbft, OD, ID):
-    # convertir a lb-in
-    T = T_lbft * 12  
+    # lb-ft → lb-in
+    T = T_lbft * 12
 
     ro = OD / 2
     ri = ID / 2
@@ -56,8 +57,7 @@ def tension_torsion(T_lbft, OD, ID):
 
 
 # ---------------------------
-# VON MISES COMPLETO (3D)
+# VON MISES
 # ---------------------------
 def von_mises(sig_ax, sig_hoop, tau):
-    return math.sqrt(sig_ax**2 + sig_hoop**2 - sig_ax*sig_hoop + 3*tau**2)
-``
+    return math.sqrt(sig_ax**2 + sig_hoop**2 - sig_ax*sig_hoop + 3*(tau**2))
