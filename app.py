@@ -101,6 +101,18 @@ Torque = st.sidebar.number_input(
     "Torque aplicado [lb·ft]",
     value=0.0
 )
+# -----------------------------
+# MECÁNICO
+# -----------------------------
+Torque = st.sidebar.number_input(
+    "Torque [lb·ft]",
+    value=0.0
+)
+
+prof_max = st.sidebar.number_input(
+    "Profundidad total [m]",
+    value=2000.0
+)
 
 
 # -----------------------------
