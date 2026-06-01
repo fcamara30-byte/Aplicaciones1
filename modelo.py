@@ -1,54 +1,100 @@
 import numpy as np
 
-def presion(z, P_surface, rho, fill):
-    g = 9.81
-    psi_pa = 1 / 6894.76
-    return P_surface + rho * g * z * fill * psi_pa
+# ----------------------------------------
+# PROPIEDAD ACERO (peso específico)
+# ----------------------------------------
+rho_steel = 490  # lbf/ft³
 
 
-def tension_circunferencial(dP, OD, t):
-    return (dP * OD) / (2 * t) / 1000  # ksi
+# ----------------------------------------
+# PRESION (psi)
+# ----------------------------------------
+def presion(z_ft, P_surface, rho_lbft3, fill):
+    # (lbf/ft³ * ft) / 144 -> psi
+    return P_surface + (rho_lbft3 * z_ft * fill) / 144
 
 
-def tension_axial(z, OD, ID, rho_int, rho_ext, F_ext, Pint, Pext):
-    g = 9.81
+# ----------------------------------------
+# LAME (psi)
+# ----------------------------------------
+def lame(Pi, Po, ri, ro, r):
 
+    A = (Po * ro**2 - Pi * ri**2) / (ro**2 - ri**2)
+    B = (ri**2 * ro**2 * (Pi - Po)) / (ro**2 - ri**2)
+
+    sigma_hoop = A + B / r**2
+    sigma_rad  = A - B / r**2
+
+    return sigma_hoop, sigma_rad   # psi
+
+
+# ----------------------------------------
+# AXIAL (psi) — CORREGIDO UNIDADES
+# ----------------------------------------
+def axial(z_ft, OD, ID, rho_int, rho_ext, F_ext, Pint, Pext, modo):
+
+    # áreas en in²
     A_ext = np.pi * OD**2 / 4
     A_int = np.pi * ID**2 / 4
-    A = A_ext - A_int
+    A     = A_ext - A_int
 
-    rho_steel = 7850
+    # ✅ convertir a ft²
+    A_ext_ft2 = A_ext / 144
+    A_int_ft2 = A_int / 144
+    A_ft2     = A / 144
 
-    # peso del acero
-    F_weight = rho_steel * A * g * z
+    # --------------------------------
+    # PESO Y FLOTACION (CORRECTOS)
+    # --------------------------------
+    F_weight = rho_steel * A_ft2 * z_ft
 
-    # flotación (correcta)
-    F_buoy = rho_ext * A_ext * g * z - rho_int * A_int * g * z
+    F_buoy = rho_ext * A_ext_ft2 * z_ft \
+           - rho_int * A_int_ft2 * z_ft
 
-    # presión axial (end cap)
-    F_pressure = (Pint - Pext) * 6894.76 * A_int
+    # --------------------------------
+    # PRESION AXIAL
+    # --------------------------------
+    if modo == "Anclado":
+        F_pressure = (Pint - Pext) * A_int  # psi*in² = lb
+    else:
+        F_pressure = 0
 
-    # total
+    # --------------------------------
+    # TOTAL
+    # --------------------------------
     F_total = F_weight - F_buoy + F_pressure + F_ext
 
-    sigma = F_total / A
+    sigma = F_total / A  # psi
 
-    return sigma / 6894.76 / 1000  # ksi
+    return sigma
 
 
-def torsion(T_lbft, OD, ID):
-    T = T_lbft * 12
+# ----------------------------------------
+# TORSION (psi)
+# ----------------------------------------
+def torsion(T, OD, ID):
+
+    T = T * 12  # lb-ft → lb-in
 
     ro = OD / 2
     ri = ID / 2
 
-    J = np.pi / 2 * (ro**4 - ri**4)
+    J = np.pi/2 * (ro**4 - ri**4)
 
     tau = T * ro / J
 
-    return tau / 1000
+    return tau
 
 
-def von_mises(sig_ax, sig_hoop, tau):
-    return np.sqrt(sig_ax**2 + sig_hoop**2 - sig_ax*sig_hoop + 3*tau**2)
+# ----------------------------------------
+# VON MISES 3D
+# ----------------------------------------
+def VM(s1, s2, s3, tau):
+
+    return np.sqrt(
+        0.5 * ((s1 - s2)**2 +
+               (s2 - s3)**2 +
+               (s3 - s1)**2)
+        + 3 * tau**2
+    )
 
