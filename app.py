@@ -183,4 +183,8 @@ cursor:pointer;">
 st.markdown("""
 <style>
 @media print {
+    section[data-testid="stSidebar"] {display:none;}
+}
+</style>
+""", unsafe_allow_html=True)
 
