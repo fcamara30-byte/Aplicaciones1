@@ -1,27 +1,77 @@
 import streamlit as st
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 from modelo import *
 
-st.title("Modelo Von Mises - Tubing")
+st.set_page_config(layout="wide")
 
-# ---------------------------
-# BASE API REALISTA (simplificada)
-# ---------------------------
-api_db = {
+st.title("Modelo Von Mises – Tubing")
+
+# -----------------------------
+# SIDEBAR
+# -----------------------------
+st.sidebar.title("Configuración")
+
+# -------- MODO --------
+modo = st.sidebar.radio("Modo", ["API", "Custom"])
+
+# -------- BASE API COMPLETA --------
+api = {
     "2 7/8": {
-        6.4: {"OD": 2.875, "t": 0.217},
-        8.6: {"OD": 2.875, "t": 0.276},
+        6.4: (2.875, 0.217),
+        8.6: (2.875, 0.276)
     },
     "3 1/2": {
-        9.3: {"OD": 3.5, "t": 0.254},
-        12.95: {"OD": 3.5, "t": 0.318},
+        9.3: (3.5, 0.254),
+        12.95: (3.5, 0.318)
     },
     "4 1/2": {
-        11.6: {"OD": 4.5, "t": 0.237},
-        15.1: {"OD": 4.5, "t": 0.337},
+        11.6: (4.5, 0.237),
+        15.1: (4.5, 0.337)
+    },
+    "5 1/2": {
+        17.0: (5.5, 0.304),
+        20.0: (5.5, 0.361)
+    },
+    "7": {
+        26.0: (7.0, 0.362),
+        29.0: (7.0, 0.408),
+        32.0: (7.0, 0.453)
+    },
+    "9 5/8": {
+        40.0: (9.625, 0.395),
+        47.0: (9.625, 0.472),
+        53.5: (9.625, 0.545)
     }
 }
+
+# -------- TUBO --------
+st.sidebar.subheader("Tubing")
+
+if modo == "API":
+    size = st.sidebar.selectbox("OD", list(api.keys()))
+    weight = st.sidebar.selectbox("lb/ft", list(api[size].keys()))
+
+    OD, t = api[size][weight]
+    ID = OD - 2*t
+
+else:
+    OD = st.sidebar.number_input("OD (in)", value=3.5)
+    weight = st.sidebar.number_input("lb/ft", value=10.0)
+
+    # aproximación
+    t = weight / (10.69 * OD)
+    ID = OD - 2*t
+
+st.sidebar.markdown(f"""
+### Geometría
+- OD: {round(OD,3)} in  
+- ID: {round(ID,3)} in  
+- t: {round(t,3)} in  
+""")
+
+# -------- MATERIAL --------
+st.sidebar.subheader("Material")
 
 grades = {
     "J55": 55,
@@ -29,97 +79,99 @@ grades = {
     "P110": 110
 }
 
-# ---------------------------
-# INPUTS
-# ---------------------------
-st.sidebar.header("Inputs")
+grado = st.sidebar.selectbox("Grado", list(grades.keys()))
+yield_ksi = grades[grado]
 
-size = st.sidebar.selectbox("OD", list(api_db.keys()))
-weights = list(api_db[size].keys())
-
-weight = st.sidebar.selectbox("lb/ft", weights)
-
-grade_name = st.sidebar.selectbox("Grado", list(grades.keys()))
-yield_ksi = grades[grade_name]
-
-OD = api_db[size][weight]["OD"]
-t = api_db[size][weight]["t"]
-ID = OD - 2*t
-
-st.sidebar.write(f"OD: {OD}")
-st.sidebar.write(f"ID: {round(ID,3)}")
+# -------- FLUIDOS --------
+st.sidebar.subheader("Fluidos")
 
 rho_int = st.sidebar.number_input("ρ interno", value=1050)
 rho_ext = st.sidebar.number_input("ρ externo", value=1200)
 
-fill_int = st.sidebar.slider("Fill int", 0.0, 1.0, 1.0)
-fill_ext = st.sidebar.slider("Fill ext", 0.0, 1.0, 1.0)
+fill_int = st.sidebar.slider("Fill interno", 0.0, 1.0, 1.0)
+fill_ext = st.sidebar.slider("Fill externo", 0.0, 1.0, 1.0)
 
-Pint_surface = st.sidebar.number_input("Pint", value=1500.0)
-Pext_surface = st.sidebar.number_input("Pext", value=0.0)
+# -------- PRESIONES --------
+st.sidebar.subheader("Presiones")
+
+Pint = st.sidebar.number_input("P interna (psi)", value=1500.0)
+Pext = st.sidebar.number_input("P externa (psi)", value=0.0)
+
+# -------- MECÁNICO --------
+st.sidebar.subheader("Mecánico")
 
 Torque = st.sidebar.number_input("Torque (lb-ft)", value=0.0)
-prof_max = st.sidebar.number_input("Prof (m)", value=2000)
+prof_max = st.sidebar.number_input("Profundidad (m)", value=2000)
 
-# ---------------------------
+# -----------------------------
 # CALCULO
-# ---------------------------
-zs = []
-sig_ax_list = []
-sig_hoop_list = []
-
-peor_ratio = 0
-peor_i = 0
+# -----------------------------
+sig_ax = []
+sig_hoop = []
 
 for i in range(100):
     z = prof_max * i / 100
 
-    Pint = presion(z, Pint_surface, rho_int, fill_int)
-    Pext = presion(z, Pext_surface, rho_ext, fill_ext)
+    Pint_z = presion(z, Pint, rho_int, fill_int)
+    Pext_z = presion(z, Pext, rho_ext, fill_ext)
 
-    dP = Pint - Pext
+    dP = Pint_z - Pext_z
 
-    sig_hoop = tension_circunferencial(dP, OD, t)
-    sig_ax = tension_axial(z, OD, ID, rho_int, rho_ext)
-    tau = tension_torsion(Torque, OD, ID)
+    s_hoop = tension_circunferencial(dP, OD, t)
+    s_ax = tension_axial(z, OD, ID, rho_int, rho_ext)
 
-    vm = von_mises(sig_ax, sig_hoop, tau)
-    ratio = vm / yield_ksi
+    sig_ax.append(s_ax)
+    sig_hoop.append(s_hoop)
 
-    sig_ax_list.append(sig_ax)
-    sig_hoop_list.append(sig_hoop)
+sig_ax = np.array(sig_ax)
+sig_hoop = np.array(sig_hoop)
 
-    if ratio > peor_ratio:
-        peor_ratio = ratio
-        peor_i = i
+tau = torsion(Torque, OD, ID)
 
-# punto crítico
-sig_ax_crit = sig_ax_list[peor_i]
-sig_hoop_crit = sig_hoop_list[peor_i]
+vm = np.sqrt(sig_ax**2 + sig_hoop**2 - sig_ax*sig_hoop + 3*tau**2)
+ratio = vm / yield_ksi
 
-# ---------------------------
-# ELIPSE CORRECTA
-# ---------------------------
-fig, ax = plt.subplots()
+i_crit = np.argmax(ratio)
 
-theta = np.linspace(0, 2*np.pi, 400)
+ax_crit = sig_ax[i_crit]
+hoop_crit = sig_hoop[i_crit]
 
-R = yield_ksi
+# -----------------------------
+# ELIPSE REAL VM
+# -----------------------------
+sig_ax_vals = np.linspace(-yield_ksi, yield_ksi, 1000)
 
-# forma Von Mises (aprox proyectada)
-x = R * np.cos(theta)
-y = R * np.sin(theta)
+sig_hoop_pos = []
+sig_hoop_neg = []
 
-ax.plot(x, y, label="Envolvente VM")
+for s_ax in sig_ax_vals:
+    disc = 4*yield_ksi**2 - 3*s_ax**2
+
+    if disc >= 0:
+        root = np.sqrt(disc)
+        sig_hoop_pos.append((s_ax + root)/2)
+        sig_hoop_neg.append((s_ax - root)/2)
+    else:
+        sig_hoop_pos.append(np.nan)
+        sig_hoop_neg.append(np.nan)
+
+# -----------------------------
+# PLOT
+# -----------------------------
+fig, ax = plt.subplots(figsize=(7,7))
+
+# elipse correcta
+ax.plot(sig_ax_vals, sig_hoop_pos, color="blue")
+ax.plot(sig_ax_vals, sig_hoop_neg, color="blue")
 
 # trayectoria
-ax.plot(sig_ax_list, sig_hoop_list, color="orange", label="Trayectoria")
+ax.plot(sig_ax, sig_hoop, color="orange", linewidth=2)
 
 # punto crítico
-ax.scatter(sig_ax_crit, sig_hoop_crit, color="red", s=120, label="Crítico")
+ax.scatter(ax_crit, hoop_crit, color="red", s=120)
 
 # formato
-lim = yield_ksi * 1.2
+lim = yield_ksi * 1.1
 
 ax.set_xlim(-lim, lim)
 ax.set_ylim(-lim, lim)
@@ -132,10 +184,12 @@ ax.axvline(0, color="black")
 ax.set_xlabel("σ axial (ksi)")
 ax.set_ylabel("σ circunferencial (ksi)")
 
-ax.legend(loc="upper left")
-
 ax.grid()
 
 st.pyplot(fig)
 
-
+# -----------------------------
+# RESULTADO
+# -----------------------------
+st.metric("Ratio máximo", round(float(np.max(ratio)), 3))
+``
