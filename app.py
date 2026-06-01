@@ -47,7 +47,7 @@ modo = st.sidebar.selectbox(
     "Condición axial", ["Libre", "Anclado", "Packer"]
 )
 
-Pint = st.sidebar.number_input("P interna [psi]", 5000.0)
+Pint = st.sidebar.number_input("P interna [psi]", 0.0)
 Pext = st.sidebar.number_input("P externa [psi]", 0.0)
 
 rho_int = kgm3_to_lbft3(
