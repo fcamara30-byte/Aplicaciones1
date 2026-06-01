@@ -12,8 +12,14 @@ st.title("Diseño Tubing - Von Mises")
 def kgm3_to_lbft3(rho):
     return rho * 0.062428
 
+def lbft3_to_kgm3(rho):
+    return rho / 0.062428
+
 def m_to_ft(z):
     return z * 3.28084
+
+def ft_to_m(z):
+    return z / 3.28084
 
 
 # =========================================
@@ -40,15 +46,20 @@ tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
 OD, ID, peso = tubos[tubo]
 
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
-SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
+SMYS = {"J55":55, "N80":80, "P110":110, "Q125":125}[grado]
 
 modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
 
-Pint = st.sidebar.number_input("P interna [psi]", 5000.0)
-Pext = st.sidebar.number_input("P externa [psi]", 0.0)
+# ✅ presión bien definida
+P_iny = st.sidebar.number_input("Presión de inyección [psi]", 0.0)
+Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", 0.0)
 
-rho_int = kgm3_to_lbft3(st.sidebar.number_input("ρ interno [kg/m³]",1050.0))
-rho_ext = kgm3_to_lbft3(st.sidebar.number_input("ρ externo [kg/m³]",0.0))
+# fluidos
+rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]", 1050.0)
+rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", 0.0)
+
+rho_int = kgm3_to_lbft3(rho_int_si)
+rho_ext = kgm3_to_lbft3(rho_ext_si)
 
 fill_int = st.sidebar.slider("Nivel interno [-]", 0.0, 1.0, 1.0)
 fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 0.0)
@@ -56,7 +67,8 @@ fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 0.0)
 Torque = st.sidebar.number_input("Torque [lb-ft]", 0.0)
 F_ext = st.sidebar.number_input("F axial externa [lbf]", 0.0)
 
-depth_ft = m_to_ft(st.sidebar.number_input("Profundidad total [m]",3000.0))
+depth_m = st.sidebar.number_input("Profundidad total [m]", 3000.0)
+depth_ft = m_to_ft(depth_m)
 
 # =========================================
 # PERFIL
@@ -72,22 +84,28 @@ for i in range(200):
 
     z = depth_ft * i / 200
 
-    ax = axial_load(
+    # ✅ presión interna calculada
+    Pi = P_iny + (rho_int * fill_int * z) / 144
+
+    # ✅ presión externa calculada
+    Po = Pext_surface + (rho_ext * fill_ext * z) / 144
+
+    ax_val = axial_load(
         OD, ID, peso, z,
         rho_int, rho_ext,
         fill_int, fill_ext,
         F_ext,
-        Pint, Pext,
+        Pi, Po,
         modo
     )
 
-    hoop = hoop_stress(Pint, Pext, OD, ID)
+    hoop_val = hoop_stress(Pi, Po, OD, ID)
 
-    vm = von_mises(ax, hoop, tau)
+    vm_val = von_mises(ax_val, hoop_val, tau)
 
-    sig_ax.append(ax / 1000)
-    sig_hoop.append(hoop / 1000)
-    vm_list.append(vm)
+    sig_ax.append(ax_val / 1000)
+    sig_hoop.append(hoop_val / 1000)
+    vm_list.append(vm_val)
     z_list.append(z)
 
 sig_ax = np.array(sig_ax)
@@ -104,31 +122,28 @@ sigma_ax = sig_ax[i_crit]
 sigma_hoop = sig_hoop[i_crit]
 vm_crit = vm_list[i_crit]
 
-z_crit_ft = z_list[i_crit]
-z_crit_m = z_crit_ft / 3.28084
+z_crit_m = ft_to_m(z_list[i_crit])
 
 # =========================================
 # API BURST
 # =========================================
 t = (OD - ID)/2
 burst = burst_api(SMYS, t, OD)
-
-burst_util = (Pint - Pext) / burst * 100
+burst_util = (P_iny / burst) * 100
 
 # =========================================
-# UTIL
+# UTILIZACIÓN
 # =========================================
 util_vm = utilization(SMYS, vm_crit)
 
 # =========================================
-# ELIPSE LIMPIA
+# ELIPSE
 # =========================================
-sy = SMYS * 0.95   # 👈 achicada visualmente
+sy = SMYS * 0.9
 
 s = np.linspace(-sy, sy, 2000)
 
-x_vm = []
-y_vm = []
+x_vm, y_vm = [], []
 
 for val in s:
     disc = 4*sy**2 - 3*val**2
@@ -155,11 +170,9 @@ ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
 # punto crítico
 ax.scatter(sigma_ax, sigma_hoop, color="red", s=160)
 
-# ejes
 ax.axhline(0, color="black", lw=1.5)
 ax.axvline(0, color="black", lw=1.5)
 
-# límites visibles
 lim = sy * 1.05
 ax.set_xlim(-lim, lim)
 ax.set_ylim(-lim, lim)
@@ -169,7 +182,6 @@ ax.set_xticks(ticks)
 ax.set_yticks(ticks)
 
 ax.grid(True, color="gray", lw=0.5)
-
 ax.set_aspect("equal")
 
 ax.set_xlabel("σ axial [ksi]")
@@ -178,7 +190,7 @@ ax.set_ylabel("σ hoop [ksi]")
 st.pyplot(fig)
 
 # =========================================
-# RESULTADOS (ORDENADOS)
+# RESULTADOS
 # =========================================
 st.subheader("Resultados")
 
@@ -191,6 +203,39 @@ col2.metric("Von Mises [ksi]", round(vm_crit/1000,2))
 col2.metric("Utilización [%]", round(util_vm,1))
 
 col3.metric("Burst Util [%]", round(burst_util,1))
-col3.metric("Profundidad crítica [m]", round(z_crit_m,0))
+col3.metric("Prof. crítica [m]", round(z_crit_m,0))
 
 st.markdown(f"### Estado: **{design_check(vm_crit, SMYS)}**")
+
+# =========================================
+# REPORTE + IMPRESIÓN
+# =========================================
+st.markdown("---")
+st.header("Reporte")
+
+st.write(f"Tubing: {tubo}")
+st.write(f"Grado: {grado}")
+st.write(f"Presión de inyección: {P_iny} psi")
+st.write(f"ρ interno: {rho_int_si} kg/m³")
+st.write(f"ρ externo: {rho_ext_si} kg/m³")
+
+st.markdown("### Imprimir")
+
+if st.button("🖨️ Imprimir Reporte"):
+    st.markdown(
+        """
+        <script>
+        window.print();
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+
+st.markdown("""
+<style>
+@media print {
+    .stSidebar {display:none;}
+    button {display:none;}
+}
+</style>
+""", unsafe_allow_html=True)
