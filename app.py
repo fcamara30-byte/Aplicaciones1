@@ -134,9 +134,23 @@ if st.button("Calcular"):
     # ---------------------------
     # FORMATO
     # ---------------------------
-    ax2.set_xlabel("σ axial (ksi)")
-    ax2.set_ylabel("σ circunferencial (ksi)")
-    ax2.legend()
-    ax2.grid()
+ax2.set_xlabel("σ axial (ksi)")
+ax2.set_ylabel("σ circumferencial (ksi)")
+
+# 🔥 Escala correcta (CLAVE)
+ax2.set_aspect('equal', adjustable='box')
+
+# 🔥 Límites simétricos (para cerrar la elipse)
+lim = yield_ksi * 1.2
+ax2.set_xlim(-lim, lim)
+ax2.set_ylim(-lim, lim)
+
+# 🔥 Líneas eje
+ax2.axhline(0, color='black', linewidth=1)
+ax2.axvline(0, color='black', linewidth=1)
+
+ax2.legend()
+ax2.grid()
+
 
     st.pyplot(fig2)
