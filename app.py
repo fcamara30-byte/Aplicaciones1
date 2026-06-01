@@ -39,6 +39,10 @@ grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
 SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
 modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
+condicion = st.sidebar.selectbox(
+    "Condición tubing",
+    ["Abierto", "Cerrado"]
+)
 
 P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=0.0)
 Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0)
@@ -70,14 +74,16 @@ for i in range(200):
     Pi = P_iny + rho_int * fill_int * z / 144
     Po = Pext_surface + rho_ext * fill_ext * z / 144
 
-    ax_val = axial_load(
-        OD, ID, peso, z,
-        rho_int, rho_ext,
-        fill_int, fill_ext,
-        F_ext,
-        Pi, Po,
-        modo
-    )
+ ax_val = axial_load(
+    OD, ID, peso, z,
+    rho_int, rho_ext,
+    fill_int, fill_ext,
+    F_ext,
+    Pi, Po,
+    modo,
+    condicion   # 👈 AGREGADO
+)
+
 
     hoop = hoop_stress(Pi, Po, OD, ID)
     vm = von_mises(ax_val, hoop, 0)
