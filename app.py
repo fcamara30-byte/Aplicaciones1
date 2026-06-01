@@ -67,7 +67,7 @@ fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 0.0)
 Torque = st.sidebar.number_input("Torque [lb-ft]", 0.0)
 F_ext = st.sidebar.number_input("F axial externa [lbf]", 0.0)
 
-depth_m = st.sidebar.number_input("Profundidad total [m]", 3000.0)
+depth_m = st.sidebar.number_input("Profundidad total [m]", 0000.0)
 depth_ft = m_to_ft(depth_m)
 
 # =========================================
