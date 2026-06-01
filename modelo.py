@@ -1,14 +1,14 @@
 import numpy as np
 
 # =========================================
-# CONVERSION
+# CONVERSIONES
 # =========================================
 def kgm3_to_lbft3(rho):
-    return rho * 0.062428
+    return rho * 0.062428  # kg/m³ → lb/ft³
 
 
 # =========================================
-# AREA
+# AREA METALICA (in²)
 # =========================================
 def area_metal(OD, ID):
     return np.pi * (OD**2 - ID**2) / 4
@@ -32,7 +32,7 @@ def hoop_stress(Pi, Po, OD, ID):
     A = (Po * ro**2 - Pi * ri**2) / (ro**2 - ri**2)
     B = (ri**2 * ro**2 * (Pi - Po)) / (ro**2 - ri**2)
 
-    # Hoop en pared interna
+    # Tensión hoop en la pared interna
     return A + B / ri**2
 
 
@@ -41,7 +41,7 @@ def hoop_stress(Pi, Po, OD, ID):
 # =========================================
 def torsion(T, OD, ID):
 
-    T = T * 12
+    T = T * 12  # lb-ft → lb-in
 
     ro = OD / 2
     ri = ID / 2
@@ -52,25 +52,31 @@ def torsion(T, OD, ID):
 
 
 # =========================================
-# AXIAL (MODELO SIMPLE Y CONSISTENTE)
+# AXIAL (CON ABIERTO / CERRADO)
 # =========================================
 def axial_load(
     OD, ID,
     peso_lbft,
     z_ft,
-    rho_int, rho_ext,   # <- se mantiene rho_int para futuro
+    rho_int, rho_ext,
     fill_int, fill_ext,
     F_ext,
     Pi, Po,
-    modo
+    modo,
+    condicion  # "Abierto" o "Cerrado"
 ):
 
-    # convertir densidad externa
+    # conversion densidades
+    rho_int = kgm3_to_lbft3(rho_int)
     rho_ext = kgm3_to_lbft3(rho_ext)
 
     # áreas
     A = area_metal(OD, ID)
+    A_int = np.pi * ID**2 / 4
     A_ext = np.pi * OD**2 / 4
+
+    # pasar a ft²
+    A_int_ft2 = A_int / 144
     A_ext_ft2 = A_ext / 144
 
     # -----------------------------------
@@ -79,32 +85,39 @@ def axial_load(
     F_weight = peso_lbft * z_ft
 
     # -----------------------------------
-    # FLOTACION (simplificada)
+    # FLOTACION (EMPUJE EXTERNO)
     # -----------------------------------
     F_buoy = rho_ext * fill_ext * z_ft * A_ext_ft2
 
     # -----------------------------------
-    # PRESION AXIAL
+    # FLUIDO INTERNO (SOLO CERRADO)
+    # -----------------------------------
+    if condicion == "Cerrado":
+        F_int = rho_int * fill_int * z_ft * A_int_ft2
+    else:
+        F_int = 0
+
+    # -----------------------------------
+    # PRESION AXIAL (simplificada)
     # -----------------------------------
     if modo == "Libre":
         F_pressure = 0
 
     elif modo == "Anclado":
-        A_int = np.pi * ID**2 / 4
         F_pressure = (Pi - Po) * A_int
 
     elif modo == "Packer":
-        A_int = np.pi * ID**2 / 4
-        F_pressure = (Pi - Po) * A_int
+        F_pressure = (Pi - Po) * A_int  # placeholder
 
     else:
         F_pressure = 0
 
     # -----------------------------------
-    # TOTAL
+    # FUERZA TOTAL
     # -----------------------------------
     F_total = (
         F_weight
+        + F_int
         - F_buoy
         + F_ext
         + F_pressure
@@ -132,26 +145,23 @@ def von_mises(sig_ax, sig_hoop, tau):
 def utilization(smys_ksi, vm):
 
     smys = smys_ksi * 1000
-
     return vm / smys * 100
 
 
 # =========================================
-# SAFETY FACTOR
+# FACTOR DE SEGURIDAD
 # =========================================
 def safety_factor(smys_ksi, vm):
 
     smys = smys_ksi * 1000
-
     return smys / vm
 
 
 # =========================================
-# CHECK
+# CHECK FINAL
 # =========================================
 def design_check(vm, smys_ksi):
 
     smys = smys_ksi * 1000
-
     return "FAIL" if vm > smys else "PASS"
 
