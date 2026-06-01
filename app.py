@@ -44,6 +44,9 @@ if st.button("Calcular"):
     peor_ratio = 0
     peor_z = 0
 
+    # ---------------------------
+    # CALCULO EN PROFUNDIDAD
+    # ---------------------------
     for i in range(100):
         z = prof_max * i / 100
 
@@ -56,7 +59,6 @@ if st.button("Calcular"):
         sig_ax = tension_axial(z, OD, ID, rho_int, rho_ext)
 
         vm = von_mises(sig_ax, sig_hoop)
-
         ratio = vm / yield_ksi
 
         zs.append(z)
@@ -81,51 +83,60 @@ if st.button("Calcular"):
         st.warning("CERCA DEL LÍMITE")
     else:
         st.success("SEGURO")
-# ---------------------------
-# GRAFICO ELIPSE VON MISES
-# ---------------------------
-fig2, ax2 = plt.subplots()
 
-# Crear elipse
-sigma = []
-sigma_circ = []
 
-for i in range(-100, 100):
-    s_ax = yield_ksi * i / 100
+    # ---------------------------
+    # GRAFICO ELIPSE VON MISES
+    # ---------------------------
+    fig2, ax2 = plt.subplots()
 
-    # ecuacion VM = constante
-    # despejo sigma_circ
-    try:
-        term = (yield_ksi**2 - s_ax**2 + s_ax**2)
-        s_circ = (s_ax / 2) + ((3 * s_ax**2 - s_ax**2 + yield_ksi**2)**0.5)
+    sigma_ax_vals = []
+    sigma_hoop_vals = []
 
-        sigma.append(s_ax)
-        sigma_circ.append(s_circ)
-    except:
-        continue
+    # Construcción correcta de la elipse VM
+    for i in range(-100, 100):
+        s_ax = yield_ksi * i / 100
 
-# graficar elipse
-ax2.plot(sigma, sigma_circ, label="Envolvente VM")
+        # discriminante
+        disc = 4*yield_ksi**2 - 3*s_ax**2
 
-# ---------------------------
-# PUNTO OPERATIVO
-# ---------------------------
-# usamos el peor caso calculado
-Pint = presion(peor_z, Pint_surface, rho_int, fill_int)
-Pext = presion(peor_z, Pext_surface, rho_ext, fill_ext)
+        if disc >= 0:
+            root = (disc)**0.5
 
-DeltaP = Pint - Pext
+            # dos ramas (elipse completa)
+            s_hoop1 = (s_ax + root)/2
+            s_hoop2 = (s_ax - root)/2
 
-sig_hoop = tension_circunferencial(DeltaP, OD, ID)
-sig_ax = tension_axial(peor_z, OD, ID, rho_int, rho_ext)
+            sigma_ax_vals.append(s_ax)
+            sigma_hoop_vals.append(s_hoop1)
 
-ax2.scatter(sig_ax, sig_hoop, color="red", label="Punto operativo")
+            sigma_ax_vals.append(s_ax)
+            sigma_hoop_vals.append(s_hoop2)
 
-ax2.set_xlabel("σ axial (ksi)")
-ax2.set_ylabel("σ circunferencial (ksi)")
-ax2.legend()
-ax2.grid()
+    # dibujar elipse
+    ax2.scatter(sigma_ax_vals, sigma_hoop_vals, s=5, label="Envolvente VM")
 
-st.pyplot(fig2)
 
-    
+    # ---------------------------
+    # PUNTO OPERATIVO (CRITICO)
+    # ---------------------------
+    Pint = presion(peor_z, Pint_surface, rho_int, fill_int)
+    Pext = presion(peor_z, Pext_surface, rho_ext, fill_ext)
+
+    DeltaP = Pint - Pext
+
+    sig_hoop = tension_circunferencial(DeltaP, OD, ID)
+    sig_ax = tension_axial(peor_z, OD, ID, rho_int, rho_ext)
+
+    ax2.scatter(sig_ax, sig_hoop, color="red", s=120, label="Punto crítico")
+
+
+    # ---------------------------
+    # FORMATO
+    # ---------------------------
+    ax2.set_xlabel("σ axial (ksi)")
+    ax2.set_ylabel("σ circunferencial (ksi)")
+    ax2.legend()
+    ax2.grid()
+
+    st.pyplot(fig2)
