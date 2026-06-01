@@ -191,5 +191,5 @@ st.pyplot(fig)
 # RESULTADO
 # -----------------------------
 st.metric("Ratio máximo", round(float(np.max(ratio)), 3))
-``
+
 
