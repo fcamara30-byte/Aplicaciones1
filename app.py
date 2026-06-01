@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from modelo import *
 
 st.set_page_config(layout="wide")
-st.title("Modelo Tubing - Von Mises")
+st.title("Diseño Tubing - Von Mises")
 
 # =========================================
 # CONVERSIONES
@@ -14,6 +14,7 @@ def kgm3_to_lbft3(rho):
 
 def m_to_ft(z):
     return z * 3.28084
+
 
 # =========================================
 # BASE TUBOS
@@ -38,25 +39,16 @@ st.sidebar.title("Inputs")
 tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
 OD, ID, peso = tubos[tubo]
 
-grado = st.sidebar.selectbox(
-    "Grado", ["J55", "N80", "P110", "Q125"]
-)
-SMYS = {"J55":55, "N80":80, "P110":110, "Q125":125}[grado]
+grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
+SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
-modo = st.sidebar.selectbox(
-    "Condición axial", ["Libre", "Anclado", "Packer"]
-)
+modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
 
-Pint = st.sidebar.number_input("P interna [psi]", 0.0)
+Pint = st.sidebar.number_input("P interna [psi]", 5000.0)
 Pext = st.sidebar.number_input("P externa [psi]", 0.0)
 
-rho_int = kgm3_to_lbft3(
-    st.sidebar.number_input("ρ interno [kg/m³]", 1050.0)
-)
-
-rho_ext = kgm3_to_lbft3(
-    st.sidebar.number_input("ρ externo [kg/m³]", 0.0)
-)
+rho_int = kgm3_to_lbft3(st.sidebar.number_input("ρ interno [kg/m³]",1050.0))
+rho_ext = kgm3_to_lbft3(st.sidebar.number_input("ρ externo [kg/m³]",0.0))
 
 fill_int = st.sidebar.slider("Nivel interno [-]", 0.0, 1.0, 1.0)
 fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 0.0)
@@ -64,15 +56,17 @@ fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 0.0)
 Torque = st.sidebar.number_input("Torque [lb-ft]", 0.0)
 F_ext = st.sidebar.number_input("F axial externa [lbf]", 0.0)
 
-depth_ft = m_to_ft(
-    st.sidebar.number_input("Profundidad total [m]", 3000.0)
-)
+depth_ft = m_to_ft(st.sidebar.number_input("Profundidad total [m]",3000.0))
 
 # =========================================
 # PERFIL
 # =========================================
 sig_ax = []
 sig_hoop = []
+vm_list = []
+z_list = []
+
+tau = torsion(Torque, OD, ID)
 
 for i in range(200):
 
@@ -89,42 +83,47 @@ for i in range(200):
 
     hoop = hoop_stress(Pint, Pext, OD, ID)
 
+    vm = von_mises(ax, hoop, tau)
+
     sig_ax.append(ax / 1000)
     sig_hoop.append(hoop / 1000)
+    vm_list.append(vm)
+    z_list.append(z)
 
 sig_ax = np.array(sig_ax)
 sig_hoop = np.array(sig_hoop)
-
-# punto crítico
-sigma_ax = sig_ax[-1]
-sigma_hoop = sig_hoop[-1]
+vm_list = np.array(vm_list)
+z_list = np.array(z_list)
 
 # =========================================
-# VM
+# PUNTO CRÍTICO
 # =========================================
-tau = torsion(Torque, OD, ID)
+i_crit = np.argmax(vm_list)
 
-vm = von_mises(
-    sigma_ax * 1000,
-    sigma_hoop * 1000,
-    tau
-)
+sigma_ax = sig_ax[i_crit]
+sigma_hoop = sig_hoop[i_crit]
+vm_crit = vm_list[i_crit]
 
-util = utilization(SMYS, vm)
+z_crit_ft = z_list[i_crit]
+z_crit_m = z_crit_ft / 3.28084
 
 # =========================================
 # API BURST
 # =========================================
-t = (OD - ID) / 2
-
+t = (OD - ID)/2
 burst = burst_api(SMYS, t, OD)
 
 burst_util = (Pint - Pext) / burst * 100
 
 # =========================================
-# ELIPSE CORRECTA
+# UTIL
 # =========================================
-sy = SMYS
+util_vm = utilization(SMYS, vm_crit)
+
+# =========================================
+# ELIPSE LIMPIA
+# =========================================
+sy = SMYS * 0.95   # 👈 achicada visualmente
 
 s = np.linspace(-sy, sy, 2000)
 
@@ -148,40 +147,7 @@ for val in reversed(s):
 # =========================================
 # PLOT
 # =========================================
-fig, ax = plt.subplots(figsize=(7, 7))
+fig, ax = plt.subplots(figsize=(7,7))
 
 ax.plot(x_vm, y_vm, color="blue", lw=2)
-ax.plot(sig_ax, sig_hoop, color="orange")
 
-ax.scatter(sigma_ax, sigma_hoop, color="red", s=150)
-
-ax.axhline(0, color="black", lw=1.5)
-ax.axvline(0, color="black", lw=1.5)
-
-lim = sy * 1.05
-ax.set_xlim(-lim, lim)
-ax.set_ylim(-lim, lim)
-
-ticks = np.arange(-sy, sy+1, 10)
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-
-ax.grid(True, color="gray", lw=0.5)
-ax.set_aspect("equal")
-
-ax.set_xlabel("σ axial [ksi]")
-ax.set_ylabel("σ hoop [ksi]")
-
-st.pyplot(fig)
-
-# =========================================
-# RESULTADOS
-# =========================================
-st.subheader("Resultados")
-
-st.metric("σ axial [ksi]", round(sigma_ax, 2))
-st.metric("σ hoop [ksi]", round(sigma_hoop, 2))
-st.metric("Von Mises [ksi]", round(vm/1000, 2))
-st.metric("Utilización [%]", round(util, 1))
-st.metric("Burst Utilización [%]", round(burst_util, 1))
-st.metric("Estado", design_check(vm, SMYS))
