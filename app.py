@@ -41,8 +41,8 @@ modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
 P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=0.0)
 Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0)
 
-rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]", 1000.0)
-rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", 1000.0)
+rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]",0.0)
+rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", 0.0)
 
 rho_int = kgm3_to_lbft3(rho_int_si)
 rho_ext = kgm3_to_lbft3(rho_ext_si)
@@ -50,7 +50,7 @@ rho_ext = kgm3_to_lbft3(rho_ext_si)
 fill_int = st.sidebar.slider("Nivel interno [-]", 0.0, 1.0, 1.0)
 fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 1.0)
 
-depth_m = st.sidebar.number_input("Profundidad [m]", 3000.0)
+depth_m = st.sidebar.number_input("Profundidad [m]", 0.0)
 depth_ft = m_to_ft(depth_m)
 
 # =========================================
