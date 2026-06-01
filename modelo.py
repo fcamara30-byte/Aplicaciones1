@@ -7,7 +7,7 @@ def presion(z, P_surface, rho, fill):
 
 
 def tension_circunferencial(dP, OD, t):
-    return (dP * OD) / (2 * t) / 1000
+    return (dP * OD) / (2 * t) / 1000  # ksi
 
 
 def tension_axial(z, OD, ID, rho_int, rho_ext):
@@ -25,7 +25,7 @@ def tension_axial(z, OD, ID, rho_int, rho_ext):
     F = (masa - buoy) * g * z
     sigma = F / A
 
-    return sigma / 6894.76 / 1000
+    return sigma / 6894.76 / 1000  # ksi
 
 
 def torsion(T_lbft, OD, ID):
@@ -34,13 +34,12 @@ def torsion(T_lbft, OD, ID):
     ro = OD / 2
     ri = ID / 2
 
-    J = math.pi/2 * (ro**4 - ri**4)
+    J = math.pi / 2 * (ro**4 - ri**4)
 
     tau = T * ro / J
 
-    return tau / 1000
+    return tau / 1000  # ksi
 
 
 def von_mises(sig_ax, sig_hoop, tau):
-    return (sig_ax**2 + sig_hoop**2 - sig_ax*sig_hoop + 3*tau**2)**0.5
-
+    return math.sqrt(sig_ax**2 + sig_hoop**2 - sig_ax*sig_hoop + 3*tau**2)
