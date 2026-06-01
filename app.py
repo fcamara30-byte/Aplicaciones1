@@ -183,32 +183,88 @@ c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
 c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 
 # =========================================
-# PRINT (FIX REAL)
+# PRINT REAL (FIX DEFINITIVO)
 # =========================================
-st.markdown("---")
+import base64
+from io import BytesIO
 
-components_html = """
-<iframe id="printf" style="display:none;"></iframe>
-<button onclick="window.print()" style="
-    background-color:#2196F3;
-    color:white;
-    padding:10px 20px;
-    border:none;
-    border-radius:5px;
-    font-size:16px;
-    cursor:pointer;">
-🖨️ Imprimir Reporte
-</button>
+# convertir gráfico a imagen
+buf = BytesIO()
+fig.savefig(buf, format="png", bbox_inches="tight")
+img_str = base64.b64encode(buf.getvalue()).decode()
+
+# HTML de reporte
+html_report = f"""
+<html>
+<head>
+<style>
+body {{
+    font-family: Arial;
+    margin: 40px;
+}}
+h1 {{
+    text-align: center;
+}}
+.grid {{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}}
+.box {{
+    padding: 5px;
+}}
+img {{
+    width: 100%;
+}}
+</style>
+</head>
+
+<body>
+
+<h1>Reporte Tubing</h1>
+
+<h2>Inputs</h2>
+
+<div class="grid">
+<div class="box">Tubing: {tubo}</div>
+<div class="box">Grado: {grado}</div>
+<div class="box">P inyección: {P_iny} psi</div>
+<div class="box">ρ interno: {rho_int_si} kg/m³</div>
+<div class="box">ρ externo: {rho_ext_si} kg/m³</div>
+<div class="box">Profundidad: {depth_m} m</div>
+</div>
+
+<h2>Resultados</h2>
+
+<div class="grid">
+<div class="box">σ axial: {round(sigma_ax,2)} ksi</div>
+<div class="box">σ hoop: {round(sigma_hoop,2)} ksi</div>
+<div class="box">VM: {round(vm_crit/1000,2)} ksi</div>
+<div class="box">Utilización: {round(util_vm,1)} %</div>
+<div class="box">Prof crítica: {round(z_crit_m,0)} m</div>
+</div>
+
+<h2>Gráfico</h2>
+
+<img src="data:image/png;base64,{img_str}"/>
+
+</body>
+</html>
 """
 
-st.components.v1.html(components_html, height=60)
+# botón real
+if st.button("🖨️ Imprimir reporte"):
+    st.components.v1.html(
+        f"""
+        <script>
+        var myWindow = window.open('', '', 'width=900,height=700');
+        myWindow.document.write(`{html_report}`);
+        myWindow.document.close();
+        myWindow.focus();
+        myWindow.print();
+        </script>
+        """,
+        height=0,
+    )
 
-st.markdown("""
-<style>
-@media print {
-    section[data-testid="stSidebar"] {display: none;}
-    button {display:none;}
-}
-</style>
-""", unsafe_allow_html=True)
 
