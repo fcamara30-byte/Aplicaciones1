@@ -18,24 +18,15 @@ def ft_to_m(z):
 def m_to_ft(z):
     return z * 3.28084
 
-
 # =========================================
 # BASE TUBOS
 # =========================================
 tubos = {
-    "2 7/8 #6.4": (2.875, 2.441, 6.4),
-    "2 7/8 #4.04": (2.875, 2.565, 4.04),
-    "3 1/2 #9.2": (3.5, 2.992, 9.2),
-    "3 1/2 #7.7": (3.5, 3.068, 7.7),
-    "5 1/2 #15.5": (5.5, 4.95, 15.5),
-    "5 1/2 #10": (5.5, 5.095, 10),
-    "7 #23": (7.0, 6.622, 23),
-    "9 5/8 #36": (9.625, 8.921, 36),
-    "9 5/8 #43.5": (9.625, 8.681, 43.5)
+    "7 #23": (7.0, 6.622, 23)
 }
 
 # =========================================
-# INPUTS (TODOS PERMITEN 0)
+# INPUTS
 # =========================================
 st.sidebar.title("Inputs")
 
@@ -43,134 +34,131 @@ tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
 OD, ID, peso = tubos[tubo]
 
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
-SMYS = {"J55":55, "N80":80, "P110":110, "Q125":125}[grado]
+SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
 modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
 
-P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=0.0, step=100.0)
-Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0, step=100.0)
+P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=0.0)
+Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0)
 
-rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]", value=0.0)
-rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", value=0.0)
+rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]", 1000.0)
+rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", 1000.0)
 
 rho_int = kgm3_to_lbft3(rho_int_si)
 rho_ext = kgm3_to_lbft3(rho_ext_si)
 
-fill_int = st.sidebar.slider("Nivel interno [-]", 0.0, 1.0, 0.0)
-fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 0.0)
+fill_int = st.sidebar.slider("Nivel interno [-]", 0.0, 1.0, 1.0)
+fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 1.0)
 
-Torque = st.sidebar.number_input("Torque [lb-ft]", value=0.0)
-F_ext = st.sidebar.number_input("F axial externa [lbf]", value=0.0)
-
-depth_m = st.sidebar.number_input("Profundidad total [m]", value=3000.0)
+depth_m = st.sidebar.number_input("Profundidad [m]", 3000.0)
 depth_ft = m_to_ft(depth_m)
 
 # =========================================
 # PERFIL
 # =========================================
-sig_ax = []
-sig_hoop = []
-vm_list = []
-z_list = []
+sig_ax, sig_hoop, vm_list, z_list = [], [], [], []
 
-tau = torsion(Torque, OD, ID)
+tau = torsion(0, OD, ID)
 
 for i in range(200):
 
     z = depth_ft * i / 200
 
-    Pi = P_iny + (rho_int * fill_int * z) / 144
-    Po = Pext_surface + (rho_ext * fill_ext * z) / 144
+    Pi = P_iny + (rho_int * z) / 144
+    Po = Pext_surface + (rho_ext * z) / 144
 
     ax_val = axial_load(
         OD, ID, peso, z,
         rho_int, rho_ext,
         fill_int, fill_ext,
-        F_ext,
+        0,
         Pi, Po,
         modo
     )
 
-    hoop_val = hoop_stress(Pi, Po, OD, ID)
-    vm_val = von_mises(ax_val, hoop_val, tau)
+    hoop = hoop_stress(Pi, Po, OD, ID)
+    vm = von_mises(ax_val, hoop, tau)
 
-    sig_ax.append(ax_val / 1000)
-    sig_hoop.append(hoop_val / 1000)
-    vm_list.append(vm_val)
+    sig_ax.append(ax_val/1000)
+    sig_hoop.append(hoop/1000)
+    vm_list.append(vm)
     z_list.append(z)
 
 sig_ax = np.array(sig_ax)
 sig_hoop = np.array(sig_hoop)
 vm_list = np.array(vm_list)
-z_list = np.array(z_list)
 
 # =========================================
 # PUNTO CRITICO
 # =========================================
 i_crit = np.argmax(vm_list)
 
-sigma_ax = sig_ax[i_crit]
-sigma_hoop = sig_hoop[i_crit]
-vm_crit = vm_list[i_crit]
-
-z_crit_m = ft_to_m(z_list[i_crit])
+x_crit = sig_ax[i_crit]
+y_crit = sig_hoop[i_crit]
+z_crit = ft_to_m(z_list[i_crit])
 
 # =========================================
-# BURST + UTIL
+# ELIPSE VON MISES REAL
 # =========================================
-t = (OD - ID)/2
-burst = burst_api(SMYS, t, OD)
+sy = SMYS
 
-util_vm = utilization(SMYS, vm_crit)
-burst_util = (P_iny / burst * 100) if burst > 0 else 0
+x_vm = []
+y_vm = []
 
-# =========================================
-# ELIPSE CORREGIDA (ESCALA AUTOMATICA)
-# =========================================
-sy = SMYS  # 🔥 escala correcta en ksi
+for s in np.linspace(-sy, sy, 2000):
 
-s = np.linspace(-sy, sy, 2000)
+    disc = 4*sy**2 - 3*s**2
 
-x_vm, y_vm = [], []
-
-for val in s:
-    disc = 4*sy**2 - 3*val**2
     if disc >= 0:
         root = np.sqrt(disc)
-        x_vm.append(val)
-        y_vm.append((val + root)/2)
 
-for val in reversed(s):
-    disc = 4*sy**2 - 3*val**2
+        x_vm.append(s)
+        y_vm.append((s + root)/2)
+
+for s in np.linspace(sy, -sy, 2000):
+
+    disc = 4*sy**2 - 3*s**2
+
     if disc >= 0:
         root = np.sqrt(disc)
-        x_vm.append(val)
-        y_vm.append((val - root)/2)
+
+        x_vm.append(s)
+        y_vm.append((s - root)/2)
 
 # =========================================
-# PLOT (ESCALA LIMPIA)
+# PLOT (ESTILO WELLCAT)
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
+# elipse
 ax.plot(x_vm, y_vm, color="blue", lw=2)
+
+# trayectoria
 ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
 
-ax.scatter(sigma_ax, sigma_hoop, color="red", s=150)
+# punto crítico
+ax.scatter(x_crit, y_crit, color="red", s=150)
 
-ax.axhline(0, color="black", lw=1.5)
-ax.axvline(0, color="black", lw=1.5)
+# ejes
+ax.axhline(0, color="black", lw=2)
+ax.axvline(0, color="black", lw=2)
 
-# 🔥 escala proporcional al grado
-lim = max(abs(sy)*1.1, abs(sigma_ax)*1.2, abs(sigma_hoop)*1.2)
+# límites SMYS
+ax.axhline(SMYS, color="red", linestyle="--")
+ax.axhline(-SMYS, color="red", linestyle="--")
+ax.axvline(SMYS, color="red", linestyle="--")
+ax.axvline(-SMYS, color="red", linestyle="--")
 
+# escala limpia
+lim = SMYS * 1.1
 ax.set_xlim(-lim, lim)
 ax.set_ylim(-lim, lim)
 
-ticks = np.arange(-lim, lim+1, 20)
+ticks = np.arange(-SMYS, SMYS+1, 20)
 ax.set_xticks(ticks)
 ax.set_yticks(ticks)
 
-ax.grid(True, color="gray", lw=0.5)
+ax.grid(True)
 ax.set_aspect("equal")
 
 ax.set_xlabel("σ axial [ksi]")
@@ -183,43 +171,44 @@ st.pyplot(fig)
 # =========================================
 st.subheader("Resultados")
 
-col1, col2, col3 = st.columns(3)
+c1, c2, c3 = st.columns(3)
 
-col1.metric("σ axial [ksi]", round(sigma_ax,2))
-col1.metric("σ hoop [ksi]", round(sigma_hoop,2))
+c1.metric("σ axial [ksi]", round(x_crit,2))
+c1.metric("σ hoop [ksi]", round(y_crit,2))
 
-col2.metric("Von Mises [ksi]", round(vm_crit/1000,2))
-col2.metric("Utilización [%]", round(util_vm,1))
+c2.metric("Von Mises [ksi]", round(vm_list[i_crit]/1000,2))
+c2.metric("Prof crítica [m]", round(z_crit,0))
 
-col3.metric("Burst Util [%]", round(burst_util,1))
-col3.metric("Prof. crítica [m]", round(z_crit_m,0))
-
-st.markdown(f"### Estado: **{design_check(vm_crit, SMYS)}**")
+c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
+c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 
 # =========================================
-# BOTON PRINT (CORREGIDO)
+# PRINT (FIX REAL)
 # =========================================
 st.markdown("---")
-st.markdown("### Imprimir reporte")
 
-st.markdown("""
+components_html = """
+<iframe id="printf" style="display:none;"></iframe>
 <button onclick="window.print()" style="
-background-color:#4CAF50;
-color:white;
-padding:10px 20px;
-border:none;
-border-radius:5px;
-cursor:pointer;
-font-size:16px;">
-🖨️ Imprimir
+    background-color:#2196F3;
+    color:white;
+    padding:10px 20px;
+    border:none;
+    border-radius:5px;
+    font-size:16px;
+    cursor:pointer;">
+🖨️ Imprimir Reporte
 </button>
-""", unsafe_allow_html=True)
+"""
+
+st.components.v1.html(components_html, height=60)
 
 st.markdown("""
 <style>
 @media print {
-    .stSidebar {display:none;}
+    section[data-testid="stSidebar"] {display: none;}
     button {display:none;}
 }
 </style>
 """, unsafe_allow_html=True)
+
