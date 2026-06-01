@@ -133,35 +133,48 @@ i_crit = np.argmax(ratio)
 ax_crit = sig_ax[i_crit]
 hoop_crit = sig_hoop[i_crit]
 
+
 # -----------------------------
-# ELIPSE VON MISES CORRECTA
+# ELIPSE VON MISES - CORRECTA
 # -----------------------------
 sigma_ax_vals = np.linspace(-yield_ksi, yield_ksi, 2000)
 
-sigma_hoop_pos = np.zeros_like(sigma_ax_vals)
-sigma_hoop_neg = np.zeros_like(sigma_ax_vals)
+sigma_hoop_pos = []
+sigma_hoop_neg = []
 
-for i, s_ax_val in enumerate(sigma_ax_vals):
-    disc = 4 * yield_ksi**2 - 3 * s_ax_val**2
+for s_ax in sigma_ax_vals:
+    disc = 4*yield_ksi**2 - 3*s_ax**2
 
     if disc >= 0:
         root = np.sqrt(disc)
-        sigma_hoop_pos[i] = (s_ax_val + root)/2
-        sigma_hoop_neg[i] = (s_ax_val - root)/2
-    else:
-        sigma_hoop_pos[i] = np.nan
-        sigma_hoop_neg[i] = np.nan
 
-# cerrar curva
-sigma_ax_full = np.concatenate([sigma_ax_vals, sigma_ax_vals[::-1]])
-sigma_hoop_full = np.concatenate([sigma_hoop_pos, sigma_hoop_neg[::-1]])
+        sigma_hoop_pos.append((s_ax + root)/2)
+        sigma_hoop_neg.append((s_ax - root)/2)
+    else:
+        sigma_hoop_pos.append(np.nan)
+        sigma_hoop_neg.append(np.nan)
+
+# ✅ CLAVE: cerrar la curva correctamente
+
+# parte superior (izq → der)
+top_x = sigma_ax_vals
+top_y = np.array(sigma_hoop_pos)
+
+# parte inferior (der → izq)
+bottom_x = sigma_ax_vals[::-1]
+bottom_y = np.array(sigma_hoop_neg)[::-1]
+
+# curva completa
+x_ellipse = np.concatenate([top_x, bottom_x])
+y_ellipse = np.concatenate([top_y, bottom_y])
+
 
 # -----------------------------
 # PLOT
 # -----------------------------
 fig, ax = plt.subplots(figsize=(7,7))
 
-ax.plot(sigma_ax_full, sigma_hoop_full, color="blue", linewidth=2, label="Envolvente VM")
+ax.plot(x_ellipse, y_ellipse, color="blue", linewidth=2, label="Envolvente VM")
 
 # trayectoria
 ax.plot(sig_ax, sig_hoop, color="orange", linewidth=2, label="Trayectoria")
