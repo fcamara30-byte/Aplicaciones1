@@ -7,10 +7,10 @@ def presion(z, P_surface, rho, fill):
 
 
 def tension_circunferencial(dP, OD, t):
-    return (dP * OD) / (2 * t) / 1000
+    return (dP * OD) / (2 * t) / 1000  # ksi
 
 
-def tension_axial(z, OD, ID, rho_int, rho_ext):
+def tension_axial(z, OD, ID, rho_int, rho_ext, F_ext):
     g = 9.81
 
     A_ext = math.pi * OD**2 / 4
@@ -22,11 +22,15 @@ def tension_axial(z, OD, ID, rho_int, rho_ext):
     masa = A * rho_steel
     buoy = A_ext * rho_ext - A_int * rho_int
 
-    F = (masa - buoy) * g * z
+    # peso + flotación
+    F_weight = (masa - buoy) * g * z
 
-    sigma = F / A
+    # ✅ AGREGADO: fuerza externa
+    F_total = F_weight + F_ext
 
-    return sigma / 6894.76 / 1000
+    sigma = F_total / A
+
+    return sigma / 6894.76 / 1000  # ksi
 
 
 def torsion(T_lbft, OD, ID):
@@ -39,4 +43,4 @@ def torsion(T_lbft, OD, ID):
 
     tau = T * ro / J
 
-    return tau / 1000
+    return tau / 1000  # ksi
