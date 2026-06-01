@@ -176,19 +176,16 @@ c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 # =========================================
 
 st.markdown("""
-<button onclick="window.print()" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    background-color: #2196F3;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;">
-🖨️ Print
-</button>
+<div style="position:fixed; top:20px; right:20px; z-index:9999;">
+    <button onclick="window.print()" style="
+        background-color:#2196F3;
+        color:white;
+        padding:10px 15px;
+        border:none;
+        border-radius:6px;
+        font-size:14px;
+        cursor:pointer;">
+    🖨️ Print
+    </button>
+</div>
 """, unsafe_allow_html=True)
-
