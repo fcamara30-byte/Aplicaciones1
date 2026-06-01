@@ -74,17 +74,15 @@ for i in range(200):
     Pi = P_iny + rho_int * fill_int * z / 144
     Po = Pext_surface + rho_ext * fill_ext * z / 144
 
-ax_val = axial_load(
-    OD, ID, peso, z,
-    rho_int, rho_ext,
-    fill_int, fill_ext,
-    F_ext,
-    Pi, Po,
-    modo,
-    condicion
-)
-
-
+    ax_val = axial_load(
+        OD, ID, peso, z,
+        rho_int, rho_ext,
+        fill_int, fill_ext,
+        F_ext,
+        Pi, Po,
+        modo,
+        condicion
+    )
 
     hoop = hoop_stress(Pi, Po, OD, ID)
     vm = von_mises(ax_val, hoop, 0)
