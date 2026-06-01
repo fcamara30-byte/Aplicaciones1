@@ -43,8 +43,8 @@ rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", value=0.0)
 rho_int = kgm3_to_lbft3(rho_int_si)
 rho_ext = kgm3_to_lbft3(rho_ext_si)
 
-fill_int = st.sidebar.number_input("Nivel interno", value=0.0)
-fill_ext = st.sidebar.number_input("Nivel externo", value=0.0)
+fill_int = st.sidebar.number_input("Nivel fluido int mts", value=0.0)
+fill_ext = st.sidebar.number_input("Nivel entrecolumna mts", value=0.0)
 
 # ✅ RESTAURADO
 F_ext = st.sidebar.number_input("Fuerza axial externa [lbf]", value=0.0)
