@@ -81,16 +81,51 @@ if st.button("Calcular"):
         st.warning("CERCA DEL LÍMITE")
     else:
         st.success("SEGURO")
+# ---------------------------
+# GRAFICO ELIPSE VON MISES
+# ---------------------------
+fig2, ax2 = plt.subplots()
 
+# Crear elipse
+sigma = []
+sigma_circ = []
 
-    # ---------------------------
-    # GRAFICO
-    # ---------------------------
-    fig, ax = plt.subplots()
+for i in range(-100, 100):
+    s_ax = yield_ksi * i / 100
 
-    ax.plot(zs, ratios)
-    ax.set_xlabel("Profundidad (m)")
-    ax.set_ylabel("VM / admisible")
-    ax.grid()
+    # ecuacion VM = constante
+    # despejo sigma_circ
+    try:
+        term = (yield_ksi**2 - s_ax**2 + s_ax**2)
+        s_circ = (s_ax / 2) + ((3 * s_ax**2 - s_ax**2 + yield_ksi**2)**0.5)
 
-    st.pyplot(fig)
+        sigma.append(s_ax)
+        sigma_circ.append(s_circ)
+    except:
+        continue
+
+# graficar elipse
+ax2.plot(sigma, sigma_circ, label="Envolvente VM")
+
+# ---------------------------
+# PUNTO OPERATIVO
+# ---------------------------
+# usamos el peor caso calculado
+Pint = presion(peor_z, Pint_surface, rho_int, fill_int)
+Pext = presion(peor_z, Pext_surface, rho_ext, fill_ext)
+
+DeltaP = Pint - Pext
+
+sig_hoop = tension_circunferencial(DeltaP, OD, ID)
+sig_ax = tension_axial(peor_z, OD, ID, rho_int, rho_ext)
+
+ax2.scatter(sig_ax, sig_hoop, color="red", label="Punto operativo")
+
+ax2.set_xlabel("σ axial (ksi)")
+ax2.set_ylabel("σ circunferencial (ksi)")
+ax2.legend()
+ax2.grid()
+
+st.pyplot(fig2)
+
+    
