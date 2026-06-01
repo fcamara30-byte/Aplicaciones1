@@ -183,7 +183,7 @@ c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
 c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 
 # =========================================
-# PRINT CORRECTO (HTML + VENTANA NUEVA)
+# PRINT (FIX DEFINITIVO SIN ERRORES)
 # =========================================
 import base64
 from io import BytesIO
@@ -191,67 +191,83 @@ from io import BytesIO
 # convertir gráfico a imagen
 buf = BytesIO()
 fig.savefig(buf, format="png", bbox_inches="tight")
-img_str = base64.b64encode(buf.getvalue()).decode()
+img_str = base64.b64encode(buf.getvalue()).decode("utf-8")
 
-# HTML completo del reporte
+# HTML seguro
 html_report = f"""
+<!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <style>
 body {{
-    font-family: Arial, sans-serif;
-    margin: 40px;
+    font-family: Arial;
+    margin: 30px;
 }}
-
 h1 {{
     text-align: center;
 }}
-
-h2 {{
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 5px;
-}}
-
 .grid {{
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
 }}
-
 .box {{
-    padding: 6px;
+    padding: 5px;
     font-size: 14px;
 }}
-
 img {{
     width: 100%;
 }}
-
 </style>
 </head>
 
 <body>
 
-<h1>Reporte Diseño Tubing</h1>
+<h1>Reporte Tubing</h1>
 
 <h2>Inputs</h2>
-
 <div class="grid">
-<div class="box"><b>Tubing:</b> {tubo}</div>
-<div class="box"><b>Grado:</b> {grado}</div>
-<div class="box"><b>Condición axial:</b> {modo}</div>
-<div class="box"><b>Presión inyección:</b> {P_iny} psi</div>
-<div class="box"><b>Presión externa sup.:</b> {Pext_surface} psi</div>
-<div class="box"><b>ρ interno:</b> {rho_int_si} kg/m³</div>
-<div class="box"><b>ρ externo:</b> {rho_ext_si} kg/m³</div>
-<div class="box"><b>Nivel interno:</b> {fill_int}</div>
-<div class="box"><b>Nivel externo:</b> {fill_ext}</div>
-<div class="box"><b>Profundidad:</b> {depth_m} m</div>
+<div class="box">Tubing: {tubo}</div>
+<div class="box">Grado: {grado}</div>
+<div class="box">Modo: {modo}</div>
+<div class="box">P inyección: {P_iny} psi</div>
+<div class="box">ρ interno: {rho_int_si} kg/m³</div>
+<div class="box">ρ externo: {rho_ext_si} kg/m³</div>
+<div class="box">Profundidad: {depth_m} m</div>
 </div>
 
 <h2>Resultados</h2>
-
 <div class="grid">
+<div class="box">σ axial: {round(sigma_ax,2)} ksi</div>
+<div class="box">σ hoop: {round(sigma_hoop,2)} ksi</div>
+<div class="box">VM: {round(vm_crit/1000,2)} ksi</div>
+<div class="box">Utilización: {round(util_vm,1)} %</div>
+<div class="box">Prof crítica: {round(z_crit_m,0)} m</div>
+<div class="box">Estado: {design_check(vm_crit, SMYS)}</div>
+</div>
 
+<h2>Gráfico</h2>
+<img src="data:image/png;base64,{img_str}"/>
+
+</body>
+</html>
+"""
+
+# BOTÓN que funciona SIEMPRE
+if st.button("🖨️ Imprimir reporte"):
+    st.components.v1.html(
+        f"""
+        <script>
+        var w = window.open("", "", "width=900,height=700");
+        w.document.write(`{html_report}`);
+        w.document.close();
+        w.focus();
+        setTimeout(function() {{
+            w.print();
+        }}, 500);
+        </script>
+        """,
+        height=0
+    )
 
