@@ -22,14 +22,14 @@ def m_to_ft(z):
 
 
 # =========================================
-# BASE TUBOS
+# TUBOS
 # =========================================
 tubos = {
     "7 #23": (7.0, 6.622, 23)
 }
 
 # =========================================
-# INPUTS (SIN RESTRICCIONES)
+# INPUTS (LIBRES)
 # =========================================
 st.sidebar.title("Inputs")
 
@@ -41,11 +41,11 @@ SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
 modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
 
-P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=0.0)
-Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0)
+P_iny = st.sidebar.number_input("Presión de inyección [psi]", 0.0)
+Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", 0.0)
 
-rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]", value=0.0)
-rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", value=0.0)
+rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]", 0.0)
+rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", 0.0)
 
 rho_int = kgm3_to_lbft3(rho_int_si)
 rho_ext = kgm3_to_lbft3(rho_ext_si)
@@ -53,7 +53,7 @@ rho_ext = kgm3_to_lbft3(rho_ext_si)
 fill_int = st.sidebar.slider("Nivel interno [-]", 0.0, 1.0, 0.0)
 fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 0.0)
 
-depth_m = st.sidebar.number_input("Profundidad [m]", value=3000.0)
+depth_m = st.sidebar.number_input("Profundidad [m]", 3000.0)
 depth_ft = m_to_ft(depth_m)
 
 # =========================================
@@ -101,34 +101,42 @@ y_crit = sig_hoop[i_crit]
 z_crit = ft_to_m(z_list[i_crit])
 
 # =========================================
-# ELIPSE VM CORRECTA
+# ELIPSE VON MISES REAL (CORRECTA)
 # =========================================
 sy = SMYS
 
-theta = np.linspace(0, 2*np.pi, 2000)
+s = np.linspace(-sy, sy, 2000)
 
-x_vm = sy * np.cos(theta)
-y_vm = sy * np.sin(theta)
+x_vm = []
+y_vm = []
+
+for val in s:
+    disc = 4*sy**2 - 3*val**2
+    if disc >= 0:
+        root = np.sqrt(disc)
+        x_vm.append(val)
+        y_vm.append((val + root)/2)
+
+for val in reversed(s):
+    disc = 4*sy**2 - 3*val**2
+    if disc >= 0:
+        root = np.sqrt(disc)
+        x_vm.append(val)
+        y_vm.append((val - root)/2)
 
 # =========================================
-# PLOT WELL-CAT STYLE
+# PLOT (WELLCAT)
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
-# elipse
 ax.plot(x_vm, y_vm, color="blue", lw=2)
-
-# trayectoria
 ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
 
-# punto crítico
 ax.scatter(x_crit, y_crit, color="red", s=150)
 
-# ejes
 ax.axhline(0, color="black", lw=2)
 ax.axvline(0, color="black", lw=2)
 
-# límites
 lim = max(SMYS*1.1, abs(x_crit)*1.2, abs(y_crit)*1.2)
 ax.set_xlim(-lim, lim)
 ax.set_ylim(-lim, lim)
@@ -157,8 +165,9 @@ c2.metric("Prof crítica [m]", round(z_crit,0))
 c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
 c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 
+
 # =========================================
-# PRINT FUNCIONANDO
+# PRINT (FUNCIONA)
 # =========================================
 buf = BytesIO()
 fig.savefig(buf, format="png", bbox_inches="tight")
@@ -176,7 +185,7 @@ html_report = f"""
 <p>VM: {round(vm_list[i_crit]/1000,2)} ksi</p>
 <p>Prof crítica: {round(z_crit,0)} m</p>
 
-<img src="data:image/png;base64,{img_str}">
+<img src="data:image/png;base64,{img_str}" />
 
 </body>
 </html>
@@ -186,13 +195,12 @@ if st.button("🖨️ Imprimir"):
     st.components.v1.html(
         f"""
         <script>
-        var w = window.open();
+        var w = window.open("", "", "width=900,height=700");
         w.document.write(`{html_report}`);
         w.document.close();
-        setTimeout(function(){{w.print();}},500);
+        w.focus();
+        setTimeout(function(){{w.print();}}, 500);
         </script>
         """,
-        height=0
+        height=0,
     )
-
-
