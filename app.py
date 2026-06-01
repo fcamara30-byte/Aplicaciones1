@@ -150,4 +150,47 @@ for val in reversed(s):
 fig, ax = plt.subplots(figsize=(7,7))
 
 ax.plot(x_vm, y_vm, color="blue", lw=2)
+ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
 
+# punto crítico
+ax.scatter(sigma_ax, sigma_hoop, color="red", s=160)
+
+# ejes
+ax.axhline(0, color="black", lw=1.5)
+ax.axvline(0, color="black", lw=1.5)
+
+# límites visibles
+lim = sy * 1.05
+ax.set_xlim(-lim, lim)
+ax.set_ylim(-lim, lim)
+
+ticks = np.arange(-sy, sy+1, 20)
+ax.set_xticks(ticks)
+ax.set_yticks(ticks)
+
+ax.grid(True, color="gray", lw=0.5)
+
+ax.set_aspect("equal")
+
+ax.set_xlabel("σ axial [ksi]")
+ax.set_ylabel("σ hoop [ksi]")
+
+st.pyplot(fig)
+
+# =========================================
+# RESULTADOS (ORDENADOS)
+# =========================================
+st.subheader("Resultados")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("σ axial [ksi]", round(sigma_ax,2))
+col1.metric("σ hoop [ksi]", round(sigma_hoop,2))
+
+col2.metric("Von Mises [ksi]", round(vm_crit/1000,2))
+col2.metric("Utilización [%]", round(util_vm,1))
+
+col3.metric("Burst Util [%]", round(burst_util,1))
+col3.metric("Profundidad crítica [m]", round(z_crit_m,0))
+
+st.markdown(f"### Estado: **{design_check(vm_crit, SMYS)}**")
