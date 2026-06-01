@@ -174,19 +174,20 @@ c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 # =========================================
 import streamlit.components.v1 as components
 
+import streamlit.components.v1 as components
+
 components.html("""
-<button onclick="window.print()" style="
-    position: fixed;
-    bottom: 40px;
-    right: 40px;
-    z-index: 9999;
-    background-color: #4CAF50;
-    color: white;
-    padding: 12px 18px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;">
-🖨️ Imprimir
-</button>
-""", height=0)
+<div style="text-align:right;">
+    <button onclick="parent.window.print()" style="
+        padding:5px 10px;
+        font-size:12px;
+        background-color:#1f3b5c;
+        color:white;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;">
+    🖨️ Print
+    </button>
+</div>
+""", height=40)
+
