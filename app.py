@@ -19,15 +19,21 @@ def ft_to_m(z):
     return z / 3.28084
 
 # =========================================
-# INPUTS (RESTAURADOS)
+# BASE TUBOS (CON LIBRAJE)
+# =========================================
+tubos = {
+    "7\" #23": (7.0, 6.622, 23),
+    "5 1/2\" #15.5": (5.5, 4.778, 15.5),
+    "3 1/2\" #9.2": (3.5, 2.992, 9.2)
+}
+
+# =========================================
+# INPUTS
 # =========================================
 st.sidebar.title("Inputs")
 
-OD = st.sidebar.number_input("OD [in]", 1.0, 20.0, 7.0)
-ID = st.sidebar.number_input("ID [in]", 1.0, 20.0, 6.622)
-
-# peso estimado (no lo tocamos)
-peso = st.sidebar.number_input("Peso [lb/ft]", value=23.0)
+tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
+OD, ID, peso = tubos[tubo]
 
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
 SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
@@ -43,10 +49,10 @@ rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", value=0.0)
 rho_int = kgm3_to_lbft3(rho_int_si)
 rho_ext = kgm3_to_lbft3(rho_ext_si)
 
-fill_int = st.sidebar.number_input("Nivel fluido int mts", value=0.0)
-fill_ext = st.sidebar.number_input("Nivel entrecolumna mts", value=0.0)
+# ✅ % de llenado (como querías)
+fill_int = st.sidebar.slider("Nivel interno [%]", 0, 100, 0) / 100
+fill_ext = st.sidebar.slider("Nivel externo [%]", 0, 100, 0) / 100
 
-# ✅ RESTAURADO
 F_ext = st.sidebar.number_input("Fuerza axial externa [lbf]", value=0.0)
 
 depth_m = st.sidebar.number_input("Profundidad [m]", value=3000.0)
@@ -61,8 +67,8 @@ for i in range(200):
 
     z = depth_ft * i / 200
 
-    Pi = P_iny + rho_int * z / 144
-    Po = Pext_surface + rho_ext * z / 144
+    Pi = P_iny + rho_int * fill_int * z / 144
+    Po = Pext_surface + rho_ext * fill_ext * z / 144
 
     ax_val = axial_load(
         OD, ID, peso, z,
@@ -114,7 +120,7 @@ for val in s:
         y_vm2.append((val - root)/2)
 
 # =========================================
-# PLOT (NO MODIFICADO)
+# PLOT (INTACTO)
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
@@ -161,29 +167,3 @@ c2.metric("Prof crítica [m]", round(z_crit,0))
 c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
 c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 
-# =========================================
-# PRINT REAL (FUNCIONA)
-# =========================================
-st.markdown("---")
-
-st.markdown("""
-<button onclick="window.print()" style="
-background-color:#4CAF50;
-color:white;
-padding:10px 20px;
-border:none;
-border-radius:5px;
-cursor:pointer;
-font-size:16px;">
-🖨️ Imprimir
-</button>
-""", unsafe_allow_html=True)
-
-# ocultar sidebar al imprimir
-st.markdown("""
-<style>
-@media print {
-    section[data-testid="stSidebar"] {display:none;}
-}
-</style>
-""", unsafe_allow_html=True)
