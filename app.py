@@ -18,6 +18,7 @@ def ft_to_m(z):
 def m_to_ft(z):
     return z * 3.28084
 
+
 # =========================================
 # BASE TUBOS
 # =========================================
@@ -41,8 +42,8 @@ modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
 P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=0.0)
 Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0)
 
-rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]",0.0)
-rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", 0.0)
+rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]", 1000.0)
+rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", 1000.0)
 
 rho_int = kgm3_to_lbft3(rho_int_si)
 rho_ext = kgm3_to_lbft3(rho_ext_si)
@@ -50,7 +51,7 @@ rho_ext = kgm3_to_lbft3(rho_ext_si)
 fill_int = st.sidebar.slider("Nivel interno [-]", 0.0, 1.0, 1.0)
 fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 1.0)
 
-depth_m = st.sidebar.number_input("Profundidad [m]", 0.0)
+depth_m = st.sidebar.number_input("Profundidad [m]", 3000.0)
 depth_ft = m_to_ft(depth_m)
 
 # =========================================
@@ -98,7 +99,7 @@ y_crit = sig_hoop[i_crit]
 z_crit = ft_to_m(z_list[i_crit])
 
 # =========================================
-# ELIPSE VON MISES REAL
+# ELIPSE
 # =========================================
 sy = SMYS
 
@@ -106,50 +107,32 @@ x_vm = []
 y_vm = []
 
 for s in np.linspace(-sy, sy, 2000):
-
     disc = 4*sy**2 - 3*s**2
-
     if disc >= 0:
         root = np.sqrt(disc)
-
         x_vm.append(s)
         y_vm.append((s + root)/2)
 
 for s in np.linspace(sy, -sy, 2000):
-
     disc = 4*sy**2 - 3*s**2
-
     if disc >= 0:
         root = np.sqrt(disc)
-
         x_vm.append(s)
         y_vm.append((s - root)/2)
 
 # =========================================
-# PLOT (ESTILO WELLCAT)
+# PLOT
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
-# elipse
 ax.plot(x_vm, y_vm, color="blue", lw=2)
-
-# trayectoria
 ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
 
-# punto crítico
 ax.scatter(x_crit, y_crit, color="red", s=150)
 
-# ejes
 ax.axhline(0, color="black", lw=2)
 ax.axvline(0, color="black", lw=2)
 
-# límites SMYS
-ax.axhline(SMYS, color="red", linestyle="--")
-ax.axhline(-SMYS, color="red", linestyle="--")
-ax.axvline(SMYS, color="red", linestyle="--")
-ax.axvline(-SMYS, color="red", linestyle="--")
-
-# escala limpia
 lim = SMYS * 1.1
 ax.set_xlim(-lim, lim)
 ax.set_ylim(-lim, lim)
@@ -183,78 +166,45 @@ c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
 c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 
 # =========================================
-# PRINT (FIX DEFINITIVO SIN ERRORES)
+# PRINT (ARREGLADO)
 # =========================================
 import base64
 from io import BytesIO
 
-# convertir gráfico a imagen
 buf = BytesIO()
 fig.savefig(buf, format="png", bbox_inches="tight")
 img_str = base64.b64encode(buf.getvalue()).decode("utf-8")
 
-# HTML seguro
 html_report = f"""
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
-body {{
-    font-family: Arial;
-    margin: 30px;
-}}
-h1 {{
-    text-align: center;
-}}
-.grid {{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-}}
-.box {{
-    padding: 5px;
-    font-size: 14px;
-}}
-img {{
-    width: 100%;
-}}
+body {{ font-family: Arial; margin: 30px; }}
+h1 {{ text-align: center; }}
+.grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }}
 </style>
 </head>
-
 <body>
 
 <h1>Reporte Tubing</h1>
 
-<h2>Inputs</h2>
 <div class="grid">
-<div class="box">Tubing: {tubo}</div>
-<div class="box">Grado: {grado}</div>
-<div class="box">Modo: {modo}</div>
-<div class="box">P inyección: {P_iny} psi</div>
-<div class="box">ρ interno: {rho_int_si} kg/m³</div>
-<div class="box">ρ externo: {rho_ext_si} kg/m³</div>
-<div class="box">Profundidad: {depth_m} m</div>
+<div>Tubing: {tubo}</div>
+<div>Grado: {grado}</div>
+<div>σ axial: {round(x_crit,2)} ksi</div>
+<div>σ hoop: {round(y_crit,2)} ksi</div>
+<div>VM: {round(vm_list[i_crit]/1000,2)} ksi</div>
+<div>Prof crítica: {round(z_crit,0)} m</div>
 </div>
 
-<h2>Resultados</h2>
-<div class="grid">
-<div class="box">σ axial: {round(sigma_ax,2)} ksi</div>
-<div class="box">σ hoop: {round(sigma_hoop,2)} ksi</div>
-<div class="box">VM: {round(vm_crit/1000,2)} ksi</div>
-<div class="box">Utilización: {round(util_vm,1)} %</div>
-<div class="box">Prof crítica: {round(z_crit_m,0)} m</div>
-<div class="box">Estado: {design_check(vm_crit, SMYS)}</div>
-</div>
-
-<h2>Gráfico</h2>
 <img src="data:image/png;base64,{img_str}"/>
 
 </body>
 </html>
 """
 
-# BOTÓN que funciona SIEMPRE
 if st.button("🖨️ Imprimir reporte"):
     st.components.v1.html(
         f"""
@@ -263,11 +213,9 @@ if st.button("🖨️ Imprimir reporte"):
         w.document.write(`{html_report}`);
         w.document.close();
         w.focus();
-        setTimeout(function() {{
-            w.print();
-        }}, 500);
+        setTimeout(() => w.print(), 500);
         </script>
         """,
-        height=0
+        height=0,
     )
 
