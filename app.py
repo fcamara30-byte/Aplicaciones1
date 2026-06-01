@@ -11,12 +11,8 @@ st.title("Modelo Von Mises")
 # -----------------------------
 st.sidebar.title("Configuración")
 
-# MODO
 modo = st.sidebar.radio("Modo", ["API", "Custom"])
 
-# -----------------------------
-# BASE API
-# -----------------------------
 api = {
     "2 7/8": {6.4: (2.875, 0.217), 8.6: (2.875, 0.276)},
     "3 1/2": {9.3: (3.5, 0.254), 12.95: (3.5, 0.318)},
@@ -50,7 +46,6 @@ if modo == "API":
 else:
     OD = st.sidebar.number_input("OD (in)", value=3.5)
     weight = st.sidebar.number_input("lb/ft", value=10.0)
-
     t = weight / (10.69 * OD)
     ID = OD - 2*t
 
@@ -65,8 +60,7 @@ st.sidebar.markdown(f"""
 # MATERIAL
 # -----------------------------
 grades = {"J55": 55, "N80": 80, "P110": 110}
-grado = st.sidebar.selectbox("Grado", grades.keys())
-yield_ksi = grades[grado]
+yield_ksi = grades[st.sidebar.selectbox("Grado", grades.keys())]
 
 # -----------------------------
 # FLUIDOS
@@ -80,20 +74,20 @@ fill_ext = st.sidebar.slider("Fill externo", 0.0, 1.0, 1.0)
 # -----------------------------
 # PRESIONES
 # -----------------------------
-Pint = st.sidebar.number_input("P interna (psi)", value=1500.0)
-Pext = st.sidebar.number_input("P externa (psi)", value=0.0)
+Pint = st.sidebar.number_input("P interna", value=1500.0)
+Pext = st.sidebar.number_input("P externa", value=0.0)
 
 # -----------------------------
-# MECÁNICO
+# TORQUE
 # -----------------------------
 Torque = st.sidebar.number_input("Torque (lb-ft)", value=0.0)
-prof_max = st.sidebar.number_input("Profundidad (m)", value=2000)
+
+prof_max = st.sidebar.number_input("Profundidad", value=2000)
 
 # -----------------------------
-# CALCULO
+# CALCULO PERFIL
 # -----------------------------
-sig_ax = []
-sig_hoop = []
+sig_ax, sig_hoop = [], []
 
 for i in range(200):
     z = prof_max * i / 200
@@ -103,15 +97,15 @@ for i in range(200):
 
     dP = Pint_z - Pext_z
 
-    s_hoop = tension_circunferencial(dP, OD, t)
-    s_ax = tension_axial(z, OD, ID, rho_int, rho_ext)
-
-    sig_ax.append(s_ax)
-    sig_hoop.append(s_hoop)
+    sig_hoop.append(tension_circunferencial(dP, OD, t))
+    sig_ax.append(tension_axial(z, OD, ID, rho_int, rho_ext))
 
 sig_ax = np.array(sig_ax)
 sig_hoop = np.array(sig_hoop)
 
+# -----------------------------
+# VM + TORQUE
+# -----------------------------
 tau = torsion(Torque, OD, ID)
 
 vm = np.sqrt(sig_ax**2 + sig_hoop**2 - sig_ax*sig_hoop + 3*tau**2)
@@ -119,48 +113,40 @@ ratio = vm / yield_ksi
 
 i_crit = np.argmax(ratio)
 
-ax_crit = sig_ax[i_crit]
-hoop_crit = sig_hoop[i_crit]
+ax_c = sig_ax[i_crit]
+hoop_c = sig_hoop[i_crit]
 
 # -----------------------------
-# ELIPSE CORRECTA (EQUACION REAL)
+# ELIPSE EXACTA (IGUAL EXCEL)
 # -----------------------------
-sigma_ax_vals = np.linspace(-yield_ksi, yield_ksi, 2000)
+sigma_ax = np.linspace(-yield_ksi, yield_ksi, 2000)
 
-top_x, top_y = [], []
-bot_x, bot_y = [], []
+sigma_hoop_top = []
+sigma_hoop_bot = []
 
-for s in sigma_ax_vals:
+for s in sigma_ax:
     disc = 4*yield_ksi**2 - 3*s**2
-    if disc >= 0:
-        root = np.sqrt(disc)
+    root = np.sqrt(max(disc, 0))
 
-        top_x.append(s)
-        top_y.append((s + root)/2)
+    sigma_hoop_top.append((s + root)/2)
+    sigma_hoop_bot.append((s - root)/2)
 
-        bot_x.append(s)
-        bot_y.append((s - root)/2)
-
-# cerrar curva
-bot_x = bot_x[::-1]
-bot_y = bot_y[::-1]
-
-x_ellipse = np.concatenate([top_x, bot_x])
-y_ellipse = np.concatenate([top_y, bot_y])
+sigma_ax_full = np.concatenate([sigma_ax, sigma_ax[::-1]])
+sigma_hoop_full = np.concatenate([sigma_hoop_top, sigma_hoop_bot[::-1]])
 
 # -----------------------------
 # PLOT
 # -----------------------------
 fig, ax = plt.subplots(figsize=(7,7))
 
-# elipse ✅ CORRECTA
-ax.plot(x_ellipse, y_ellipse, color="blue", linewidth=2, label="Envolvente VM")
+# elipse ✅
+ax.plot(sigma_ax_full, sigma_hoop_full, color="blue", linewidth=2)
 
 # trayectoria ✅
-ax.plot(sig_ax, sig_hoop, color="orange", linewidth=2, label="Trayectoria")
+ax.plot(sig_ax, sig_hoop, color="orange", linewidth=2)
 
 # punto ✅
-ax.scatter(ax_crit, hoop_crit, color="red", s=120, label="Crítico")
+ax.scatter(ax_c, hoop_c, color="red", s=120)
 
 # limites ✅
 lim = yield_ksi
@@ -172,7 +158,7 @@ ax.set_ylim(-lim, lim)
 ax.axhline(0, color="black")
 ax.axvline(0, color="black")
 
-# cuadrado limite (rojo)
+# limites rojos
 ax.axhline(lim, color="red", linestyle="--")
 ax.axhline(-lim, color="red", linestyle="--")
 ax.axvline(lim, color="red", linestyle="--")
@@ -183,8 +169,9 @@ ax.set_aspect("equal")
 ax.set_xlabel("σ axial (ksi)")
 ax.set_ylabel("σ circunferencial (ksi)")
 
-ax.legend(loc="upper right")
 ax.grid()
 
 st.pyplot(fig)
+
+st.metric("VM max / Yield", round(float(max(ratio)),3))
 
