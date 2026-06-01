@@ -153,4 +153,4 @@ ax2.legend()
 ax2.grid()
 
 
-    st.pyplot(fig2)
+st.pyplot(fig2)
