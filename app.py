@@ -172,12 +172,21 @@ c2.metric("Prof crítica [m]", round(z_crit,0))
 c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
 c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 # =========================================
-if st.button("🖨️ Imprimir (como Ctrl+P)"):
-    st.markdown(
-        """
-        <script>
-        window.print();
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
+import streamlit.components.v1 as components
+
+components.html("""
+<button onclick="window.print()" style="
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 9999;
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;">
+🖨️ Imprimir
+</button>
+""", height=0)
