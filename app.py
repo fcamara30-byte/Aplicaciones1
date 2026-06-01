@@ -2,6 +2,8 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from modelo import *
+import base64
+from io import BytesIO
 
 st.set_page_config(layout="wide")
 st.title("Diseño Tubing - Von Mises")
@@ -27,7 +29,7 @@ tubos = {
 }
 
 # =========================================
-# INPUTS
+# INPUTS (SIN RESTRICCIONES)
 # =========================================
 st.sidebar.title("Inputs")
 
@@ -42,16 +44,16 @@ modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
 P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=0.0)
 Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0)
 
-rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]", 1000.0)
-rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", 1000.0)
+rho_int_si = st.sidebar.number_input("ρ interno [kg/m³]", value=0.0)
+rho_ext_si = st.sidebar.number_input("ρ externo [kg/m³]", value=0.0)
 
 rho_int = kgm3_to_lbft3(rho_int_si)
 rho_ext = kgm3_to_lbft3(rho_ext_si)
 
-fill_int = st.sidebar.slider("Nivel interno [-]", 0.0, 1.0, 1.0)
-fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 1.0)
+fill_int = st.sidebar.slider("Nivel interno [-]", 0.0, 1.0, 0.0)
+fill_ext = st.sidebar.slider("Nivel externo [-]", 0.0, 1.0, 0.0)
 
-depth_m = st.sidebar.number_input("Profundidad [m]", 3000.0)
+depth_m = st.sidebar.number_input("Profundidad [m]", value=3000.0)
 depth_ft = m_to_ft(depth_m)
 
 # =========================================
@@ -99,47 +101,37 @@ y_crit = sig_hoop[i_crit]
 z_crit = ft_to_m(z_list[i_crit])
 
 # =========================================
-# ELIPSE
+# ELIPSE VM CORRECTA
 # =========================================
 sy = SMYS
 
-x_vm = []
-y_vm = []
+theta = np.linspace(0, 2*np.pi, 2000)
 
-for s in np.linspace(-sy, sy, 2000):
-    disc = 4*sy**2 - 3*s**2
-    if disc >= 0:
-        root = np.sqrt(disc)
-        x_vm.append(s)
-        y_vm.append((s + root)/2)
-
-for s in np.linspace(sy, -sy, 2000):
-    disc = 4*sy**2 - 3*s**2
-    if disc >= 0:
-        root = np.sqrt(disc)
-        x_vm.append(s)
-        y_vm.append((s - root)/2)
+x_vm = sy * np.cos(theta)
+y_vm = sy * np.sin(theta)
 
 # =========================================
-# PLOT
+# PLOT WELL-CAT STYLE
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
+# elipse
 ax.plot(x_vm, y_vm, color="blue", lw=2)
+
+# trayectoria
 ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
 
+# punto crítico
 ax.scatter(x_crit, y_crit, color="red", s=150)
 
+# ejes
 ax.axhline(0, color="black", lw=2)
 ax.axvline(0, color="black", lw=2)
 
-lim = SMYS * 1.1
+# límites
+lim = max(SMYS*1.1, abs(x_crit)*1.2, abs(y_crit)*1.2)
 ax.set_xlim(-lim, lim)
 ax.set_ylim(-lim, lim)
-
-ticks = np.arange(-SMYS, SMYS+1, 20)
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
 
 ax.grid(True)
 ax.set_aspect("equal")
@@ -166,56 +158,41 @@ c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
 c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 
 # =========================================
-# PRINT (ARREGLADO)
+# PRINT FUNCIONANDO
 # =========================================
-import base64
-from io import BytesIO
-
 buf = BytesIO()
 fig.savefig(buf, format="png", bbox_inches="tight")
 img_str = base64.b64encode(buf.getvalue()).decode("utf-8")
 
 html_report = f"""
-<!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
-<style>
-body {{ font-family: Arial; margin: 30px; }}
-h1 {{ text-align: center; }}
-.grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }}
-</style>
-</head>
 <body>
+<h2>Reporte Tubing</h2>
 
-<h1>Reporte Tubing</h1>
+<p>Tubing: {tubo}</p>
+<p>Grado: {grado}</p>
+<p>σ axial: {round(x_crit,2)} ksi</p>
+<p>σ hoop: {round(y_crit,2)} ksi</p>
+<p>VM: {round(vm_list[i_crit]/1000,2)} ksi</p>
+<p>Prof crítica: {round(z_crit,0)} m</p>
 
-<div class="grid">
-<div>Tubing: {tubo}</div>
-<div>Grado: {grado}</div>
-<div>σ axial: {round(x_crit,2)} ksi</div>
-<div>σ hoop: {round(y_crit,2)} ksi</div>
-<div>VM: {round(vm_list[i_crit]/1000,2)} ksi</div>
-<div>Prof crítica: {round(z_crit,0)} m</div>
-</div>
-
-<img src="data:image/png;base64,{img_str}"/>
+<img src="data:image/png;base64,{img_str}">
 
 </body>
 </html>
 """
 
-if st.button("🖨️ Imprimir reporte"):
+if st.button("🖨️ Imprimir"):
     st.components.v1.html(
         f"""
         <script>
-        var w = window.open("", "", "width=900,height=700");
+        var w = window.open();
         w.document.write(`{html_report}`);
         w.document.close();
-        w.focus();
-        setTimeout(() => w.print(), 500);
+        setTimeout(function(){{w.print();}},500);
         </script>
         """,
-        height=0,
+        height=0
     )
+
 
