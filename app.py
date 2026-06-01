@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from modelo import *
 
 st.set_page_config(layout="wide")
-st.title("Diseño Tubing - Von Mises")
+st.title("Diseño OCTG - Von Misses")
 
 # =========================================
 # CONVERSIONES
@@ -32,7 +32,7 @@ tubos = {
 # =========================================
 st.sidebar.title("Inputs")
 
-tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
+tubo = st.sidebar.selectbox("Tubo", list(tubos.keys()))
 OD, ID, peso = tubos[tubo]
 
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
@@ -40,7 +40,7 @@ SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
 modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
 condicion = st.sidebar.selectbox(
-    "Condición tubing",
+    "Condición Tubo",
     ["Abierto", "Cerrado"]
 )
 
