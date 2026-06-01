@@ -17,22 +17,10 @@ modo = st.sidebar.radio("Modo", ["API", "Custom"])
 # BASE API
 # -----------------------------
 api = {
-    "2 7/8": {
-        6.4: (2.875, 0.217),
-        8.6: (2.875, 0.276)
-    },
-    "3 1/2": {
-        9.3: (3.5, 0.254),
-        12.95: (3.5, 0.318)
-    },
-    "4 1/2": {
-        11.6: (4.5, 0.237),
-        15.1: (4.5, 0.337)
-    },
-    "5 1/2": {
-        17.0: (5.5, 0.304),
-        20.0: (5.5, 0.361)
-    },
+    "2 7/8": {6.4: (2.875, 0.217), 8.6: (2.875, 0.276)},
+    "3 1/2": {9.3: (3.5, 0.254), 12.95: (3.5, 0.318)},
+    "4 1/2": {11.6: (4.5, 0.237), 15.1: (4.5, 0.337)},
+    "5 1/2": {17.0: (5.5, 0.304), 20.0: (5.5, 0.361)},
     "7": {
         23.0: (7.0, 0.317),
         26.0: (7.0, 0.362),
@@ -47,7 +35,7 @@ api = {
 }
 
 # -----------------------------
-# TUBO
+# GEOMETRIA
 # -----------------------------
 st.sidebar.subheader("Tubing")
 
@@ -133,76 +121,36 @@ i_crit = np.argmax(ratio)
 ax_crit = sig_ax[i_crit]
 hoop_crit = sig_hoop[i_crit]
 
-
 # -----------------------------
-# ELIPSE VON MISES - CORRECTA
+# ELIPSE CORRECTA (parametrica)
 # -----------------------------
-sigma_ax_vals = np.linspace(-yield_ksi, yield_ksi, 2000)
+theta = np.linspace(0, 2*np.pi, 1000)
 
-sigma_hoop_pos = []
-sigma_hoop_neg = []
-
-for s_ax in sigma_ax_vals:
-    disc = 4*yield_ksi**2 - 3*s_ax**2
-
-    if disc >= 0:
-        root = np.sqrt(disc)
-
-        sigma_hoop_pos.append((s_ax + root)/2)
-        sigma_hoop_neg.append((s_ax - root)/2)
-    else:
-        sigma_hoop_pos.append(np.nan)
-        sigma_hoop_neg.append(np.nan)
-
-# ✅ CLAVE: cerrar la curva correctamente
-
-# parte superior (izq → der)
-top_x = sigma_ax_vals
-top_y = np.array(sigma_hoop_pos)
-
-# parte inferior (der → izq)
-bottom_x = sigma_ax_vals[::-1]
-bottom_y = np.array(sigma_hoop_neg)[::-1]
-
-# curva completa
-x_ellipse = np.concatenate([top_x, bottom_x])
-y_ellipse = np.concatenate([top_y, bottom_y])
-
+sigma_ax_ellipse = yield_ksi * (np.cos(theta) - 0.5*np.sin(theta))
+sigma_hoop_ellipse = yield_ksi * (np.sin(theta) - 0.5*np.cos(theta))
 
 # -----------------------------
 # PLOT
 # -----------------------------
 fig, ax = plt.subplots(figsize=(7,7))
 
-ax.plot(x_ellipse, y_ellipse, color="blue", linewidth=2, label="Envolvente VM")
+# elipse correcta
+ax.plot(sigma_ax_ellipse, sigma_hoop_ellipse,
+        color="blue", linewidth=2, label="Envolvente VM")
 
 # trayectoria
 ax.plot(sig_ax, sig_hoop, color="orange", linewidth=2, label="Trayectoria")
 
-# punto
+# punto crítico
 ax.scatter(ax_crit, hoop_crit, color="red", s=120, label="Crítico")
 
+# -----------------------------
+# LINEAS LIMITE (ROJAS)
+# -----------------------------
 lim = yield_ksi
 
-ax.set_xlim(-lim, lim)
-ax.set_ylim(-lim, lim)
-
-ax.set_aspect("equal")
-
-ax.axhline(0, color="black")
-ax.axvline(0, color="black")
-
-ax.set_xlabel("σ axial (ksi)")
-ax.set_ylabel("σ circunferencial (ksi)")
-
-ax.legend(loc="upper right")
-ax.grid()
-
-st.pyplot(fig)
-
-# -----------------------------
-# RESULTADO
-# -----------------------------
-st.metric("Ratio máximo", round(float(np.max(ratio)), 3))
+ax.axvline(lim, color="red", linestyle="--", linewidth=1)
+ax.axvline(-lim, color="red", linestyle="--", linewidth=1)
+ax.axhline(lim, color="red", linestyle="--", linewidth=1)
 
 
