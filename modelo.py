@@ -19,19 +19,21 @@ def tension_axial(z, OD, ID, rho_int, rho_ext, F_ext, Pint, Pext):
 
     rho_steel = 7850
 
-    # peso real del acero
-    sigma_weight = (rho_steel * g * z) / 6894.76 / 1000
+    # peso acero
+    F_weight = rho_steel * A * g * z
 
-    # flotación CORRECTA
-    sigma_buoy = ((rho_ext - rho_int) * g * z) / 6894.76 / 1000
+    # flotación
+    F_buoy = (rho_ext - rho_int) * A_ext * g * z
 
-    # presión axial (end-cap)
-    sigma_pressure = (Pint - Pext) * (A_int / A) / 1000
+    # fuerza presión axial (end-cap)
+    F_pressure = (Pint - Pext) * 6894.76 * A_int
 
-    # fuerza externa axial
-    sigma_ext = F_ext / A / 6894.76 / 1000
+    # total fuerzas
+    F_total = F_weight - F_buoy + F_pressure + F_ext
 
-    return sigma_weight - sigma_buoy + sigma_pressure + sigma_ext
+    sigma = F_total / A
+
+    return sigma / 6894.76 / 1000  # ksi
 
 
 def torsion(T_lbft, OD, ID):
@@ -46,6 +48,3 @@ def torsion(T_lbft, OD, ID):
 
     return tau / 1000
 
-
-def von_mises(sig_ax, sig_hoop, tau):
-    return np.sqrt(sig_ax**2 + sig_hoop**2 - sig_ax*sig_hoop + 3*tau**2)
