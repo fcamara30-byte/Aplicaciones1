@@ -19,13 +19,15 @@ def ft_to_m(z):
     return z / 3.28084
 
 # =========================================
-# INPUTS (SIN LIMITES)
+# INPUTS (RESTAURADOS)
 # =========================================
 st.sidebar.title("Inputs")
 
-OD = 7.0
-ID = 6.622
-peso = 23
+OD = st.sidebar.number_input("OD [in]", 1.0, 20.0, 7.0)
+ID = st.sidebar.number_input("ID [in]", 1.0, 20.0, 6.622)
+
+# peso estimado (no lo tocamos)
+peso = st.sidebar.number_input("Peso [lb/ft]", value=23.0)
 
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
 SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
@@ -44,6 +46,7 @@ rho_ext = kgm3_to_lbft3(rho_ext_si)
 fill_int = st.sidebar.number_input("Nivel interno", value=0.0)
 fill_ext = st.sidebar.number_input("Nivel externo", value=0.0)
 
+# ✅ RESTAURADO
 F_ext = st.sidebar.number_input("Fuerza axial externa [lbf]", value=0.0)
 
 depth_m = st.sidebar.number_input("Profundidad [m]", value=3000.0)
@@ -92,7 +95,7 @@ sy_val = sig_hoop[i_crit]
 z_crit = ft_to_m(z_list[i_crit])
 
 # =========================================
-# VON MISES ELIPSE (CORRECTA)
+# ELIPSE (NO TOCAR)
 # =========================================
 Sy = SMYS
 
@@ -111,25 +114,20 @@ for val in s:
         y_vm2.append((val - root)/2)
 
 # =========================================
-# PLOT (WELLCAT REAL)
+# PLOT (NO MODIFICADO)
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
-# elipse VM
 ax.plot(x_vm, y_vm1, 'b', lw=2)
 ax.plot(x_vm, y_vm2, 'b', lw=2)
 
-# trayectoria
 ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
 
-# punto
 ax.scatter(sx, sy_val, color="red", s=150)
 
-# ejes
 ax.axhline(0, color="black", lw=2)
 ax.axvline(0, color="black", lw=2)
 
-# limites SMYS
 ax.axhline(SMYS, color="red", ls="--")
 ax.axhline(-SMYS, color="red", ls="--")
 ax.axvline(SMYS, color="red", ls="--")
@@ -164,22 +162,24 @@ c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
 c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 
 # =========================================
-# PRINT REAL (BROWSER)
+# PRINT REAL (FUNCIONA)
 # =========================================
 st.markdown("---")
 
 st.markdown("""
 <button onclick="window.print()" style="
-background-color:#2196F3;
+background-color:#4CAF50;
 color:white;
 padding:10px 20px;
 border:none;
 border-radius:5px;
-cursor:pointer;">
+cursor:pointer;
+font-size:16px;">
 🖨️ Imprimir
 </button>
 """, unsafe_allow_html=True)
 
+# ocultar sidebar al imprimir
 st.markdown("""
 <style>
 @media print {
@@ -187,4 +187,3 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
