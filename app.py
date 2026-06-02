@@ -117,7 +117,15 @@ vm_list = np.array(vm_list)
 # =========================================
 # PUNTO CRITICO
 # =========================================
-i_crit = np.argmax(vm_list)
+
+i_vm = np.argmax(vm_list)
+i_bot = len(vm_list) - 1
+
+if vm_list[i_bot] > vm_list[i_vm]:
+    i_crit = i_bot
+else:
+    i_crit = i_vm
+
 
 sx = sig_ax[i_crit]
 sy_val = sig_hoop[i_crit]
