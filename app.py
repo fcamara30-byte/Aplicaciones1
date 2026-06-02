@@ -18,126 +18,234 @@ def ft_to_m(z):
     return z / 3.28084
 
 # =========================================
-# BASE TUBOS
+# FUNCIONES
+# =========================================
+def area_metal(OD, ID):
+    return np.pi * (OD**2 - ID**2) / 4
+
+def hoop_stress(Pi, Po, OD, ID):
+
+    t = (OD - ID) / 2
+
+    return (Pi - Po) * OD / (2 * t)
+
+def radial_stress(Pi):
+    return -Pi
+
+def torsion(Torque_lbft, OD, ID):
+
+    T = Torque_lbft * 12
+
+    ro = OD / 2
+    ri = ID / 2
+
+    J = np.pi / 2 * (ro**4 - ri**4)
+
+    if J <= 0:
+        return 0
+
+    return T * ro / J
+
+def axial_stress(
+    OD,
+    ID,
+    peso_lbft,
+    z_ft,
+    rho_ext_lbft3,
+    fill_ext,
+    F_ext=0
+):
+
+    A = area_metal(OD, ID)
+
+    A_ext_ft2 = (np.pi * OD**2 / 4) / 144
+
+    F_weight = peso_lbft * z_ft
+
+    F_buoy = (
+        rho_ext_lbft3 *
+        fill_ext *
+        z_ft *
+        A_ext_ft2
+    )
+
+    F_total = (
+        F_weight
+        - F_buoy
+        + F_ext
+    )
+
+    return F_total / A
+
+def von_mises(sa, sh, sr, tau):
+
+    return np.sqrt(
+        0.5 * (
+            (sa - sh)**2 +
+            (sh - sr)**2 +
+            (sr - sa)**2
+        )
+        + 3 * tau**2
+    )
+
+# =========================================
+# TUBOS
 # =========================================
 tubos = {
-    "7\" #23": (7.0, 6.622, 23),
-    "5 1/2\" #15.5": (5.5, 4.778, 15.5),
-    "3 1/2\" #9.2": (3.5, 2.992, 9.2),
-    "2 7/8 \" #6.5": (2.875, 2.441, 6.5),
+    '7" #23': (7.000, 6.622, 23.0),
+    '5 1/2" #15.5': (5.500, 4.778, 15.5),
+    '3 1/2" #9.2': (3.500, 2.992, 9.2),
+    '2 7/8" #6.5': (2.875, 2.441, 6.5),
 }
 
 # =========================================
 # INPUTS
 # =========================================
-st.sidebar.title("Inputs")
+st.sidebar.header("Inputs")
 
-tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
+tubo = st.sidebar.selectbox(
+    "Tubing",
+    list(tubos.keys())
+)
+
 OD, ID, peso = tubos[tubo]
 
-# CORROSION
-perdida_pct = st.sidebar.slider("Pérdida de espesor [%]", 0, 100, 0)
-perdida = perdida_pct / 100
+perdida_pct = st.sidebar.slider(
+    "Pérdida de espesor [%]",
+    0,
+    100,
+    0
+)
 
 t_original = (OD - ID) / 2
-t_actual = t_original * (1 - perdida)
+t_actual = t_original * (1 - perdida_pct / 100)
+
 ID = OD - 2 * t_actual
 
-if t_actual <= 0:
-    st.sidebar.error("Espesor nulo")
+grado = st.sidebar.selectbox(
+    "Grado",
+    ["J55","N80","P110","Q125"]
+)
 
-# MATERIAL
-grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
-SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
+SMYS = {
+    "J55":55,
+    "N80":80,
+    "P110":110,
+    "Q125":125
+}[grado]
 
-# PRESION
-P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=2000.0)
+P_iny = st.sidebar.number_input(
+    "Presión de inyección [psi]",
+    value=2000.0
+)
 
-# DENSIDADES
-rho_int = kgm3_to_lbft3(st.sidebar.number_input("ρ interno [kg/m³]", value=1090.0))
-rho_ext = kgm3_to_lbft3(st.sidebar.number_input("ρ externo [kg/m³]", value=1000.0))
+rho_int = st.sidebar.number_input(
+    "ρ interno [kg/m³]",
+    value=1090.0
+)
 
-# NIVELES
-fill_int = st.sidebar.slider("Nivel interno [%]", 0, 100, 100) / 100
-fill_ext = st.sidebar.slider("Nivel externo [%]", 0, 100, 100) / 100
+rho_ext = st.sidebar.number_input(
+    "ρ externo [kg/m³]",
+    value=1000.0
+)
 
-# TORQUE
-Torque = st.sidebar.number_input("Torque [lb-ft]", value=0.0)
+fill_int = (
+    st.sidebar.slider(
+        "Nivel interno [%]",
+        0,
+        100,
+        100
+    ) / 100
+)
 
-# PROFUNDIDAD
-depth_m = st.sidebar.number_input("Profundidad [m]", value=3000.0)
+fill_ext = (
+    st.sidebar.slider(
+        "Nivel externo [%]",
+        0,
+        100,
+        100
+    ) / 100
+)
+
+Torque = st.sidebar.number_input(
+    "Torque [lb-ft]",
+    value=0.0
+)
+
+F_ext = st.sidebar.number_input(
+    "Fuerza axial externa [lbf]",
+    value=0.0
+)
+
+depth_m = st.sidebar.number_input(
+    "Profundidad [m]",
+    value=3000.0
+)
+
 depth_ft = m_to_ft(depth_m)
 
+rho_int = kgm3_to_lbft3(rho_int)
+rho_ext = kgm3_to_lbft3(rho_ext)
+
 # =========================================
-# PERFIL
+# CALCULO PERFIL
 # =========================================
-sig_ax, sig_hoop, vm_list, z_list = [], [], [], []
+sig_ax = []
+sig_hoop = []
+vm_list = []
+z_list = []
 
 for i in range(200):
 
     z = depth_ft * i / 199
 
-    # ========================
-    # PRESIONES
-    # ========================
     z_int = z * fill_int
     z_ext = z * fill_ext
 
-    P_int = rho_int * z_int / 144 / 1000  # ksi
-    P_ext = rho_ext * z_ext / 144 / 1000  # ksi
-
-    Pi = P_int + (P_iny / 1000)
-
-    # ========================
-    # GEOMETRIA
-    # ========================
-    t = (OD - ID) / 2
-    A = np.pi/4 * (OD**2 - ID**2)
-    A_ext = np.pi/4 * (OD**2)
-
-    # ========================
-    # HOOP (ΔP)
-    # ========================
-    hoop = (Pi - P_ext) * OD / (2 * t)
-
-    # ========================
-    # AXIAL (CON FLOTACION REAL)
-    # ========================
-    F_weight = peso * z                   # peso tubo
-    F_buoy = rho_ext * z_ext * A_ext      # empuje fluido externo
-
-    F_eff = F_weight - F_buoy             # carga efectiva
-    sigma_ax = F_eff / A / 1000          # ksi
-
-    # ========================
-    # RADIAL
-    # ========================
-    sigma_r = -P_ext
-
-    # ========================
-    # TORSION
-    # ========================
-    T = Torque * 12
-    ro = OD / 2
-    ri = ID / 2
-    J = np.pi/2 * (ro**4 - ri**4)
-    tau = T * ro / J if J > 0 else 0
-
-    # ========================
-    # VON MISES
-    # ========================
-    vm = np.sqrt(
-        0.5 * (
-            (sigma_ax - hoop)**2 +
-            (hoop - sigma_r)**2 +
-            (sigma_r - sigma_ax)**2
-        )
-        + 3 * tau**2
+    Pi = (
+        P_iny +
+        rho_int * z_int / 144
     )
 
-    sig_ax.append(sigma_ax)
-    sig_hoop.append(hoop)
-    vm_list.append(vm)
+    Po = (
+        rho_ext * z_ext / 144
+    )
+
+    sa = axial_stress(
+        OD,
+        ID,
+        peso,
+        z,
+        rho_ext,
+        fill_ext,
+        F_ext
+    )
+
+    sh = hoop_stress(
+        Pi,
+        Po,
+        OD,
+        ID
+    )
+
+    sr = radial_stress(Pi)
+
+    tau = torsion(
+        Torque,
+        OD,
+        ID
+    )
+
+    vm = von_mises(
+        sa,
+        sh,
+        sr,
+        tau
+    )
+
+    sig_ax.append(sa / 1000)
+    sig_hoop.append(sh / 1000)
+    vm_list.append(vm / 1000)
     z_list.append(z)
 
 sig_ax = np.array(sig_ax)
@@ -151,20 +259,27 @@ i_crit = np.argmax(vm_list)
 
 sx = sig_ax[i_crit]
 sy = sig_hoop[i_crit]
+vm_crit = vm_list[i_crit]
+
 z_crit = ft_to_m(z_list[i_crit])
 
 # =========================================
-# ELIPSE
+# ENVOLVENTE VON MISES
 # =========================================
-Sy = SMYS
-s = np.linspace(-Sy, Sy, 2000)
+s = np.linspace(-SMYS, SMYS, 2000)
 
-x_vm, y1, y2 = [], [], []
+x_vm = []
+y1 = []
+y2 = []
 
 for val in s:
-    disc = 4*Sy**2 - 3*val**2
+
+    disc = 4 * SMYS**2 - 3 * val**2
+
     if disc >= 0:
+
         root = np.sqrt(disc)
+
         x_vm.append(val)
         y1.append((val + root)/2)
         y2.append((val - root)/2)
@@ -174,25 +289,38 @@ for val in s:
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
-ax.plot(x_vm, y1, 'b', lw=2)
-ax.plot(x_vm, y2, 'b', lw=2)
+ax.plot(x_vm, y1, 'b')
+ax.plot(x_vm, y2, 'b')
 
-ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
-ax.scatter(sx, sy, color="red", s=150)
+ax.plot(
+    sig_ax,
+    sig_hoop,
+    color="orange",
+    lw=2
+)
 
-ax.axhline(0, color="black")
-ax.axvline(0, color="black")
+ax.scatter(
+    sx,
+    sy,
+    color="red",
+    s=120
+)
 
-ax.axhline(SMYS, color="red", ls="--")
-ax.axhline(-SMYS, color="red", ls="--")
-ax.axvline(SMYS, color="red", ls="--")
-ax.axvline(-SMYS, color="red", ls="--")
+ax.axhline(0,color='black')
+ax.axvline(0,color='black')
 
-lim = SMYS * 1.1
+ax.axhline(SMYS,color='red',ls='--')
+ax.axhline(-SMYS,color='red',ls='--')
+ax.axvline(SMYS,color='red',ls='--')
+ax.axvline(-SMYS,color='red',ls='--')
+
+lim = SMYS * 1.10
+
 ax.set_xlim(-lim, lim)
 ax.set_ylim(-lim, lim)
 
 ax.set_aspect("equal")
+
 ax.grid(True)
 
 ax.set_xlabel("σ axial [ksi]")
@@ -207,6 +335,34 @@ st.subheader("Resultados")
 
 c1, c2, c3 = st.columns(3)
 
-c1.metric("σ axial [ksi]", round(sx,2))
-c1.metric("σ hoop [ksi]", round(sy,2))
+c1.metric(
+    "σ axial [ksi]",
+    round(sx,2)
+)
 
+c1.metric(
+    "σ hoop [ksi]",
+    round(sy,2)
+)
+
+c2.metric(
+    "Von Mises [ksi]",
+    round(vm_crit,2)
+)
+
+c2.metric(
+    "Prof. crítica [m]",
+    round(z_crit,0)
+)
+
+util = vm_crit / SMYS * 100
+
+c3.metric(
+    "Utilización [%]",
+    round(util,1)
+)
+
+c3.metric(
+    "Estado",
+    "PASS" if vm_crit < SMYS else "FAIL"
+)
