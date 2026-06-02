@@ -81,7 +81,10 @@ for i in range(200):
     z = depth_ft * i / 199
 
     # ✅ MODELO IGUAL AL EXCEL
-    Pi = P_iny
+    
+    z_int = z * fill_int
+    Pi = P_iny + rho_int * z_int / 144
+
     Po = Pext_surface
 
     # AXIAL BASE
