@@ -81,8 +81,12 @@ for i in range(200):
 
     z = depth_ft * i / 200
 
-    Pi = P_iny + rho_int * z / 144
-    Po = rho_ext * z / 144 if fill_ext > 0 else 0
+    z_int = z * fill_int
+    Pi = P_iny + rho_int * z_int / 144
+    
+    z_ext = z * fill_ext
+    Po = rho_ext * z_ext / 144
+
 
     ax_val = axial_load(
         OD, ID,
