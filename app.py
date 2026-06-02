@@ -88,12 +88,15 @@ for i in range(200):
     Po = rho_ext * z / 144 if fill_ext > 0 else 0
 
     # AXIAL
-    ax_val = axial_load(
-        OD, ID, peso, z,
-        rho_ext,
-        fill_ext,
-        F_ext
-    )
+ax_val = axial_load(
+    OD, ID,
+    peso,
+    z,
+    rho_ext,
+    fill_ext,
+    F_ext
+)
+
 
     # 🔴 HOOP CORRECTO (ΔP EFECTIVO)
     hoop = hoop_stress(Pi, Po, OD, ID)
