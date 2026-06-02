@@ -66,7 +66,6 @@ fill_ext = st.sidebar.slider("Nivel externo [%]", 0, 100, 100) / 100
 
 F_ext = st.sidebar.number_input("Fuerza axial externa [lbf]", value=0.0)
 
-# ✅ torque
 Torque = st.sidebar.number_input("Torque [lb-ft]", value=0.0)
 
 depth_m = st.sidebar.number_input("Profundidad [m]", value=2000.0)
@@ -81,13 +80,11 @@ for i in range(200):
 
     z = depth_ft * i / 199
 
-    z_int = z * fill_int
-    Pi = P_iny 
-    
-    z_ext = z * fill_ext
-    Po = rho_ext * z_ext / 144
+    # ✅ MODELO IGUAL AL EXCEL
+    Pi = P_iny
+    Po = Pext_surface
 
-
+    # AXIAL BASE
     ax_val = axial_load(
         OD, ID,
         peso,
@@ -96,21 +93,24 @@ for i in range(200):
         fill_ext,
         F_ext
     )
-if condicion == "Cerrado":
-    Ai = np.pi * (ID**2) / 4
-    Ao = np.pi * (OD**2) / 4
-    Am = np.pi * (OD**2 - ID**2) / 4
-    ax_val += (Pi * Ai - Po * Ao) / Am
 
+    # ✅ CORRECCIÓN AXIAL POR PRESIÓN (CLAVE)
+    if condicion == "Cerrado":
+        Ai = np.pi * (ID**2) / 4
+        Ao = np.pi * (OD**2) / 4
+        Am = np.pi * (OD**2 - ID**2) / 4
+        ax_val += (Pi * Ai - Po * Ao) / Am
 
-
-    
+    # HOOP
     hoop = hoop_stress(Pi, Po, OD, ID)
 
+    # RADIAL
     sigma_r = radial_stress(Po)
 
+    # TORSION
     tau = torsion(Torque, OD, ID)
 
+    # VON MISES
     vm = von_mises_3d(ax_val, hoop, sigma_r, tau)
 
     sig_ax.append(ax_val / 1000)
@@ -125,25 +125,16 @@ vm_list = np.array(vm_list)
 # =========================================
 # PUNTO CRITICO
 # =========================================
-
-i_vm = np.argmax(vm_list)
-i_bot = len(vm_list) - 1
-
-if vm_list[i_bot] > vm_list[i_vm]:
-    i_crit = i_bot
-else:
-    i_crit = i_vm
-
+i_crit = np.argmax(vm_list)
 
 sx = sig_ax[i_crit]
 sy_val = sig_hoop[i_crit]
 z_crit = ft_to_m(z_list[i_crit])
 
 # =========================================
-# ELIPSE (SE CONSERVA TU GRAFICO)
+# ELIPSE
 # =========================================
 Sy = SMYS
-
 s = np.linspace(-Sy, Sy, 2000)
 
 x_vm, y_vm1, y_vm2 = [], [], []
@@ -157,7 +148,7 @@ for val in s:
         y_vm2.append((val - root)/2)
 
 # =========================================
-# PLOT (NO TOCADO)
+# PLOT
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
