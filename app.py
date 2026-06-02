@@ -103,3 +103,84 @@ for i in range(200):
     ro = OD/2
     ri = ID/2
     J = np.pi/2*(ro**4 - ri**4)
+    tau = T * ro / J if J > 0 else 0
+
+    # =========================================
+    # VON MISES (EXACTO)
+    # =========================================
+
+    vm = np.sqrt(
+        0.5 * (
+            (sigma_ax - hoop)**2 +
+            (hoop - sigma_r)**2 +
+            (sigma_r - sigma_ax)**2
+        )
+        + 3 * tau**2
+    )
+
+    sig_ax.append(sigma_ax)
+    sig_hoop.append(hoop)
+    vm_list.append(vm)
+    z_list.append(z)
+
+sig_ax = np.array(sig_ax)
+sig_hoop = np.array(sig_hoop)
+vm_list = np.array(vm_list)
+
+# =========================================
+# CRITICO
+# =========================================
+
+i_crit = np.argmax(vm_list)
+
+sx = sig_ax[i_crit]
+sy = sig_hoop[i_crit]
+z_crit = ft_to_m(z_list[i_crit])
+
+# =========================================
+# ELIPSE VM
+# =========================================
+s = np.linspace(-SMYS, SMYS, 2000)
+
+x_vm, y1, y2 = [], [], []
+
+for val in s:
+    disc = 4*SMYS**2 - 3*val**2
+    if disc >= 0:
+        root = np.sqrt(disc)
+        x_vm.append(val)
+        y1.append((val + root)/2)
+        y2.append((val - root)/2)
+
+# =========================================
+# PLOT
+# =========================================
+fig, ax = plt.subplots(figsize=(7,7))
+
+ax.plot(x_vm, y1, 'b')
+ax.plot(x_vm, y2, 'b')
+
+ax.plot(sig_ax, sig_hoop, 'orange')
+ax.scatter(sx, sy, color="red", s=120)
+
+ax.axhline(0)
+ax.axvline(0)
+
+ax.set_aspect('equal')
+ax.grid(True)
+
+st.pyplot(fig)
+
+# =========================================
+# RESULTADOS
+# =========================================
+c1, c2, c3 = st.columns(3)
+
+c1.metric("σ axial [ksi]", round(sx,2))
+c1.metric("σ hoop [ksi]", round(sy,2))
+
+c2.metric("Von Mises [ksi]", round(vm_list[i_crit],2))
+c2.metric("Prof crítica [m]", round(z_crit,0))
+
+c3.metric("Utilización [%]", round(vm_list[i_crit]/SMYS*100,1))
+c3.metric("Estado", "PASS" if vm_list[i_crit] < SMYS else "FAIL")
