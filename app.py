@@ -120,7 +120,7 @@ for i in range(200):
     z = depth_ft * i / 200
 
     Pi = P_iny + rho_int * fill_int * z / 144
-    Po = Pext_surface + rho_ext * fill_ext * z / 144
+    Po = Pext_surface 
 
     ax_val = axial_load(
         OD, ID, peso, z,
@@ -220,7 +220,8 @@ c1.metric("σ hoop [ksi]", round(sy_val,2))
 c2.metric("Von Mises [ksi]", round(vm_list[i_crit]/1000,2))
 c2.metric("Prof crítica [m]", round(z_crit,0))
 
-c3.metric("Utilización [%]", round(utilization(SMYS, vm_list[i_crit]),1))
+c3.metric("Utilización [%]", round(utilization(vm_list[i_crit], SMYS),1))
+
 c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
 # =========================================
 import streamlit.components.v1 as components
