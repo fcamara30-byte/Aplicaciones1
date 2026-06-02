@@ -55,7 +55,7 @@ Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", val
 rho_int = kgm3_to_lbft3(st.sidebar.number_input("ρ interno [kg/m³]", value=1090.0))
 
 fill_int = st.sidebar.slider("Nivel interno [%]", 0, 100, 100) / 100
-
+fill_ext = st.sidebar.slider("Nivel externo [%]", 0, 100, 100) / 100
 Torque = st.sidebar.number_input("Torque [lb-ft]", value=0.0)
 
 depth_m = st.sidebar.number_input("Profundidad [m]", value=3000.0)
