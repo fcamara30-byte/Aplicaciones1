@@ -32,9 +32,43 @@ tubos = {
 # =========================================
 st.sidebar.title("Inputs")
 
-tubo = st.sidebar.selectbox("Tubo", list(tubos.keys()))
+# =========================================
+# SELECCION DE TUBO
+# =========================================
+tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
+
 OD, ID, peso = tubos[tubo]
 
+# =========================================
+# PERDIDA DE ESPESOR
+# =========================================
+perdida = st.sidebar.slider(
+    "% pérdida de espesor",
+    0, 100, 0
+) / 100
+
+# espesor original
+t_original = (OD - ID) / 2
+
+# espesor actual
+t_actual = t_original * (1 - perdida)
+
+# nuevo ID (ajustado por corrosión)
+ID = OD - 2 * t_actual
+
+# =========================================
+# MOSTRAR RESULTADOS DE ESPESOR
+# =========================================
+st.sidebar.markdown("---")
+st.sidebar.subheader("Espesor")
+
+st.sidebar.text(f"Original: {round(t_original,3)} in")
+st.sidebar.text(f"Remanente: {round(t_actual,3)} in")
+st.sidebar.text(f"% Remanente: {round((1-perdida)*100,1)} %")
+
+# validación básica
+if ID >= OD:
+    st.sidebar.error("Espesor nulo: el tubo dejó de existir")
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
 SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
