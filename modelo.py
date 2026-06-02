@@ -1,42 +1,66 @@
 import numpy as np
 
 # =========================================
+# CONVERSIONES
+# =========================================
+def kgm3_to_lbft3(rho):
+    return rho * 0.062428
+
+
+# =========================================
 # GEOMETRIA
 # =========================================
 def area_metal(OD, ID):
-    return np.pi/4 * (OD**2 - ID**2)
-
-def area_ext(OD):
-    return np.pi/4 * OD**2
+    return np.pi * (OD**2 - ID**2) / 4
 
 
 # =========================================
-# HOOP (BARLOW - IGUAL EXCEL)
+# RADIAL + PRESION EXTERNA TOTAL
+# =========================================
+def external_pressure(Pext_surface, rho_ext, z_ft):
+    return Pext_surface + rho_ext * z_ft / 144
+
+
+def radial_stress(Po):
+    return -Po
+
+
+# =========================================
+# HOOP (LAME + thin wall)
 # =========================================
 def hoop_stress(Pi, Po, OD, ID):
 
-    t = (OD - ID)/2
+    t = (OD - ID) / 2
 
-    return (Pi - Po) * OD / (2*t)
+    if OD / t >= 20:
+        return (Pi - Po) * OD / (2 * t)
 
+    ri = ID / 2
+    ro = OD / 2
 
-# =========================================
-# RADIAL (EXCEL)
-# σr = - (Pext + ρgz)
-# =========================================
-def radial_stress(Pext_surface, rho_ext, z_ft):
+    A = (Po * ro**2 - Pi * ri**2) / (ro**2 - ri**2)
+    B = (ri**2 * ro**2 * (Pi - Po)) / (ro**2 - ri**2)
 
-    rho_ext_lbft3 = rho_ext * 0.062428
-
-    P_hydro = rho_ext_lbft3 * z_ft / 144
-
-    Po_total = Pext_surface + P_hydro
-
-    return -Po_total
+    return A + B / ri**2
 
 
 # =========================================
-# AXIAL (SOLO MECÁNICO - EXACTO EXCEL)
+# TORSION
+# =========================================
+def torsion(T, OD, ID):
+
+    T = T * 12
+
+    ro = OD / 2
+    ri = ID / 2
+
+    J = np.pi / 2 * (ro**4 - ri**4)
+
+    return T * ro / J
+
+
+# =========================================
+# AXIAL
 # =========================================
 def axial_load(
     OD, ID,
@@ -50,58 +74,55 @@ def axial_load(
     condicion
 ):
 
-    rho_ext_lbft3 = rho_ext * 0.062428
-
     A = area_metal(OD, ID)
-    Aext = area_ext(OD) / 144
 
-    Fw = peso_lbft * z_ft
+    A_ext = np.pi * OD**2 / 4
+    A_ext_ft2 = A_ext / 144
 
-    Fb = rho_ext_lbft3 * fill_ext * z_ft * Aext
+    # peso
+    F_weight = peso_lbft * z_ft
 
-    F_total = Fw - Fb + F_ext
+    # flotacion
+    F_buoy = rho_ext * fill_ext * z_ft * A_ext_ft2
 
-    return F_total / A
+    F_total = F_weight - F_buoy + F_ext
+
+    sigma_ax = F_total / A
+
+    # extremos cerrados (BIEN)
+    if condicion == "Cerrado":
+
+        ri = ID / 2
+        ro = OD / 2
+
+        sigma_pressure = (Pi * ri**2 - Po * ro**2) / (ro**2 - ri**2)
+
+        sigma_ax += sigma_pressure
+
+    return sigma_ax
 
 
 # =========================================
-# TORSION
-# =========================================
-def torsion(T_lbft, OD, ID):
-
-    T = T_lbft * 12
-
-    ro = OD/2
-    ri = ID/2
-
-    J = np.pi/2 * (ro**4 - ri**4)
-
-    return T * ro / J
-
-
-# =========================================
-# VON MISES (IDENTICO EXCEL)
+# VON MISES
 # =========================================
 def von_mises_3d(sa, sh, sr, tau):
 
     return np.sqrt(
-        0.5*((sa - sh)**2 +
-             (sh - sr)**2 +
-             (sr - sa)**2)
-        + 3*tau**2
+        0.5 * (
+            (sa - sh)**2 +
+            (sh - sr)**2 +
+            (sr - sa)**2
+        )
+        + 3 * tau**2
     )
 
 
 # =========================================
 # UTILIZACION
 # =========================================
-def utilization(vm, smys):
-
-    smys = smys * 1000
-    return vm / (0.9 * smys) * 100
+def utilization(vm, smys_ksi):
+    return vm / (smys_ksi * 1000) * 100
 
 
-def design_check(vm, smys):
-
-    smys = smys * 1000
-    return "FAIL" if vm > 0.9*smys else "PASS"
+def design_check(vm, smys_ksi):
+    return "FAIL" if vm > smys_ksi * 1000 else "PASS"
