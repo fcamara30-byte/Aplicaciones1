@@ -80,14 +80,11 @@ for i in range(200):
 
     z = depth_ft * i / 199
 
-    # ✅ MODELO IGUAL AL EXCEL
-    
     z_int = z * fill_int
-    Pi = P_iny + rho_int * z_int / 144
 
+    Pi = (rho_int * z_int / 144 / 1000) + P_iny
     Po = Pext_surface
 
-    # AXIAL BASE
     ax_val = axial_load(
         OD, ID,
         peso,
@@ -97,29 +94,25 @@ for i in range(200):
         F_ext
     )
 
-    # ✅ CORRECCIÓN AXIAL POR PRESIÓN (CLAVE)
-if condicion == "Cerrado":
-    Ai = np.pi * (ID**2) / 4
-    Am = np.pi * (OD**2 - ID**2) / 4
-    P_hid = rho_int * z_int / 144
-    ax_val += (P_hid * Ai) / Am
+    if condicion == "Cerrado":
+        Ai = np.pi * (ID**2) / 4
+        Am = np.pi * (OD**2 - ID**2) / 4
+        P_hid = rho_int * z_int / 144
+        ax_val += (P_hid * Ai) / Am
 
-    # HOOP
     hoop = hoop_stress(Pi, Po, OD, ID)
 
-    # RADIAL
     sigma_r = radial_stress(Po)
 
-    # TORSION
     tau = torsion(Torque, OD, ID)
 
-    # VON MISES
     vm = von_mises_3d(ax_val, hoop, sigma_r, tau)
 
     sig_ax.append(ax_val / 1000)
     sig_hoop.append(hoop / 1000)
     vm_list.append(vm)
     z_list.append(z)
+
 
 sig_ax = np.array(sig_ax)
 sig_hoop = np.array(sig_hoop)
