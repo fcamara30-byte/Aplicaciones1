@@ -82,7 +82,7 @@ for i in range(200):
     z = depth_ft * i / 199
 
     z_int = z * fill_int
-    Pi = P_iny + rho_int * z_int / 144
+    Pi = P_iny 
     
     z_ext = z * fill_ext
     Po = rho_ext * z_ext / 144
