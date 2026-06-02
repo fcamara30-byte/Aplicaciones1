@@ -1,4 +1,5 @@
-import numpy as np
+
+ import numpy as np
 
 # =========================================
 # AREA
@@ -6,34 +7,31 @@ import numpy as np
 def area_metal(OD, ID):
     return np.pi/4 * (OD**2 - ID**2)
 
-def area_int(ID):
-    return np.pi/4 * ID**2
-
 def area_ext(OD):
     return np.pi/4 * OD**2
 
 
 # =========================================
-# LAME (correcto paredes gruesas)
+# LAME (presión REAL en tubing)
 # =========================================
 def stresses_lame(Pi, Po, OD, ID):
 
-    ri = ID / 2
-    ro = OD / 2
+    ri = ID/2
+    ro = OD/2
 
-    A = (Po * ro**2 - Pi * ri**2) / (ro**2 - ri**2)
-    B = (ri**2 * ro**2 * (Pi - Po)) / (ro**2 - ri**2)
+    A = (Po*ro**2 - Pi*ri**2)/(ro**2 - ri**2)
+    B = (ri**2*ro**2*(Pi - Po))/(ro**2 - ri**2)
 
     sigma_r = -Pi
-    sigma_theta = A + B / ri**2
+    sigma_theta = A + B/ri**2
 
     return sigma_r, sigma_theta
 
 
 # =========================================
-# AXIAL MECANICO
+# AXIAL (SOLO MECANICO - CLAVE)
 # =========================================
-def axial_mechanical(
+def axial_load(
     OD, ID,
     weight_lbft,
     depth_ft,
@@ -41,26 +39,16 @@ def axial_mechanical(
     fill_ext,
     F_ext
 ):
+
     rho_ext = rho_ext * 0.062428
 
     A = area_metal(OD, ID)
-    A_ext_ft2 = area_ext(OD)/144
+    Aext = area_ext(OD)/144
 
     Fw = weight_lbft * depth_ft
-    Fb = rho_ext * fill_ext * depth_ft * A_ext_ft2
+    Fb = rho_ext * fill_ext * depth_ft * Aext
 
     return (Fw - Fb + F_ext) / A
-
-
-# =========================================
-# AXIAL PRESION (SOLO si realmente cerrado)
-# =========================================
-def axial_pressure(Pi, Po, OD, ID):
-
-    ri = ID/2
-    ro = OD/2
-
-    return (Pi*ri**2 - Po*ro**2)/(ro**2 - ri**2)
 
 
 # =========================================
@@ -72,13 +60,13 @@ def torsion(T_lbft, OD, ID):
     ro = OD/2
     ri = ID/2
 
-    J = np.pi/2*(ro**4 - ri**4)
+    J = np.pi/2 * (ro**4 - ri**4)
 
-    return T*ro/J
+    return T * ro / J
 
 
 # =========================================
-# VON MISES 3D
+# VON MISES
 # =========================================
 def von_mises(sa, sh, sr, tau):
 
@@ -89,37 +77,15 @@ def von_mises(sa, sh, sr, tau):
 
 
 # =========================================
-# CASO COMPLETO CONSISTENTE
+# UTILIZACION
 # =========================================
-def solve_case(
-    OD, ID,
-    peso, z,
-    Pi, Po,
-    rho_ext,
-    fill_ext,
-    F_ext,
-    torque,
-    condicion   # "Abierto" o "Cerrado"
-):
+def utilization(vm, smys):
 
-    # --- presión ---
-    sr, sh = stresses_lame(Pi, Po, OD, ID)
+    smys = smys * 1000
+    return vm/(0.9*smys)*100
 
-    # --- axial mecánico ---
-    sa = axial_mechanical(
-        OD, ID, peso, z,
-        rho_ext, fill_ext,
-        F_ext
-    )
 
-    # 🔴 SOLO si físicamente cerrado (packer real)
-    if condicion == "Cerrado":
-        sa += axial_pressure(Pi, Po, OD, ID)
+def design_check(vm, smys):
 
-    # --- torsión ---
-    tau = torsion(torque, OD, ID)
-
-    # --- VM ---
-    vm = von_mises(sa, sh, sr, tau)
-
-    return sa, sh, sr, vm
+    smys = smys * 1000
+    return "FAIL" if vm > 0.9*smys else "PASS"
