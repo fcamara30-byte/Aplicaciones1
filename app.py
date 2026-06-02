@@ -81,11 +81,13 @@ for i in range(200):
 
     z = depth_ft * i / 200
 
-    Pi = P_iny 
+    # PRESION INTERNA (EXCEL)
+    Pi = P_iny
 
-    # ✅ CLAVE
+    # PRESION EXTERNA SUPERFICIAL
     Po = Pext_surface
 
+    # AXIAL
     ax_val = axial_load(
         OD, ID, peso, z,
         rho_int, rho_ext,
@@ -96,17 +98,21 @@ for i in range(200):
         condicion
     )
 
-     hoop = hoop_stress(Pi, Po, OD, ID)
+    # HOOP (BARLOW)
+    hoop = hoop_stress(Pi, Po, OD, ID)
 
-     sigma_r = radial_stress(Pext_surface, rho_ext, z)
+    # RADIAL (EXCEL)
+    sigma_r = radial_stress(Pext_surface, rho_ext, z)
 
-     tau = torsion(Torque, OD, ID)
+    # TORSION
+    tau = torsion(Torque, OD, ID)
 
-     vm = von_mises_3d(ax_val, hoop, sigma_r, tau)
+    # VON MISES
+    vm = von_mises_3d(ax_val, hoop, sigma_r, tau)
 
-
-    sig_ax.append(ax_val/1000)
-    sig_hoop.append(hoop/1000)
+    # GUARDADO
+    sig_ax.append(ax_val / 1000)
+    sig_hoop.append(hoop / 1000)
     vm_list.append(vm)
     z_list.append(z)
 
