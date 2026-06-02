@@ -81,7 +81,7 @@ for i in range(200):
 
     z = depth_ft * i / 200
 
-    Pi = P_iny + rho_int * fill_int * z / 144
+    Pi = P_iny 
 
     # ✅ CLAVE
     Po = Pext_surface
