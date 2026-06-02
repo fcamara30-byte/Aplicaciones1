@@ -96,11 +96,14 @@ for i in range(200):
         condicion
     )
 
-    sigma_r, hoop = stresses_lame(Pi, Po, OD, ID)
+     hoop = hoop_stress(Pi, Po, OD, ID)
 
-    tau = torsion(Torque, OD, ID)
+     sigma_r = radial_stress(Pext_surface, rho_ext, z)
 
-    vm = von_mises_3d(ax_val, hoop, sigma_r, tau)
+     tau = torsion(Torque, OD, ID)
+
+     vm = von_mises_3d(ax_val, hoop, sigma_r, tau)
+
 
     sig_ax.append(ax_val/1000)
     sig_hoop.append(hoop/1000)
