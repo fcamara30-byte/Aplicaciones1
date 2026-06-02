@@ -132,8 +132,10 @@ for i in range(200):
         condicion
     )
 
-    hoop = hoop_stress(Pi, Po, OD, ID)
-    vm = von_mises(ax_val, hoop, 0)
+    sigma_r, hoop = stresses_lame(Pi, Po, OD, ID)
+
+    vm = von_mises_3d(ax_val, hoop, sigma_r)
+
 
     sig_ax.append(ax_val/1000)
     sig_hoop.append(hoop/1000)
