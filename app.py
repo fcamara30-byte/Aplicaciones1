@@ -33,19 +33,22 @@ tubos = {
 st.sidebar.title("Inputs")
 
 # =========================================
-# SELECCION DE TUBO
+# SELECCION DE TUBO (NO CAMBIA)
 # =========================================
 tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
-
 OD, ID, peso = tubos[tubo]
 
 # =========================================
 # PERDIDA DE ESPESOR
 # =========================================
-perdida = st.sidebar.slider(
-    "% pérdida de espesor",
+st.sidebar.markdown("#### Degradación")
+
+perdida_pct = st.sidebar.slider(
+    "Pérdida de espesor [%]",
     0, 100, 0
-) / 100
+)
+
+perdida = perdida_pct / 100
 
 # espesor original
 t_original = (OD - ID) / 2
@@ -53,22 +56,32 @@ t_original = (OD - ID) / 2
 # espesor actual
 t_actual = t_original * (1 - perdida)
 
-# nuevo ID (ajustado por corrosión)
+# nuevo ID
 ID = OD - 2 * t_actual
 
 # =========================================
-# MOSTRAR RESULTADOS DE ESPESOR
+# INFO COMPACTA (PROLIJA)
 # =========================================
-st.sidebar.markdown("---")
-st.sidebar.subheader("Espesor")
+st.sidebar.markdown(
+    f"""
+    <div style="
+        font-size:13px;
+        background-color:#f0f2f6;
+        padding:8px;
+        border-radius:6px;
+        margin-top:5px;
+    ">
+    Espesor: <b>{t_actual:.3f}"</b> <br>
+    <span style="color:gray;">(orig: {t_original:.3f}")</span>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-st.sidebar.text(f"Original: {round(t_original,3)} in")
-st.sidebar.text(f"Remanente: {round(t_actual,3)} in")
-st.sidebar.text(f"% Remanente: {round((1-perdida)*100,1)} %")
+# validación mínima
+if t_actual <= 0:
+    st.sidebar.error("Espesor nulo")
 
-# validación básica
-if ID >= OD:
-    st.sidebar.error("Espesor nulo: el tubo dejó de existir")
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
 SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
