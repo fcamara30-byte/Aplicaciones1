@@ -82,10 +82,10 @@ for i in range(200):
     z = depth_ft * i / 200
 
     # PRESION INTERNA (EXCEL)
-    Pi = P_iny
+    Pi = P_iny + rho_int * z / 144
 
     # PRESION EXTERNA SUPERFICIAL
-    Po = Pext_surface
+    Po = Pext_surface + rho_ext * z / 144
 
     # AXIAL
     ax_val = axial_load(
@@ -102,7 +102,7 @@ for i in range(200):
     hoop = hoop_stress(Pi, Po, OD, ID)
 
     # RADIAL (EXCEL)
-    sigma_r = radial_stress(Pext_surface, rho_ext, z)
+    sigma_r = radial_stress(Po)
 
     # TORSION
     tau = torsion(Torque, OD, ID)
