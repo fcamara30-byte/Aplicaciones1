@@ -134,7 +134,8 @@ for i in range(200):
 
     sigma_r, hoop = stresses_lame(Pi, Po, OD, ID)
 
-    vm = von_mises_3d(ax_val, hoop, sigma_r)
+   vm = von_mises_3d(ax_val, hoop, sigma_r, 0)
+
 
 
     sig_ax.append(ax_val/1000)
