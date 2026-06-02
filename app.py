@@ -98,11 +98,11 @@ for i in range(200):
     )
 
     # ✅ CORRECCIÓN AXIAL POR PRESIÓN (CLAVE)
-    if condicion == "Cerrado":
-        Ai = np.pi * (ID**2) / 4
-        Ao = np.pi * (OD**2) / 4
-        Am = np.pi * (OD**2 - ID**2) / 4
-        ax_val += (Pi * Ai - Po * Ao) / Am
+if condicion == "Cerrado":
+    Ai = np.pi * (ID**2) / 4
+    Am = np.pi * (OD**2 - ID**2) / 4
+    P_hid = rho_int * z_int / 144
+    ax_val += (P_hid * Ai) / Am
 
     # HOOP
     hoop = hoop_stress(Pi, Po, OD, ID)
