@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from modelo import *
 
 st.set_page_config(layout="wide")
 st.title("Diseño OCTG - Von Misses")
@@ -36,6 +35,7 @@ st.sidebar.title("Inputs")
 tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
 OD, ID, peso = tubos[tubo]
 
+# pérdida de espesor
 perdida_pct = st.sidebar.slider("Pérdida de espesor [%]", 0, 100, 0)
 perdida = perdida_pct / 100
 
@@ -46,19 +46,25 @@ ID = OD - 2 * t_actual
 if t_actual <= 0:
     st.sidebar.error("Espesor nulo")
 
+# material
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
 SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
+# presiones
 P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=2000.0)
-Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0)
 
+# densidades
 rho_int = kgm3_to_lbft3(st.sidebar.number_input("ρ interno [kg/m³]", value=1090.0))
 rho_ext = kgm3_to_lbft3(st.sidebar.number_input("ρ externo [kg/m³]", value=1000.0))
 
+# niveles
 fill_int = st.sidebar.slider("Nivel interno [%]", 0, 100, 100) / 100
 fill_ext = st.sidebar.slider("Nivel externo [%]", 0, 100, 100) / 100
+
+# torque
 Torque = st.sidebar.number_input("Torque [lb-ft]", value=0.0)
 
+# profundidad
 depth_m = st.sidebar.number_input("Profundidad [m]", value=3000.0)
 depth_ft = m_to_ft(depth_m)
 
@@ -70,31 +76,38 @@ sig_ax, sig_hoop, vm_list, z_list = [], [], [], []
 for i in range(200):
 
     z = depth_ft * i / 199
+
+    # === PRESIONES (KSI como Excel)
     z_int = z * fill_int
-
-    # === PRESION EXACTA EXCEL (KSI) ===
-    P_hid_ksi = rho_int * z_int / 144 / 1000
-    Pi = P_hid_ksi + (P_iny / 1000)
     z_ext = z * fill_ext
-    P_ext_ksi = rho_ext * z_ext / 144 / 1000
-    # === HOOP ===
+
+    P_int = rho_int * z_int / 144 / 1000
+    P_ext = rho_ext * z_ext / 144 / 1000
+
+    Pi = P_int + (P_iny / 1000)
+
+    # === GEOMETRIA
     t = (OD - ID) / 2
-    hoop = (Pi - P_ext_ksi) * OD / (2 * t)
-
-
-    # === AXIAL (SOLO PESO) ===
     A = np.pi/4 * (OD**2 - ID**2)
+
+    # === HOOP (Barlow)
+    hoop = (Pi - P_ext) * OD / (2 * t)
+
+    # === AXIAL (como tu Excel → peso)
     F_weight = peso * z
     sigma_ax = F_weight / A / 1000
 
-    # === RADIAL ===
-    sigma_r = -P_ext_ksi
+    # === RADIAL
+    sigma_r = -P_ext
 
+    # === TORSION
+    T = Torque * 12
+    ro = OD/2
+    ri = ID/2
+    J = np.pi/2*(ro**4 - ri**4)
+    tau = T * ro / J if J > 0 else 0
 
-    # === TORSION ===
-    tau = torsion(Torque, OD, ID)
-
-    # === VON MISES ===
+    # === VON MISES
     vm = np.sqrt(
         0.5 * (
             (sigma_ax - hoop)**2 +
@@ -123,7 +136,7 @@ sy = sig_hoop[i_crit]
 z_crit = ft_to_m(z_list[i_crit])
 
 # =========================================
-# ELIPSE (NO TOCADO)
+# ELIPSE
 # =========================================
 Sy = SMYS
 s = np.linspace(-Sy, Sy, 2000)
@@ -139,18 +152,18 @@ for val in s:
         y2.append((val - root)/2)
 
 # =========================================
-# PLOT (NO TOCADO)
+# GRAFICO (NO TOCADO)
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
-ax.plot(x_vm, y1, 'b')
-ax.plot(x_vm, y2, 'b')
+ax.plot(x_vm, y1, 'b', lw=2)
+ax.plot(x_vm, y2, 'b', lw=2)
 
 ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
 ax.scatter(sx, sy, color="red", s=150)
 
-ax.axhline(0, color="black", lw=2)
-ax.axvline(0, color="black", lw=2)
+ax.axhline(0, color="black")
+ax.axvline(0, color="black")
 
 ax.axhline(SMYS, color="red", ls="--")
 ax.axhline(-SMYS, color="red", ls="--")
