@@ -81,33 +81,24 @@ for i in range(200):
 
     z = depth_ft * i / 200
 
-    # 🔴 PRESION INTERNA REAL EN FONDO
     Pi = P_iny + rho_int * z / 144
-
-    # 🔴 PRESION EXTERNA SOLO SI HAY FLUIDO
     Po = rho_ext * z / 144 if fill_ext > 0 else 0
 
-    # AXIAL
-ax_val = axial_load(
-    OD, ID,
-    peso,
-    z,
-    rho_ext,
-    fill_ext,
-    F_ext
-)
+    ax_val = axial_load(
+        OD, ID,
+        peso,
+        z,
+        rho_ext,
+        fill_ext,
+        F_ext
+    )
 
-
-    # 🔴 HOOP CORRECTO (ΔP EFECTIVO)
     hoop = hoop_stress(Pi, Po, OD, ID)
 
-    # RADIAL
     sigma_r = radial_stress(Po)
 
-    # TORSION
     tau = torsion(Torque, OD, ID)
 
-    # VM
     vm = von_mises_3d(ax_val, hoop, sigma_r, tau)
 
     sig_ax.append(ax_val / 1000)
