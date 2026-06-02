@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
-st.title("Diseño OCTG - Von Misses")
+st.title("Diseño OCTG - Von Mises")
 
 # =========================================
 # CONVERSIONES
@@ -35,7 +35,7 @@ st.sidebar.title("Inputs")
 tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
 OD, ID, peso = tubos[tubo]
 
-# pérdida de espesor
+# CORROSION
 perdida_pct = st.sidebar.slider("Pérdida de espesor [%]", 0, 100, 0)
 perdida = perdida_pct / 100
 
@@ -46,25 +46,25 @@ ID = OD - 2 * t_actual
 if t_actual <= 0:
     st.sidebar.error("Espesor nulo")
 
-# material
+# MATERIAL
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
 SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
-# presiones
+# PRESION
 P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=2000.0)
 
-# densidades
+# DENSIDADES
 rho_int = kgm3_to_lbft3(st.sidebar.number_input("ρ interno [kg/m³]", value=1090.0))
 rho_ext = kgm3_to_lbft3(st.sidebar.number_input("ρ externo [kg/m³]", value=1000.0))
 
-# niveles
+# NIVELES
 fill_int = st.sidebar.slider("Nivel interno [%]", 0, 100, 100) / 100
 fill_ext = st.sidebar.slider("Nivel externo [%]", 0, 100, 100) / 100
 
-# torque
+# TORQUE
 Torque = st.sidebar.number_input("Torque [lb-ft]", value=0.0)
 
-# profundidad
+# PROFUNDIDAD
 depth_m = st.sidebar.number_input("Profundidad [m]", value=3000.0)
 depth_ft = m_to_ft(depth_m)
 
@@ -77,37 +77,55 @@ for i in range(200):
 
     z = depth_ft * i / 199
 
-    # === PRESIONES (KSI como Excel)
+    # ========================
+    # PRESIONES
+    # ========================
     z_int = z * fill_int
     z_ext = z * fill_ext
 
-    P_int = rho_int * z_int / 144 / 1000
-    P_ext = rho_ext * z_ext / 144 / 1000
+    P_int = rho_int * z_int / 144 / 1000  # ksi
+    P_ext = rho_ext * z_ext / 144 / 1000  # ksi
 
     Pi = P_int + (P_iny / 1000)
 
-    # === GEOMETRIA
+    # ========================
+    # GEOMETRIA
+    # ========================
     t = (OD - ID) / 2
     A = np.pi/4 * (OD**2 - ID**2)
+    A_ext = np.pi/4 * (OD**2)
 
-    # === HOOP (Barlow)
+    # ========================
+    # HOOP (ΔP)
+    # ========================
     hoop = (Pi - P_ext) * OD / (2 * t)
 
-    # === AXIAL (como tu Excel → peso)
-    F_weight = peso * z
-    sigma_ax = F_weight / A / 1000
+    # ========================
+    # AXIAL (CON FLOTACION REAL)
+    # ========================
+    F_weight = peso * z                   # peso tubo
+    F_buoy = rho_ext * z_ext * A_ext      # empuje fluido externo
 
-    # === RADIAL
+    F_eff = F_weight - F_buoy             # carga efectiva
+    sigma_ax = F_eff / A / 1000          # ksi
+
+    # ========================
+    # RADIAL
+    # ========================
     sigma_r = -P_ext
 
-    # === TORSION
+    # ========================
+    # TORSION
+    # ========================
     T = Torque * 12
-    ro = OD/2
-    ri = ID/2
-    J = np.pi/2*(ro**4 - ri**4)
+    ro = OD / 2
+    ri = ID / 2
+    J = np.pi/2 * (ro**4 - ri**4)
     tau = T * ro / J if J > 0 else 0
 
-    # === VON MISES
+    # ========================
+    # VON MISES
+    # ========================
     vm = np.sqrt(
         0.5 * (
             (sigma_ax - hoop)**2 +
@@ -152,7 +170,7 @@ for val in s:
         y2.append((val - root)/2)
 
 # =========================================
-# GRAFICO (NO TOCADO)
+# GRAFICO
 # =========================================
 fig, ax = plt.subplots(figsize=(7,7))
 
@@ -192,8 +210,3 @@ c1, c2, c3 = st.columns(3)
 c1.metric("σ axial [ksi]", round(sx,2))
 c1.metric("σ hoop [ksi]", round(sy,2))
 
-c2.metric("Von Mises [ksi]", round(vm_list[i_crit],2))
-c2.metric("Prof crítica [m]", round(z_crit,0))
-
-c3.metric("Utilización [%]", round(vm_list[i_crit]/SMYS*100,1))
-c3.metric("Estado", "PASS" if vm_list[i_crit] < SMYS else "FAIL")
