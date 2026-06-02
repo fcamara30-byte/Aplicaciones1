@@ -11,24 +11,32 @@ def area_ext(OD):
 
 
 # =========================================
-# LAME (presión)
+# HOOP (BARLOW - IGUAL EXCEL)
 # =========================================
-def stresses_lame(Pi, Po, OD, ID):
+def hoop_stress(Pi, Po, OD, ID):
 
-    ri = ID/2
-    ro = OD/2
+    t = (OD - ID)/2
 
-    A = (Po*ro**2 - Pi*ri**2)/(ro**2 - ri**2)
-    B = (ri**2*ro**2*(Pi-Po))/(ro**2 - ri**2)
-
-    sigma_r = -Pi
-    sigma_theta = A + B/ri**2
-
-    return sigma_r, sigma_theta
+    return (Pi - Po) * OD / (2*t)
 
 
 # =========================================
-# AXIAL (COMPATIBLE CON TU APP)
+# RADIAL (EXCEL)
+# σr = - (Pext + ρgz)
+# =========================================
+def radial_stress(Pext_surface, rho_ext, z_ft):
+
+    rho_ext_lbft3 = rho_ext * 0.062428
+
+    P_hydro = rho_ext_lbft3 * z_ft / 144
+
+    Po_total = Pext_surface + P_hydro
+
+    return -Po_total
+
+
+# =========================================
+# AXIAL (SOLO MECÁNICO - EXACTO EXCEL)
 # =========================================
 def axial_load(
     OD, ID,
@@ -42,19 +50,22 @@ def axial_load(
     condicion
 ):
 
-    rho_ext = rho_ext * 0.062428
+    rho_ext_lbft3 = rho_ext * 0.062428
 
     A = area_metal(OD, ID)
     Aext = area_ext(OD) / 144
 
     Fw = peso_lbft * z_ft
-    Fb = rho_ext * fill_ext * z_ft * Aext
 
-    return (Fw - Fb + F_ext) / A
+    Fb = rho_ext_lbft3 * fill_ext * z_ft * Aext
+
+    F_total = Fw - Fb + F_ext
+
+    return F_total / A
 
 
 # =========================================
-# TORSION (REAL)
+# TORSION
 # =========================================
 def torsion(T_lbft, OD, ID):
 
@@ -69,7 +80,7 @@ def torsion(T_lbft, OD, ID):
 
 
 # =========================================
-# VON MISES
+# VON MISES (IDENTICO EXCEL)
 # =========================================
 def von_mises_3d(sa, sh, sr, tau):
 
@@ -82,7 +93,7 @@ def von_mises_3d(sa, sh, sr, tau):
 
 
 # =========================================
-# RESULTADOS
+# UTILIZACION
 # =========================================
 def utilization(vm, smys):
 
