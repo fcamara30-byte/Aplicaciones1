@@ -53,6 +53,7 @@ P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=2000.0)
 Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0)
 
 rho_int = kgm3_to_lbft3(st.sidebar.number_input("ρ interno [kg/m³]", value=1090.0))
+rho_ext = kgm3_to_lbft3(st.sidebar.number_input("ρ externo [kg/m³]", value=1000.0))
 
 fill_int = st.sidebar.slider("Nivel interno [%]", 0, 100, 100) / 100
 fill_ext = st.sidebar.slider("Nivel externo [%]", 0, 100, 100) / 100
@@ -74,10 +75,12 @@ for i in range(200):
     # === PRESION EXACTA EXCEL (KSI) ===
     P_hid_ksi = rho_int * z_int / 144 / 1000
     Pi = P_hid_ksi + (P_iny / 1000)
-
+    z_ext = z * fill_ext
+    P_ext_ksi = rho_ext * z_ext / 144 / 1000
     # === HOOP ===
     t = (OD - ID) / 2
-    hoop = Pi * OD / (2 * t)
+    hoop = (Pi - P_ext_ksi) * OD / (2 * t)
+
 
     # === AXIAL (SOLO PESO) ===
     A = np.pi/4 * (OD**2 - ID**2)
@@ -85,7 +88,8 @@ for i in range(200):
     sigma_ax = F_weight / A / 1000
 
     # === RADIAL ===
-    sigma_r = -P_hid_ksi
+    sigma_r = -P_ext_ksi
+
 
     # === TORSION ===
     tau = torsion(Torque, OD, ID)
