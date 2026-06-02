@@ -25,15 +25,14 @@ def stresses_lame(Pi, Po, OD, ID):
     A = (Po * ro**2 - Pi * ri**2) / (ro**2 - ri**2)
     B = (ri**2 * ro**2 * (Pi - Po)) / (ro**2 - ri**2)
 
-    # pared interna
-    sigma_r = -Pi
-    sigma_theta = A + B / ri**2
+    sigma_r = -Pi                     # radial
+    sigma_theta = A + B / ri**2       # hoop
 
     return sigma_r, sigma_theta
 
 
 # =========================================
-# AXIAL (COMPATIBLE + CORREGIDO)
+# AXIAL REAL (SOLO MECANICO)
 # =========================================
 def axial_load(
     OD, ID,
@@ -48,7 +47,7 @@ def axial_load(
 ):
 
     # -----------------------------------
-    # MECANICO (igual que tu modelo)
+    # SOLO MECANICO (CLAVE)
     # -----------------------------------
     rho_ext = kgm3_to_lbft3(rho_ext)
 
@@ -59,7 +58,6 @@ def axial_load(
     F_weight = peso_lbft * z_ft
     F_buoy = rho_ext * fill_ext * z_ft * A_ext_ft2
 
-    # NO tocamos esto (tu lógica)
     if modo == "Libre":
         F_pressure_end = 0
     else:
@@ -68,26 +66,7 @@ def axial_load(
 
     F_total = F_weight - F_buoy + F_ext + F_pressure_end
 
-    sigma_ax_mech = F_total / A
-
-    # -----------------------------------
-    # AXIAL POR PRESION (FIX REAL)
-    # -----------------------------------
-    if condicion == "Cerrado":
-
-        ri = ID / 2
-        ro = OD / 2
-
-        sigma_ax_press = (
-            Pi * ri**2 - Po * ro**2
-        ) / (
-            ro**2 - ri**2
-        )
-
-    else:
-        sigma_ax_press = 0
-
-    return sigma_ax_mech + sigma_ax_press
+    return F_total / A   # ✅ SOLO MECANICO
 
 
 # =========================================
@@ -123,7 +102,7 @@ def von_mises_3d(sig_ax, sig_hoop, sig_rad, tau):
 # =========================================
 # UTILIZACION (FS = 0.9)
 # =========================================
-def utilization(smys_ksi, vm):
+def utilization(vm, smys_ksi):
 
     smys = smys_ksi * 1000
     allowable = 0.9 * smys
