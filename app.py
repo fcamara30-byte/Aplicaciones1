@@ -81,36 +81,32 @@ for i in range(200):
 
     z = depth_ft * i / 200
 
-    # PRESION INTERNA (EXCEL)
+    # 🔴 PRESION INTERNA REAL EN FONDO
     Pi = P_iny + rho_int * z / 144
 
-    # PRESION EXTERNA SUPERFICIAL
-    Po = Pext_surface + rho_ext * z / 144
+    # 🔴 PRESION EXTERNA SOLO SI HAY FLUIDO
+    Po = rho_ext * z / 144 if fill_ext > 0 else 0
 
     # AXIAL
     ax_val = axial_load(
         OD, ID, peso, z,
-        rho_int, rho_ext,
-        fill_int, fill_ext,
-        F_ext,
-        Pi, Po,
-        modo,
-        condicion
+        rho_ext,
+        fill_ext,
+        F_ext
     )
 
-    # HOOP (BARLOW)
+    # 🔴 HOOP CORRECTO (ΔP EFECTIVO)
     hoop = hoop_stress(Pi, Po, OD, ID)
 
-    # RADIAL (EXCEL)
+    # RADIAL
     sigma_r = radial_stress(Po)
 
     # TORSION
     tau = torsion(Torque, OD, ID)
 
-    # VON MISES
+    # VM
     vm = von_mises_3d(ax_val, hoop, sigma_r, tau)
 
-    # GUARDADO
     sig_ax.append(ax_val / 1000)
     sig_hoop.append(hoop / 1000)
     vm_list.append(vm)
