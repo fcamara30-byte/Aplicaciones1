@@ -12,7 +12,7 @@ st.title("Diseño OCTG - Von Misses")
 def kgm3_to_lbft3(rho):
     return rho * 0.062428
 
-def m_to_ft(z):
+ m_to_ft(z):
     return z * 3.28084
 
 def ft_to_m(z):
