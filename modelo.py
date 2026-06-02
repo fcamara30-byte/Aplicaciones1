@@ -8,14 +8,14 @@ def kgm3_to_lbft3(rho):
 
 
 # =========================================
-# AREA
+# AREA METALICA
 # =========================================
 def area_metal(OD, ID):
     return np.pi * (OD**2 - ID**2) / 4
 
 
 # =========================================
-# LAME COMPLETO
+# LAME (HOOP + RADIAL)
 # =========================================
 def stresses_lame(Pi, Po, OD, ID):
 
@@ -26,15 +26,15 @@ def stresses_lame(Pi, Po, OD, ID):
     A = (Po * ro**2 - Pi * ri**2) / (ro**2 - ri**2)
     B = (ri**2 * ro**2 * (Pi - Po)) / (ro**2 - ri**2)
 
-    # tensiones en pared interna (ri)
-    sigma_r = -Pi                     # radial
-    sigma_theta = A + B / ri**2       # hoop
+    # tensiones en pared interna
+    sigma_r = -Pi                       # radial
+    sigma_theta = A + B / ri**2         # hoop
 
     return sigma_r, sigma_theta
 
 
 # =========================================
-# AXIAL REAL
+# AXIAL COMPLETO
 # =========================================
 def axial_load(
     OD, ID,
@@ -54,26 +54,43 @@ def axial_load(
     A_ext = np.pi * OD**2 / 4
     A_ext_ft2 = A_ext / 144
 
-    # peso acero
+    # -----------------------------------
+    # 1. AXIAL MECANICO (TU MODELO ORIGINAL)
+    # -----------------------------------
     F_weight = peso_lbft * z_ft
-
-    # flotación externa
     F_buoy = rho_ext * fill_ext * z_ft * A_ext_ft2
 
-    # presión axial
     if modo == "Libre":
-        F_pressure = 0
+        F_pressure_end = 0
     else:
         A_int = np.pi * ID**2 / 4
-        F_pressure = (Pi - Po) * A_int
+        F_pressure_end = (Pi - Po) * A_int
 
-    F_total = F_weight - F_buoy + F_ext + F_pressure
+    F_total = F_weight - F_buoy + F_ext + F_pressure_end
 
-    return F_total / A
+    sigma_ax_mech = F_total / A
+
+    # -----------------------------------
+    # 2. AXIAL POR PRESION (LAME - SOLO CERRADO)
+    # -----------------------------------
+    if condicion == "Cerrado":
+        ri = ID / 2
+        ro = OD / 2
+
+        sigma_ax_pressure = (Pi * ri**2 - Po * ro**2) / (ro**2 - ri**2)
+    else:
+        sigma_ax_pressure = 0
+
+    # -----------------------------------
+    # 3. TOTAL
+    # -----------------------------------
+    sigma_ax_total = sigma_ax_mech + sigma_ax_pressure
+
+    return sigma_ax_total
 
 
 # =========================================
-# VON MISES 3D REAL (CLAVE)
+# VON MISES 3D (REAL)
 # =========================================
 def von_mises_3d(sig_ax, sig_hoop, sig_rad):
 
@@ -104,4 +121,3 @@ def design_check(vm, smys_ksi):
     smys = smys_ksi * 1000
 
     return "FAIL" if vm > smys else "PASS"
-
