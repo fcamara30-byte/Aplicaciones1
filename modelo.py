@@ -76,3 +76,25 @@ def design_check(vm, smys):
 
     smys = smys * 1000
     return "FAIL" if vm > 0.9 * smys else "PASS"
+
+def axial_load(
+    OD, ID,
+    peso_lbft,
+    z_ft,
+    rho_int, rho_ext,
+    fill_int, fill_ext,
+    F_ext,
+    Pi, Po,
+    modo,
+    condicion
+):
+
+    rho_ext = rho_ext * 0.062428
+
+    A = area_metal(OD, ID)
+    Aext = area_ext(OD) / 144
+
+    Fw = peso_lbft * z_ft
+    Fb = rho_ext * fill_ext * z_ft * Aext
+
+    return (Fw - Fb + F_ext) / A
