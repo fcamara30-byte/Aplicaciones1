@@ -79,7 +79,7 @@ sig_ax, sig_hoop, vm_list, z_list = [], [], [], []
 
 for i in range(200):
 
-    z = depth_ft * i / 200
+    z = depth_ft * i / 199
 
     z_int = z * fill_int
     Pi = P_iny + rho_int * z_int / 144
@@ -96,7 +96,14 @@ for i in range(200):
         fill_ext,
         F_ext
     )
+if condicion == "Cerrado":
+    Ai = np.pi * (ID**2) / 4
+    Am = np.pi * (OD**2 - ID**2) / 4
+    ax_val += (Pi * Ai) / Am
 
+
+
+    
     hoop = hoop_stress(Pi, Po, OD, ID)
 
     sigma_r = radial_stress(Po)
