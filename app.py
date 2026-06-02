@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from modelo import *
 
 st.set_page_config(layout="wide")
 st.title("Diseño OCTG - Von Misses")
@@ -36,9 +35,6 @@ st.sidebar.title("Inputs")
 tubo = st.sidebar.selectbox("Tubing", list(tubos.keys()))
 OD, ID, peso = tubos[tubo]
 
-# =========================================
-# PERDIDA DE ESPESOR
-# =========================================
 perdida_pct = st.sidebar.slider("Pérdida de espesor [%]", 0, 100, 0)
 perdida = perdida_pct / 100
 
@@ -46,30 +42,19 @@ t_original = (OD - ID) / 2
 t_actual = t_original * (1 - perdida)
 ID = OD - 2 * t_actual
 
-if t_actual <= 0:
-    st.sidebar.error("Espesor nulo")
-
 grado = st.sidebar.selectbox("Grado", ["J55","N80","P110","Q125"])
 SMYS = {"J55":55,"N80":80,"P110":110,"Q125":125}[grado]
 
-modo = st.sidebar.selectbox("Condición axial", ["Libre","Anclado","Packer"])
-condicion = st.sidebar.selectbox("Condición Tubo", ["Abierto", "Cerrado"])
+P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=2000.0)
 
-P_iny = st.sidebar.number_input("Presión de inyección [psi]", value=0.0)
-Pext_surface = st.sidebar.number_input("Presión externa superficial [psi]", value=0.0)
-
-rho_int = kgm3_to_lbft3(st.sidebar.number_input("ρ interno [kg/m³]", value=1000.0))
-rho_ext = kgm3_to_lbft3(st.sidebar.number_input("ρ externo [kg/m³]", value=1000.0))
+rho_int = kgm3_to_lbft3(st.sidebar.number_input("ρ interno [kg/m³]", value=1090.0))
 
 fill_int = st.sidebar.slider("Nivel interno [%]", 0, 100, 100) / 100
-fill_ext = st.sidebar.slider("Nivel externo [%]", 0, 100, 100) / 100
 
-F_ext = st.sidebar.number_input("Fuerza axial externa [lbf]", value=0.0)
+depth_m = st.sidebar.number_input("Profundidad [m]", value=3000.0)
+depth_ft = m_to_ft(depth_m)
 
 Torque = st.sidebar.number_input("Torque [lb-ft]", value=0.0)
-
-depth_m = st.sidebar.number_input("Profundidad [m]", value=2000.0)
-depth_ft = m_to_ft(depth_m)
 
 # =========================================
 # PERFIL
@@ -79,113 +64,42 @@ sig_ax, sig_hoop, vm_list, z_list = [], [], [], []
 for i in range(200):
 
     z = depth_ft * i / 199
-
     z_int = z * fill_int
 
-    Pi = (rho_int * z_int / 144 / 1000) + P_iny
-    Po = Pext_surface
+    # =========================================
+    # PRESION (EXACTA DEL EXCEL)
+    # =========================================
 
-    ax_val = axial_load(
-        OD, ID,
-        peso,
-        z,
-        rho_ext,
-        fill_ext,
-        F_ext
-    )
+    P_hid_ksi = rho_int * z_int / 144 / 1000
+    Pi = P_hid_ksi + (P_iny / 1000)
 
-    if condicion == "Cerrado":
-        Ai = np.pi * (ID**2) / 4
-        Am = np.pi * (OD**2 - ID**2) / 4
-        P_hid = rho_int * z_int / 144
-        ax_val += (P_hid * Ai) / Am
+    # =========================================
+    # HOOP (EXCEL)
+    # =========================================
 
-    hoop = hoop_stress(Pi, Po, OD, ID)
+    t = (OD - ID) / 2
+    hoop = Pi * OD / (2 * t)
 
-    sigma_r = radial_stress(Po)
+    # =========================================
+    # AXIAL (EXCEL → SOLO PESO)
+    # =========================================
 
-    tau = torsion(Torque, OD, ID)
+    A = np.pi/4 * (OD**2 - ID**2)
 
-    vm = von_mises_3d(ax_val, hoop, sigma_r, tau)
+    F_weight = peso * z
+    sigma_ax = F_weight / A / 1000
 
-    sig_ax.append(ax_val / 1000)
-    sig_hoop.append(hoop / 1000)
-    vm_list.append(vm)
-    z_list.append(z)
+    # =========================================
+    # RADIAL (EXCEL)
+    # =========================================
 
+    sigma_r = -P_hid_ksi
 
-sig_ax = np.array(sig_ax)
-sig_hoop = np.array(sig_hoop)
-vm_list = np.array(vm_list)
+    # =========================================
+    # TORSION
+    # =========================================
 
-# =========================================
-# PUNTO CRITICO
-# =========================================
-i_crit = np.argmax(vm_list)
-
-sx = sig_ax[i_crit]
-sy_val = sig_hoop[i_crit]
-z_crit = ft_to_m(z_list[i_crit])
-
-# =========================================
-# ELIPSE
-# =========================================
-Sy = SMYS
-s = np.linspace(-Sy, Sy, 2000)
-
-x_vm, y_vm1, y_vm2 = [], [], []
-
-for val in s:
-    disc = 4*Sy**2 - 3*val**2
-    if disc >= 0:
-        root = np.sqrt(disc)
-        x_vm.append(val)
-        y_vm1.append((val + root)/2)
-        y_vm2.append((val - root)/2)
-
-# =========================================
-# PLOT
-# =========================================
-fig, ax = plt.subplots(figsize=(7,7))
-
-ax.plot(x_vm, y_vm1, 'b', lw=2)
-ax.plot(x_vm, y_vm2, 'b', lw=2)
-
-ax.plot(sig_ax, sig_hoop, color="orange", lw=2)
-ax.scatter(sx, sy_val, color="red", s=150)
-
-ax.axhline(0, color="black", lw=2)
-ax.axvline(0, color="black", lw=2)
-
-ax.axhline(SMYS, color="red", ls="--")
-ax.axhline(-SMYS, color="red", ls="--")
-ax.axvline(SMYS, color="red", ls="--")
-ax.axvline(-SMYS, color="red", ls="--")
-
-lim = SMYS * 1.1
-ax.set_xlim(-lim, lim)
-ax.set_ylim(-lim, lim)
-
-ax.set_aspect("equal")
-ax.grid(True)
-
-ax.set_xlabel("σ axial [ksi]")
-ax.set_ylabel("σ hoop [ksi]")
-
-st.pyplot(fig)
-
-# =========================================
-# RESULTADOS
-# =========================================
-st.subheader("Resultados")
-
-c1, c2, c3 = st.columns(3)
-
-c1.metric("σ axial [ksi]", round(sx,2))
-c1.metric("σ hoop [ksi]", round(sy_val,2))
-
-c2.metric("Von Mises [ksi]", round(vm_list[i_crit]/1000,2))
-c2.metric("Prof crítica [m]", round(z_crit,0))
-
-c3.metric("Utilización [%]", round(utilization(vm_list[i_crit], SMYS),1))
-c3.metric("Estado", design_check(vm_list[i_crit], SMYS))
+    T = Torque * 12
+    ro = OD/2
+    ri = ID/2
+    J = np.pi/2*(ro**4 - ri**4)
