@@ -96,7 +96,7 @@ rho_int = st.sidebar.number_input(
 )
 
 rho_ext = st.sidebar.number_input(
-    "ρ externo [kg/m³]",
+    "ρ Ext. [kg/m³]",
     value=1000.0
 )
 
@@ -129,7 +129,7 @@ F_ext = st.sidebar.number_input(
 )
 
 depth_m = st.sidebar.number_input(
-    "Profundidad [m]",
+    "Depth [m]",
     value=3000.0
 )
 
@@ -379,9 +379,9 @@ ax.set_ylabel("σ hoop [ksi]")
 st.pyplot(fig)
 
 # =========================================
-# RESULTADOS
+# Conclusions
 # =========================================
-st.subheader("Resultados")
+st.subheader("Conclusions")
 
 c1, c2, c3 = st.columns(3)
 
