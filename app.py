@@ -24,6 +24,47 @@ def ft_to_m(z):
 # =========================================
 def area_metal(OD, ID):
     return np.pi * (OD**2 - ID**2) / 4
+def area_metal(OD, ID):
+    return np.pi * (OD**2 - ID**2) / 4
+
+
+def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
+            fill_int, fill_ext, Pext_surface,
+            Torque, F_ext, condicion):
+
+    depth_ft = m_to_ft(depth_m)
+
+    A = area_metal(OD, ID)
+    ri = ID / 2
+    ro = OD / 2
+    t = (OD - ID) / 2
+
+    A_ext_ft2 = (np.pi * OD**2 / 4) / 144
+
+    Pi = Piny + rho_int * depth_ft * fill_int / 144
+    Po = Pext_surface + rho_ext * depth_ft * fill_ext / 144
+
+    F_weight = peso * depth_ft
+    F_buoy = rho_ext * depth_ft * A_ext_ft2
+
+    sigma_ax = (F_weight - F_buoy + F_ext) / A
+
+    if condicion == "Libre":
+        sigma_pressure = 0
+    else:
+        sigma_pressure = Pi * ri**2 / (ro**2 - ri**2)
+
+    sa = sigma_ax + sigma_pressure
+
+    sh = (Pi - Po) * OD / (2 * t)
+
+    T = Torque * 12
+    J = (np.pi / 2) * (ro**4 - ri**4)
+    tau = T * ro / J if J > 0 else 0
+
+    vm = np.sqrt(sa**2 + sh**2 - sa * sh + 3 * tau**2)
+
+    return vm / 1000
 
 # =========================================
 # TUBOS
@@ -417,7 +458,6 @@ ax.set_xlabel("σ axial [ksi]")
 ax.set_ylabel("σ hoop [ksi]")
 
 st.pyplot(fig)
-
 if st.button("Generar Reporte"):
 
     profundidades = np.arange(500, 3501, 500)
@@ -425,60 +465,19 @@ if st.button("Generar Reporte"):
 
     tabla_vm = np.zeros((len(presiones), len(profundidades)))
 
-    A = area_metal(OD, ID)
-    ri = ID / 2
-    ro = OD / 2
-    t = (OD - ID) / 2
-    A_ext_ft2 = (np.pi * OD**2 / 4) / 144
-
     for i_p, Piny in enumerate(presiones):
-
         for i_z, prof in enumerate(profundidades):
 
-            z = m_to_ft(prof)
-
-            # ==========================
-            # PRESIONES
-            # ==========================
-            Pi = Piny + rho_int * z / 144
-            Po = Pext_surface + rho_ext * z / 144
-
-            # ==========================
-            # AXIAL MECÁNICO
-            # ==========================
-            F_weight = peso * z
-            F_buoy = rho_ext * z * A_ext_ft2   # 👈 FIX: sin fill_ext
-
-            sigma_ax = (F_weight - F_buoy + F_ext) / A
-
-            # ==========================
-            # AXIAL POR PRESIÓN
-            # ==========================
-            if condicion == "Libre":
-                sigma_pressure = 0
-            else:
-                sigma_pressure = Pi * ri**2 / (ro**2 - ri**2)
-
-            sa = sigma_ax + sigma_pressure
-
-            # ==========================
-            # HOOP
-            # ==========================
-            sh = (Pi - Po) * OD / (2 * t)
-
-            # ==========================
-            # TORSIÓN
-            # ==========================
-            T = Torque * 12
-            J = (np.pi / 2) * (ro**4 - ri**4)
-            tau = T * ro / J if J > 0 else 0
-
-            # ==========================
-            # VON MISES
-            # ==========================
-            vm = np.sqrt(sa**2 + sh**2 - sa * sh + 3 * tau**2)
-
-            tabla_vm[i_p, i_z] = vm / 1000
+            tabla_vm[i_p, i_z] = calc_vm(
+                prof,
+                Piny,
+                OD, ID, peso,
+                rho_int, rho_ext,
+                fill_int, fill_ext,
+                Pext_surface,
+                Torque, F_ext,
+                condicion
+            )
 
     df_vm = pd.DataFrame(
         tabla_vm,
