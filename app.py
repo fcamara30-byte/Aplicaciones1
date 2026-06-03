@@ -492,7 +492,7 @@ with st.expander("Tabla Von Mises [ksi]", expanded=False):
         .applymap(color_vm),
         use_container_width=True
     )
-  def color_vm(val):
+def color_vm(val):
     if val <= 20:
         return "background-color: #2ecc71"
     elif val <= 30:
