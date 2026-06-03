@@ -35,6 +35,21 @@ tubos = {
     '7" #23': (7.000, 6.360, 23.0),
     '9 5/8" #36': (9.620, 8.760, 36.0),
 }
+
+# =========================================
+# INPUTS
+# =========================================
+st.sidebar.header("Inputs")
+
+tubo = st.sidebar.selectbox(
+    "Tube",
+    list(tubos.keys())
+)
+revestimiento = st.sidebar.selectbox(
+    "Revestimiento interno",
+    ["Sin revestimiento", "Con revestimiento"]
+)
+OD, ID, peso = tubos[tubo]
 t_liner = 4 / 25.4      # 4 mm -> in
 t_cemento = 1 / 25.4    # 1 mm -> in
 
@@ -65,20 +80,7 @@ if revestimiento == "Con revestimiento":
 
     peso += peso_ppa + peso_cem
 
-# =========================================
-# INPUTS
-# =========================================
-st.sidebar.header("Inputs")
 
-tubo = st.sidebar.selectbox(
-    "Tube",
-    list(tubos.keys())
-)
-revestimiento = st.sidebar.selectbox(
-    "Revestimiento interno",
-    ["Sin revestimiento", "Con revestimiento"]
-)
-OD, ID, peso = tubos[tubo]
 
 perdida_pct = st.sidebar.slider(
     "Wallthickness Reduction [%]",
