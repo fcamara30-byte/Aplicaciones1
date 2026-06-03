@@ -46,7 +46,10 @@ tubo = st.sidebar.selectbox(
     "Tube",
     list(tubos.keys())
 )
-
+revestimiento = st.sidebar.selectbox(
+    "Revestimiento interno",
+    ["Sin revestimiento", "Con revestimiento"]
+)
 OD, ID, peso = tubos[tubo]
 
 perdida_pct = st.sidebar.slider(
