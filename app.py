@@ -1,3 +1,5 @@
+import pandas as pd
+from io import BytesIO
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
@@ -389,7 +391,90 @@ ax.set_xlabel("σ axial [ksi]")
 ax.set_ylabel("σ hoop [ksi]")
 
 st.pyplot(fig)
+if st.button("Generar Reporte"):
 
+    profundidades = np.arange(500, 3501, 500)
+    presiones = np.arange(0, 3001, 500)
+
+    tabla_vm = np.zeros((len(presiones), len(profundidades)))
+
+    for i_p, Piny in enumerate(presiones):
+
+        for i_z, prof in enumerate(profundidades):
+
+            z = m_to_ft(prof)
+
+            Pi = Piny + rho_int * z / 144
+            Po = Pext_surface + rho_ext * z * fill_ext / 144
+
+            A = area_metal(OD, ID)
+
+            ri = ID / 2
+            ro = OD / 2
+
+            A_ext_ft2 = (np.pi * OD**2 / 4) / 144
+
+            F_weight = peso * z
+
+            F_buoy = rho_ext * fill_ext * z * A_ext_ft2
+
+            sigma_ax = (
+                F_weight
+                - F_buoy
+                + F_ext
+            ) / A
+
+            if condicion == "Libre":
+                sigma_pressure = 0
+            else:
+                sigma_pressure = (
+                    Pi * ri**2
+                    - Po * ro**2
+                ) / (
+                    ro**2 - ri**2
+                )
+
+            sa = sigma_ax + sigma_pressure
+
+            t = (OD - ID) / 2
+
+            sh = (
+                (Pi - Po)
+                * OD
+                / (2 * t)
+            )
+
+            T = Torque * 12
+
+            J = (
+                np.pi / 2
+                * (ro**4 - ri**4)
+            )
+
+            tau = T * ro / J if J > 0 else 0
+
+            vm = np.sqrt(
+                sa**2
+                + sh**2
+                - sa * sh
+                + 3 * tau**2
+            )
+
+            tabla_vm[i_p, i_z] = vm / 1000
+
+    df_vm = pd.DataFrame(
+        tabla_vm,
+        index=presiones,
+        columns=profundidades
+    )
+
+    st.subheader("Tabla Von Mises [ksi]")
+
+    st.dataframe(
+        df_vm.style.background_gradient(
+            cmap="RdYlGn_r"
+        )
+    )
 # =========================================
 # Conclusions
 # =========================================
