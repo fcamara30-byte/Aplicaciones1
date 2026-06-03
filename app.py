@@ -3,6 +3,17 @@ from io import BytesIO
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+def color_vm(val):
+    if val <= 20:
+        return "background-color: #2ecc71"
+    elif val <= 30:
+        return "background-color: #f1c40f"
+    elif val <= 45:
+        return "background-color: #e67e22"
+    elif val <= 55:
+        return "background-color: #e74c3c"
+    else:
+        return "background-color: #8e0000"
 
 st.set_page_config(layout="wide")
 st.title("Diseño OCTG - Von Misses")
@@ -484,25 +495,16 @@ if st.button("Generar Reporte"):
         index=[f"{p} psi" for p in presiones],
         columns=[f"{p} m" for p in profundidades]
     )
-with st.expander("Tabla Von Mises [ksi]", expanded=False):
 
-    st.dataframe(
-        df_vm.style
-        .format("{:.1f}")
-        .applymap(color_vm),
-        use_container_width=True
-    )
-def color_vm(val):
-    if val <= 20:
-        return "background-color: #2ecc71"
-    elif val <= 30:
-        return "background-color: #f1c40f"
-    elif val <= 45:
-        return "background-color: #e67e22"
-    elif val <= 55:
-        return "background-color: #e74c3c"
-    else:
-        return "background-color: #8e0000"
+    with st.expander("Tabla Von Mises [ksi]", expanded=False):
+
+        st.dataframe(
+            df_vm.style
+            .format("{:.1f}")
+            .applymap(color_vm),
+            use_container_width=True
+        )
+
 # =========================================
 # Conclusions
 # =========================================
