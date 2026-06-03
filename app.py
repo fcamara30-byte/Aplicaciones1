@@ -248,15 +248,12 @@ for i in range(200):
     # ==========================
     # VON MISES
     # ==========================
-    vm = np.sqrt(
-        0.5 * (
-            (sa - sh)**2 +
-            (sh - sr)**2 +
-            (sr - sa)**2
-        )
-        + 3 * tau**2
-    )
-
+vm = np.sqrt(
+    sa**2
+    + sh**2
+    - sa*sh
+    + 3*tau**2
+)
     sig_ax.append(sa / 1000)
     sig_hoop.append(sh / 1000)
     vm_list.append(vm / 1000)
