@@ -501,7 +501,7 @@ if st.button("Generar Reporte"):
         st.dataframe(
             df_vm.style
             .format("{:.1f}")
-            .applymap(color_vm),
+            .map(color_vm),
             use_container_width=True
         )
 
