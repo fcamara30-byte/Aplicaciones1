@@ -407,111 +407,72 @@ if st.button("Generar Reporte"):
 
     tabla_vm = np.zeros((len(presiones), len(profundidades)))
 
+    A = area_metal(OD, ID)
+    ri = ID / 2
+    ro = OD / 2
+    t = (OD - ID) / 2
+    A_ext_ft2 = (np.pi * OD**2 / 4) / 144
+
     for i_p, Piny in enumerate(presiones):
 
         for i_z, prof in enumerate(profundidades):
 
             z = m_to_ft(prof)
 
+            # ==========================
+            # PRESIONES
+            # ==========================
             Pi = Piny + rho_int * z / 144
+            Po = Pext_surface + rho_ext * z / 144
 
-            Po = (
-                Pext_surface
-                + rho_ext * z * fill_ext / 144
-            )
-
-            A = area_metal(OD, ID)
-
-            ri = ID / 2
-            ro = OD / 2
-
-            A_ext_ft2 = (
-                np.pi * OD**2 / 4
-            ) / 144
-
+            # ==========================
+            # AXIAL MECÁNICO
+            # ==========================
             F_weight = peso * z
+            F_buoy = rho_ext * z * A_ext_ft2   # 👈 FIX: sin fill_ext
 
-            F_buoy = (
-                rho_ext *
-                fill_ext *
-                z *
-                A_ext_ft2
-            )
+            sigma_ax = (F_weight - F_buoy + F_ext) / A
 
-            sigma_ax = (
-                F_weight
-                - F_buoy
-                + F_ext
-            ) / A
-
+            # ==========================
+            # AXIAL POR PRESIÓN
+            # ==========================
             if condicion == "Libre":
-
                 sigma_pressure = 0
-
             else:
-
-                sigma_pressure = (
-                    Pi * ri**2
-                    - Po * ro**2
-                ) / (
-                    ro**2 - ri**2
-                )
+                sigma_pressure = Pi * ri**2 / (ro**2 - ri**2)
 
             sa = sigma_ax + sigma_pressure
 
-            t = (OD - ID) / 2
+            # ==========================
+            # HOOP
+            # ==========================
+            sh = (Pi - Po) * OD / (2 * t)
 
-            sh = (
-                (Pi - Po)
-                * OD
-                / (2 * t)
-            )
-
+            # ==========================
+            # TORSIÓN
+            # ==========================
             T = Torque * 12
+            J = (np.pi / 2) * (ro**4 - ri**4)
+            tau = T * ro / J if J > 0 else 0
 
-            J = (
-                np.pi / 2
-                * (ro**4 - ri**4)
-            )
-
-            tau = (
-                T * ro / J
-                if J > 0
-                else 0
-            )
-
-            vm = np.sqrt(
-                sa**2
-                + sh**2
-                - sa * sh
-                + 3 * tau**2
-            )
+            # ==========================
+            # VON MISES
+            # ==========================
+            vm = np.sqrt(sa**2 + sh**2 - sa * sh + 3 * tau**2)
 
             tabla_vm[i_p, i_z] = vm / 1000
 
     df_vm = pd.DataFrame(
         tabla_vm,
-        index=[
-            f"{p} psi"
-            for p in presiones
-        ],
-        columns=[
-            f"{z} m"
-            for z in profundidades
-        ]
+        index=[f"{p} psi" for p in presiones],
+        columns=[f"{p} m" for p in profundidades]
     )
 
-    with st.expander(
-        "Tabla Von Mises [ksi]",
-        expanded=False
-    ):
-
+    with st.expander("Tabla Von Mises [ksi]", expanded=False):
         st.dataframe(
             df_vm.style
             .format("{:.1f}")
-            .background_gradient(
-                cmap="RdYlGn_r"
-            ),
+            .background_gradient(cmap="RdYlGn_r"),
             use_container_width=True
         )
 # =========================================
