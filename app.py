@@ -48,22 +48,21 @@ tubo = st.sidebar.selectbox(
 revestimiento = st.sidebar.selectbox(
     "Revestimiento interno",
     ["Sin revestimiento", "Con revestimiento"]
+revestimiento = st.sidebar.selectbox(
+    "Revestimiento interno",
+    ["Sin revestimiento", "Con revestimiento"]
 )
-OD, ID, peso = tubos[tubo]
-t_liner = 4 / 25.4      # 4 mm -> in
-t_cemento = 1 / 25.4    # 1 mm -> in
-
-rho_ppa = 1.50          # g/cm3
-rho_cem = 1.80          # g/cm3
 
 if revestimiento == "Con revestimiento":
 
+    t_liner = 4 / 25.4      # in
+    t_cemento = 1 / 25.4    # in
+
+    rho_ppa = 1.50          # g/cm3
+    rho_cem = 1.80          # g/cm3
+
     ID_original = ID
 
-    # reducción hidráulica
-    ID = ID - 2 * (t_liner + t_cemento)
-
-    # áreas
     A_ppa = np.pi/4 * (
         ID_original**2
         - (ID_original - 2*t_liner)**2
@@ -71,33 +70,13 @@ if revestimiento == "Con revestimiento":
 
     A_cem = np.pi/4 * (
         (ID_original - 2*t_liner)**2
-        - ID**2
+        - (ID_original - 2*t_liner - 2*t_cemento)**2
     )
 
-    # peso adicional lb/ft
     peso_ppa = A_ppa * rho_ppa * 0.491
     peso_cem = A_cem * rho_cem * 0.491
 
     peso += peso_ppa + peso_cem
-
-
-
-perdida_pct = st.sidebar.slider(
-    "Wallthickness Reduction [%]",
-    0,
-    100,
-    0
-)
-
-t_original = (OD - ID) / 2
-t_actual = t_original * (1 - perdida_pct / 100)
-
-if t_actual <= 0:
-    st.error("Espesor nulo")
-    st.stop()
-
-ID = OD - 2 * t_actual
-
 grado = st.sidebar.selectbox(
     "Grado",
     ["J55","N80","P110","Q125"]
