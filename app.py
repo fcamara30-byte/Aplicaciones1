@@ -489,19 +489,17 @@ if st.button("Generar Reporte"):
         st.dataframe(
             df_vm.style
             .format("{:.1f}")
-             def color_vm(val):
-               if val <= 20:
-                return "background-color: #2ecc71"  # verde
-             elif val <= 30:
-                return "background-color: #f1c40f"  # amarillo
-             elif val <= 45:
-                return "background-color: #e67e22"  # naranja
-             elif val <= 55:
-                return "background-color: #e74c3c"  # rojo
-             else:
-                return "background-color: #8e0000"  # rojo oscuro (fail severo)
-            use_container_width=True
-        )
+  def color_vm(val):
+    if val <= 20:
+        return "background-color: #2ecc71"
+    elif val <= 30:
+        return "background-color: #f1c40f"
+    elif val <= 45:
+        return "background-color: #e67e22"
+    elif val <= 55:
+        return "background-color: #e74c3c"
+    else:
+        return "background-color: #8e0000"
 # =========================================
 # Conclusions
 # =========================================
