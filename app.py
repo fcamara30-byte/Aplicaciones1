@@ -35,7 +35,35 @@ tubos = {
     '7" #23': (7.000, 6.360, 23.0),
     '9 5/8" #36': (9.620, 8.760, 36.0),
 }
+t_liner = 4 / 25.4      # 4 mm -> in
+t_cemento = 1 / 25.4    # 1 mm -> in
 
+rho_ppa = 1.50          # g/cm3
+rho_cem = 1.80          # g/cm3
+
+if revestimiento == "Con revestimiento":
+
+    ID_original = ID
+
+    # reducción hidráulica
+    ID = ID - 2 * (t_liner + t_cemento)
+
+    # áreas
+    A_ppa = np.pi/4 * (
+        ID_original**2
+        - (ID_original - 2*t_liner)**2
+    )
+
+    A_cem = np.pi/4 * (
+        (ID_original - 2*t_liner)**2
+        - ID**2
+    )
+
+    # peso adicional lb/ft
+    peso_ppa = A_ppa * rho_ppa * 0.491
+    peso_cem = A_cem * rho_cem * 0.491
+
+    peso += peso_ppa + peso_cem
 
 # =========================================
 # INPUTS
