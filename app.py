@@ -391,6 +391,7 @@ ax.set_xlabel("σ axial [ksi]")
 ax.set_ylabel("σ hoop [ksi]")
 
 st.pyplot(fig)
+
 if st.button("Generar Reporte"):
 
     profundidades = np.arange(500, 3501, 500)
@@ -405,18 +406,29 @@ if st.button("Generar Reporte"):
             z = m_to_ft(prof)
 
             Pi = Piny + rho_int * z / 144
-            Po = Pext_surface + rho_ext * z * fill_ext / 144
+
+            Po = (
+                Pext_surface
+                + rho_ext * z * fill_ext / 144
+            )
 
             A = area_metal(OD, ID)
 
             ri = ID / 2
             ro = OD / 2
 
-            A_ext_ft2 = (np.pi * OD**2 / 4) / 144
+            A_ext_ft2 = (
+                np.pi * OD**2 / 4
+            ) / 144
 
             F_weight = peso * z
 
-            F_buoy = rho_ext * fill_ext * z * A_ext_ft2
+            F_buoy = (
+                rho_ext *
+                fill_ext *
+                z *
+                A_ext_ft2
+            )
 
             sigma_ax = (
                 F_weight
@@ -425,8 +437,11 @@ if st.button("Generar Reporte"):
             ) / A
 
             if condicion == "Libre":
+
                 sigma_pressure = 0
+
             else:
+
                 sigma_pressure = (
                     Pi * ri**2
                     - Po * ro**2
@@ -451,7 +466,11 @@ if st.button("Generar Reporte"):
                 * (ro**4 - ri**4)
             )
 
-            tau = T * ro / J if J > 0 else 0
+            tau = (
+                T * ro / J
+                if J > 0
+                else 0
+            )
 
             vm = np.sqrt(
                 sa**2
@@ -464,17 +483,29 @@ if st.button("Generar Reporte"):
 
     df_vm = pd.DataFrame(
         tabla_vm,
-        index=presiones,
-        columns=profundidades
+        index=[
+            f"{p} psi"
+            for p in presiones
+        ],
+        columns=[
+            f"{z} m"
+            for z in profundidades
+        ]
     )
 
-    st.subheader("Tabla Von Mises [ksi]")
+    with st.expander(
+        "Tabla Von Mises [ksi]",
+        expanded=False
+    ):
 
-    st.dataframe(
-        df_vm.style.background_gradient(
-            cmap="RdYlGn_r"
+        st.dataframe(
+            df_vm.style
+            .format("{:.1f}")
+            .background_gradient(
+                cmap="RdYlGn_r"
+            ),
+            use_container_width=True
         )
-    )
 # =========================================
 # Conclusions
 # =========================================
