@@ -55,7 +55,7 @@ if revestimiento == "Con revestimiento":
     t_liner = 4 / 25.4      # in
     t_cemento = 1 / 25.4    # in
 
-    rho_ppa = 0,95         # g/cm3
+    rho_ppa = 0.95         # g/cm3
     rho_cem = 1.80          # g/cm3
 
     ID_original = ID
