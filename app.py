@@ -45,14 +45,11 @@ tubo = st.sidebar.selectbox(
     "Tube",
     list(tubos.keys())
 )
-revestimiento = st.sidebar.selectbox(
-    "Revestimiento interno",
-    ["Sin revestimiento", "Con revestimiento"]
+OD, ID, peso = tubos[tubo]
 revestimiento = st.sidebar.selectbox(
     "Revestimiento interno",
     ["Sin revestimiento", "Con revestimiento"]
 )
-
 if revestimiento == "Con revestimiento":
 
     t_liner = 4 / 25.4      # in
