@@ -81,12 +81,12 @@ condicion = st.sidebar.selectbox(
 )
 
 P_iny = st.sidebar.number_input(
-    "Presión inyección [psi]",
+    "Injection Pressure [psi]",
     value=2000.0
 )
 
 Pext_surface = st.sidebar.number_input(
-    "Presión externa superficie [psi]",
+    "Pressure Casing [psi]",
     value=0.0
 )
 
@@ -102,7 +102,7 @@ rho_ext = st.sidebar.number_input(
 
 fill_int = (
     st.sidebar.slider(
-        "Nivel interno [%]",
+        "Int. fluid filled [%]",
         0,
         100,
         100
@@ -111,7 +111,7 @@ fill_int = (
 
 fill_ext = (
     st.sidebar.slider(
-        "Nivel externo [%]",
+        "Ext. fluid filled [%]",
         0,
         100,
         100
@@ -124,7 +124,7 @@ Torque = st.sidebar.number_input(
 )
 
 F_ext = st.sidebar.number_input(
-    "Fuerza axial externa [lbf]",
+    "Axial Ext Load [lbf]",
     value=0.0
 )
 
