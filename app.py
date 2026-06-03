@@ -484,11 +484,14 @@ if st.button("Generar Reporte"):
         index=[f"{p} psi" for p in presiones],
         columns=[f"{p} m" for p in profundidades]
     )
+with st.expander("Tabla Von Mises [ksi]", expanded=False):
 
-    with st.expander("Tabla Von Mises [ksi]", expanded=False):
-        st.dataframe(
-            df_vm.style
-            .format("{:.1f}")
+    st.dataframe(
+        df_vm.style
+        .format("{:.1f}")
+        .applymap(color_vm),
+        use_container_width=True
+    )
   def color_vm(val):
     if val <= 20:
         return "background-color: #2ecc71"
