@@ -342,19 +342,37 @@ ax.plot(x_vm, y2, lw=2)
 
 util_profile = vm_list / SMYS * 100
 
+from matplotlib.colors import Normalize
+
+# =========================================
+# NORMALIZACIÓN INGENIERÍA
+# =========================================
+util_profile = vm_list / SMYS * 100
+
+# cortes típicos OCTG
+# <60% verde
+# 60-80% amarillo
+# 80-100% naranja
+# >100% rojo
+
+bounds = [0, 60, 80, 100, 150]
+cmap = plt.cm.get_cmap("RdYlGn_r", len(bounds)-1)
+
+norm = Normalize(vmin=0, vmax=150)
+
 sc = ax.scatter(
     sig_ax,
     sig_hoop,
     c=util_profile,
-    cmap="turbo",
+    cmap=cmap,
+    norm=norm,
     s=25
 )
 
-plt.colorbar(
-    sc,
-    ax=ax,
-    label="Utilización [%]"
-)
+cbar = plt.colorbar(sc, ax=ax, label="Utilización [%]")
+
+cbar.set_ticks([30, 70, 90, 120])
+cbar.set_ticklabels(["Baja", "Media", "Alta", "Fluencia"])
 
 ax.scatter(
     sx,
