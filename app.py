@@ -248,11 +248,11 @@ for i in range(200):
     # ==========================
     # VON MISES
     # ==========================
-vm = np.sqrt(
-    sa**2
-    + sh**2
-    - sa*sh
-    + 3*tau**2
+    vm = np.sqrt(
+     sa**2
+     + sh**2
+     - sa*sh
+     + 3*tau**2
 )
     sig_ax.append(sa / 1000)
     sig_hoop.append(sh / 1000)
