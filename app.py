@@ -229,7 +229,7 @@ for i in range(200):
     sa = sigma_ax + sigma_pressure
     if i == 199:
 
-    st.write(
+      st.write(
         "Pi=", round(Pi,0),
         "Po=", round(Po,0),
         "Sigma axial=", round(sa/1000,2),
