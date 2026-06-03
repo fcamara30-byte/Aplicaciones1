@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
-st.title("Diseño OCTG - Von Mises")
+st.title("Diseño OCTG - Von Misses")
 
 # =========================================
 # CONVERSIONES
@@ -28,7 +28,9 @@ def area_metal(OD, ID):
 # =========================================
 tubos = {
     '2 7/8" #6.5': (2.876, 2.440, 6.5),
+    '2 7/8" #6.5': (2.876, 2.6, 4),
     '3 1/2" #9.2': (3.500, 2.992, 9.2),
+    '3 1/2" #7.7': (3.500, 3.068, 7.7),
     '5 1/2" #15.5': (5.500, 4.960, 15.5),
     '7" #23': (7.000, 6.360, 23.0),
     '9 5/8" #36': (9.620, 8.760, 36.0),
@@ -41,14 +43,14 @@ tubos = {
 st.sidebar.header("Inputs")
 
 tubo = st.sidebar.selectbox(
-    "Tubing",
+    "Tube",
     list(tubos.keys())
 )
 
 OD, ID, peso = tubos[tubo]
 
 perdida_pct = st.sidebar.slider(
-    "Pérdida espesor [%]",
+    "Wallthickness Reduction [%]",
     0,
     100,
     0
