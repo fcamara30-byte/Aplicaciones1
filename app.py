@@ -471,8 +471,8 @@ ax.set_ylabel("σ hoop [ksi]")
 st.pyplot(fig)
 if st.button("Generar Reporte"):
 
-    profundidades = np.arange(500, 8001, 500)
-    presiones = np.arange(0, 3001, 500)
+    profundidades = np.arange(500, 3001, 500)
+    presiones = np.arange(0, 6001, 500)
 
     tabla_vm = np.zeros((len(presiones), len(profundidades)))
 
