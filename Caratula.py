@@ -27,9 +27,9 @@ except:
 
     visitas = 0
 
-    visitas += 1
+visitas += 1
 
-   with open(VISIT_FILE, "w") as f:
+with open(VISIT_FILE, "w") as f:
     f.write(str(visitas))
 # ==========================================================
 # CSS
