@@ -45,13 +45,13 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
             Torque, F_ext, condicion):
 
                 def run_model():
-    profundidades = np.arange(500, 3501, 500)
-    presiones = np.arange(0, 6001, 500)
+                  profundidades = np.arange(500, 3501, 500)
+                  presiones = np.arange(0, 6001, 500)
 
-    tabla_vm = np.zeros((len(presiones), len(profundidades)))
+                 tabla_vm = np.zeros((len(presiones), len(profundidades)))
 
-    for i_p, Piny in enumerate(presiones):
-        for i_z, prof in enumerate(profundidades):
+                 for i_p, Piny in enumerate(presiones):
+                 for i_z, prof in enumerate(profundidades):
 
             tabla_vm[i_p, i_z] = calc_vm(
                 prof,
