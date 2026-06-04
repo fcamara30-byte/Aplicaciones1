@@ -658,3 +658,11 @@ c3.metric(
     "Estado",
     "PASS" if vm_crit < SMYS else "FAIL"
 )
+
+st.markdown(
+    "<p style='font-size:11px; color:gray;'>"
+    "Developed by FCAM & Pro-Eng - June 2026 "
+   
+    "</p>",
+    unsafe_allow_html=True
+)
