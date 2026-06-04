@@ -386,8 +386,7 @@ st.markdown("""
 
 st.markdown("""
 <div class="footer">
-
-Petroleum Engineering 
+Developed by FCAM & Pro-Eng
 
 <br><br>
 
