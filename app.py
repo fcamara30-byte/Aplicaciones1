@@ -514,7 +514,7 @@ with st.expander("Tabla Von Mises [% SMYS]", expanded=False):
    
 
     st.dataframe(
-        df_vm_percent.style
+        df_vm.style
         .format("{:.1f}")
         .map(color_vm),
         use_container_width=True
