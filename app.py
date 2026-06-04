@@ -609,12 +609,6 @@ if vm_crit >= SMYS:
         )
 
 
-    
-    s=250,
-    edgecolors="black",
-    linewidths=2,
-    zorder=10
-)
 
 ax.annotate(
     f"VM={vm_crit:.1f} ksi",
