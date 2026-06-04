@@ -3,6 +3,7 @@ from io import BytesIO
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 st.session_state.setdefault("run_id", 0)
 
 st.markdown("""
@@ -552,7 +553,7 @@ ax.scatter(
 # DIBUJO DEL TUBO
 # ==========================
 
-import matplotlib.patches as patches
+
 
 x0 = sx
 y0 = sy
