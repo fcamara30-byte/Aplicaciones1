@@ -477,37 +477,6 @@ ax.set_xlabel("σ axial [ksi]")
 ax.set_ylabel("σ hoop [ksi]")
 
 st.pyplot(fig)
-if st.button("Generar Reporte"):
-    st.session_state.run_id += 1
-
-   # =========================================
-# TABLA VM
-# =========================================
-
-profundidades = np.arange(500, 3001, 500)
-presiones = np.arange(0, 6001, 500)
-
-tabla_vm = np.zeros((len(presiones), len(profundidades)))
-
-for i_p, Piny in enumerate(presiones):
-    for i_z, prof in enumerate(profundidades):
-
-        tabla_vm[i_p, i_z] = calc_vm(
-            prof,
-            Piny,
-            OD, ID, peso,
-            rho_int, rho_ext,
-            fill_int, fill_ext,
-            Pext_surface,
-            Torque, F_ext,
-            condicion
-        )
-
-df_vm = pd.DataFrame(
-    tabla_vm,
-    index=[f"{p} psi" for p in presiones],
-    columns=[f"{p} m" for p in profundidades]
-)
 
 # =========================================
 # EXPANDER (CORRECTO)
