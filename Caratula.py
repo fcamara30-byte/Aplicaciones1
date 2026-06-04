@@ -5,7 +5,7 @@ import streamlit as st
 # ==========================================================
 
 st.set_page_config(
-    page_title="Petroleum Engineering Hub",
+    page_title="Quick Calculation Guide",
     page_icon="⚙",
     layout="wide"
 )
@@ -171,11 +171,11 @@ PETROLEUM
 </div>
 
 <div class="hero-title2">
-ENGINEERING HUB
+Quick Calculation Guide
 </div>
 
 <div class="hero-sub">
-OCTG • ARTIFICIAL LIFT • INTEGRITY • RELIABILITY
+OCTG • ARTIFICIAL LIFT • CORROSION FATIGUE
 </div>
 
 <div class="hero-line"></div>
@@ -212,7 +212,7 @@ with col1:
     </div>
 
     <div class="card-desc">
-    OCTG Stress Envelope<br>
+    OCTG Stress <br>
     Yield Assessment<br>
     Design Verification
     </div>
@@ -282,7 +282,7 @@ with col3:
     <div class="card-desc">
     Fatigue Evaluation<br>
     Goodman Diagram<br>
-    Reliability Analysis
+    Suggestions
     </div>
 
     </div>
