@@ -44,6 +44,27 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
             fill_int, fill_ext, Pext_surface,
             Torque, F_ext, condicion):
 
+                def run_model():
+    profundidades = np.arange(500, 3501, 500)
+    presiones = np.arange(0, 6001, 500)
+
+    tabla_vm = np.zeros((len(presiones), len(profundidades)))
+
+    for i_p, Piny in enumerate(presiones):
+        for i_z, prof in enumerate(profundidades):
+
+            tabla_vm[i_p, i_z] = calc_vm(
+                prof,
+                Piny,
+                OD, ID, peso,
+                rho_int, rho_ext,
+                fill_int, fill_ext,
+                Pext_surface,
+                Torque, F_ext,
+                condicion
+            )
+
+    return tabla_vm, profundidades, presiones
     depth_ft = m_to_ft(depth_m)
 
     A = area_metal(OD, ID)
