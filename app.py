@@ -561,7 +561,7 @@ df_vm = pd.DataFrame(
 # =========================================
 # EXPANDER (CORRECTO)
 # =========================================
-with st.expander("Tabla Von Mises [% SMYS]", expanded=False):
+with st.expander(" Inj Pressure/depth then Von Misses results", expanded=False):
 
    
 
