@@ -1,4 +1,11 @@
 import streamlit as st
+from pathlib import Path
+
+VISIT_FILE = "visits.txt"
+
+if not Path(VISIT_FILE).exists():
+    with open(VISIT_FILE, "w") as f:
+        f.write("0")
 
 # ==========================================================
 # CONFIG
@@ -9,7 +16,13 @@ st.set_page_config(
     page_icon="⚙",
     layout="wide"
 )
+with open(VISIT_FILE, "r") as f:
+    visitas = int(f.read())
 
+visitas += 1
+
+with open(VISIT_FILE, "w") as f:
+    f.write(str(visitas))
 # ==========================================================
 # CSS
 # ==========================================================
@@ -374,3 +387,19 @@ OCTG • PCP • SRP
 
 </div>
 """, unsafe_allow_html=True)
+st.markdown("---")
+
+st.markdown(
+    f"""
+    <div style="
+        text-align:center;
+        color:#9db1c5;
+        font-size:18px;
+        margin-top:15px;
+        margin-bottom:20px;
+    ">
+        👁️ Total Visits: <b>{visitas:,}</b>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
