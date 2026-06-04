@@ -549,6 +549,11 @@ ax.scatter(
     sx,
     sy,
     color="red",
+    s=250,
+    edgecolors="black",
+    linewidths=2,
+    zorder=10
+)
 # ==========================
 # DIBUJO DEL TUBO
 # ==========================
