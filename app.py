@@ -228,7 +228,7 @@ rho_ext = st.sidebar.number_input(
 
 fill_int = (
     st.sidebar.slider(
-        "Int. fluid filled [%]",
+        "Tubing filled (%)",
         0,
         100,
         100
@@ -237,7 +237,7 @@ fill_int = (
 
 fill_ext = (
     st.sidebar.slider(
-        "Ext. fluid filled [%]",
+        "Casing filled (%)",
         0,
         100,
         100
