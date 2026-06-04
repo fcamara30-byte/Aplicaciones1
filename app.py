@@ -3,6 +3,7 @@ from io import BytesIO
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+st.session_state.setdefault("run_id", 0)
 def color_vm(val):
     if val <= 20:
         return "background-color: #2ecc71"
@@ -470,6 +471,7 @@ ax.set_ylabel("σ hoop [ksi]")
 
 st.pyplot(fig)
 if st.button("Generar Reporte"):
+    st.session_state.run_id += 1
 
     profundidades = np.arange(500, 3001, 500)
     presiones = np.arange(0, 6001, 500)
