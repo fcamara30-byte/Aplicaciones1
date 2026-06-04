@@ -324,44 +324,9 @@ with col4:
     st.markdown("""
     <div class="card">
 
-<div class="card-icon">
-
-<svg width="110" height="110" viewBox="0 0 200 200">
-
-    <line x1="30" y1="170" x2="170" y2="170"
-          stroke="#7ec8ff" stroke-width="6"/>
-
-    <line x1="70" y1="170" x2="95" y2="70"
-          stroke="#4db8ff" stroke-width="8"/>
-
-    <line x1="120" y1="170" x2="95" y2="70"
-          stroke="#4db8ff" stroke-width="8"/>
-
-    <line x1="82" y1="120" x2="108" y2="120"
-          stroke="#4db8ff" stroke-width="5"/>
-
-    <line x1="95" y1="70" x2="160" y2="50"
-          stroke="#66d9ff" stroke-width="10"/>
-
-    <path d="
-    M155 42
-    Q175 45 175 60
-    Q170 72 155 72
-    "
-    fill="none"
-    stroke="#66d9ff"
-    stroke-width="8"/>
-
-    <line x1="120" y1="58" x2="120" y2="120"
-          stroke="#ffffff" stroke-width="4"/>
-
-    <circle cx="120" cy="120" r="10"
-            fill="#66d9ff"/>
-
-</svg>
-
-</div>
-
+    <div class="card-icon">
+    🔩
+    </div>
     <div class="card-title">
     Rod String Design
     </div>
