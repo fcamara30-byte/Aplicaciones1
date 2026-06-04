@@ -3,7 +3,6 @@ from io import BytesIO
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 st.session_state.setdefault("run_id", 0)
 
 st.markdown("""
@@ -453,17 +452,6 @@ i_crit = np.argmax(vm_list)
 sx = sig_ax[i_crit]
 sy = sig_hoop[i_crit]
 vm_crit = vm_list[i_crit]
-modo_falla = "OK"
-
-if vm_crit > 0.7*SMYS:
-
-    if abs(sy) > abs(sx):
-        if sy > 0:
-            modo_falla = "BURST"
-        else:
-            modo_falla = "COLAPSO"
-    else:
-        modo_falla = "TRACCION"
 
 z_crit = ft_to_m(z_list[i_crit])
 
@@ -554,61 +542,6 @@ ax.scatter(
     linewidths=2,
     zorder=10
 )
-# ==========================
-# DIBUJO DEL TUBO
-# ==========================
-
-
-
-x0 = sx
-y0 = sy
-
-# color según estado
-if vm_crit < 0.6 * SMYS:
-    color_tubo = "green"
-elif vm_crit < SMYS:
-    color_tubo = "orange"
-else:
-    color_tubo = "red"
-
-w = SMYS * 0.12
-h = SMYS * 0.18
-
-rect = patches.Rectangle(
-    (x0 - w/2, y0 - h/2),
-    w,
-    h,
-    linewidth=2,
-    edgecolor='black',
-    facecolor=color_tubo,
-    zorder=12
-)
-
-ax.add_patch(rect)
-if vm_crit >= SMYS:
-
-    if modo_falla == "BURST":
-        ax.plot(
-            [x0-w/2, x0+w/2],
-            [y0+h/2, y0+h/2 + SMYS*0.1],
-            color='red', lw=3
-        )
-
-    elif modo_falla == "COLAPSO":
-        ax.plot(
-            [x0-w/2, x0+w/2],
-            [y0-h/2, y0-h/2 - SMYS*0.1],
-            color='blue', lw=3
-        )
-
-    elif modo_falla == "TRACCION":
-        ax.plot(
-            [x0, x0],
-            [y0-h/2, y0+h/2 + SMYS*0.1],
-            color='black', lw=3
-        )
-
-
 
 ax.annotate(
     f"VM={vm_crit:.1f} ksi",
