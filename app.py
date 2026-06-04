@@ -616,7 +616,7 @@ with st.expander(" Inj Pressure/depth then Von Misses results", expanded=False):
         df_vm.style
         .format("{:.1f}")
         .map(color_vm),
-        use_container_width=false
+        use_container_width=False
     )
 
 
