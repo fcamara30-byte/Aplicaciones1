@@ -571,8 +571,8 @@ elif vm_crit < SMYS:
 else:
     color_tubo = "red"
 
-w = SMYS * 0.05
-h = SMYS * 0.08
+w = SMYS * 0.12
+h = SMYS * 0.18
 
 rect = patches.Rectangle(
     (x0 - w/2, y0 - h/2),
