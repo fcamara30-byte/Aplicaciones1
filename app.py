@@ -499,18 +499,16 @@ if st.button("Generar Reporte"):
         columns=[f"{p} m" for p in profundidades]
     )
 
-    with st.expander("Tabla Von Mises [ksi]", expanded=False):
+with st.expander("Tabla Von Mises [ksi]", expanded=False):
 
-  
+    df_vm_percent = df_vm / SMYS * 100
 
-df_vm_percent = df_vm / SMYS * 100
-
-st.dataframe(
-    df_vm_percent.style
-    .format("{:.1f}")
-    .map(color_vm),
-    use_container_width=True
-)
+    st.dataframe(
+        df_vm_percent.style
+        .format("{:.1f}")
+        .map(color_vm),
+        use_container_width=True
+    )
 # =========================================
 # Conclusions
 # =========================================
