@@ -1,160 +1,181 @@
 import streamlit as st
 
+# ==========================================================
+# CONFIG
+# ==========================================================
+
 st.set_page_config(
     page_title="Petroleum Engineering Hub",
-    page_icon="⚙️",
+    page_icon="⚙",
     layout="wide"
 )
 
-# =====================================================
+# ==========================================================
 # CSS
-# =====================================================
+# ==========================================================
 
 st.markdown("""
 <style>
 
-.stApp {
+.stApp{
     background:
     linear-gradient(
         135deg,
         #07111f 0%,
-        #0c1f36 40%,
-        #081220 100%
+        #0d2038 50%,
+        #07111f 100%
     );
 }
 
-/* Oculta menú streamlit */
+/* Ocultar Streamlit */
+
 #MainMenu {visibility:hidden;}
 footer {visibility:hidden;}
 header {visibility:hidden;}
 
 /* HERO */
 
-.hero {
+.hero{
     text-align:center;
-    padding-top:30px;
+    padding-top:20px;
     padding-bottom:40px;
 }
 
-.hero-icon {
-    font-size:80px;
-}
-
-.hero-title {
-    font-size:64px;
-    font-weight:800;
+.hero-title{
+    font-size:90px;
+    font-weight:900;
     color:white;
-    letter-spacing:2px;
-    margin-bottom:10px;
+    line-height:0.9;
 }
 
-.hero-subtitle {
+.hero-title2{
+    font-size:90px;
+    font-weight:900;
+    color:#4db8ff;
+    line-height:0.9;
+}
+
+.hero-sub{
+    margin-top:25px;
+    color:#b5c5d6;
     font-size:24px;
-    color:#9fb3c8;
-    margin-bottom:15px;
+    letter-spacing:2px;
 }
 
-.hero-line {
-    width:200px;
+.hero-line{
+    width:250px;
     height:4px;
-    background:#2ea8ff;
+    background:#4db8ff;
     margin:auto;
+    margin-top:20px;
     border-radius:10px;
 }
 
-/* SECTION TITLE */
+/* SECTION */
 
-.section-title {
+.section-title{
     color:white;
     font-size:34px;
     font-weight:700;
-    margin-top:40px;
+    margin-top:30px;
     margin-bottom:20px;
 }
 
 /* CARDS */
 
-.card {
+.card{
     background:
     linear-gradient(
-        160deg,
-        #16243a,
-        #0d1728
+        135deg,
+        #152842,
+        #0c1829
     );
 
-    border:1px solid #223a58;
-    border-radius:25px;
+    border:1px solid #21476f;
+
+    border-radius:30px;
 
     padding:35px;
 
-    min-height:280px;
+    min-height:260px;
 
     transition:0.3s;
 }
 
-.card:hover {
-    transform:translateY(-8px);
-    box-shadow:0px 0px 35px rgba(46,168,255,0.35);
+.card:hover{
+    transform:translateY(-6px);
+
+    box-shadow:
+    0px 0px 25px
+    rgba(77,184,255,0.35);
 }
 
-.card-icon {
-    font-size:55px;
+.card-icon{
     text-align:center;
+    font-size:60px;
 }
 
-.card-title {
+.card-title{
+    text-align:center;
     color:white;
-    text-align:center;
-    font-size:38px;
-    font-weight:700;
+    font-size:34px;
+    font-weight:800;
     margin-top:15px;
 }
 
-.card-desc {
-    color:#b5c5d6;
+.card-desc{
     text-align:center;
-    font-size:20px;
-    margin-top:15px;
+    color:#c4d1df;
+    font-size:18px;
+    line-height:1.7;
+    margin-top:20px;
 }
 
-/* Papers */
+/* LIBRARY */
 
-.paper {
-    background:#111c2f;
-    border-left:5px solid #2ea8ff;
+.paper{
+    background:#122036;
+
+    border-left:5px solid #4db8ff;
+
+    padding:18px;
+
     border-radius:10px;
-    padding:15px;
-    margin-bottom:12px;
+
     color:white;
+
+    margin-bottom:12px;
 }
 
-/* Footer */
+/* FOOTER */
 
-.footer {
+.footer{
     text-align:center;
-    color:#8aa1b7;
-    margin-top:50px;
+    color:#9db1c5;
+    margin-top:40px;
     margin-bottom:20px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# =====================================================
+# ==========================================================
 # HERO
-# =====================================================
+# ==========================================================
 
 st.markdown("""
 <div class="hero">
 
-<div class="hero-icon">⚙️</div>
-
 <div class="hero-title">
-PETROLEUM ENGINEERING HUB
+PETROLEUM
 </div>
 
-<div class="hero-subtitle">
-OCTG • Artificial Lift • Reliability • Integrity
+<div class="hero-title2">
+ENGINEERING HUB
+</div>
+
+<div class="hero-sub">
+OCTG • ARTIFICIAL LIFT • INTEGRITY • RELIABILITY
 </div>
 
 <div class="hero-line"></div>
@@ -162,9 +183,9 @@ OCTG • Artificial Lift • Reliability • Integrity
 </div>
 """, unsafe_allow_html=True)
 
-# =====================================================
+# ==========================================================
 # APPLICATIONS
-# =====================================================
+# ==========================================================
 
 st.markdown(
     '<div class="section-title">Engineering Applications</div>',
@@ -173,20 +194,29 @@ st.markdown(
 
 col1, col2 = st.columns(2)
 
+# ==========================================================
+# CARD 1
+# ==========================================================
+
 with col1:
 
     st.markdown("""
     <div class="card">
-        <div class="card-icon">🛢️</div>
-        <div class="card-title">
-            Von Mises Tube Analyzer
-        </div>
 
-        <div class="card-desc">
-            OCTG Stress Envelope<br>
-            Yield Assessment<br>
-            Design Verification
-        </div>
+    <div class="card-icon">
+    🛢
+    </div>
+
+    <div class="card-title">
+    Von Mises Tube Analyzer
+    </div>
+
+    <div class="card-desc">
+    OCTG Stress Envelope<br>
+    Yield Assessment<br>
+    Design Verification
+    </div>
+
     </div>
     """, unsafe_allow_html=True)
 
@@ -196,20 +226,29 @@ with col1:
         use_container_width=True
     )
 
+# ==========================================================
+# CARD 2
+# ==========================================================
+
 with col2:
 
     st.markdown("""
     <div class="card">
-        <div class="card-icon">⚙️</div>
-        <div class="card-title">
-            PCP String Stress Analysis
-        </div>
 
-        <div class="card-desc">
-            Torque Evaluation<br>
-            Tensile Loads<br>
-            PCP Design
-        </div>
+    <div class="card-icon">
+    ⚙
+    </div>
+
+    <div class="card-title">
+    PCP String Stress Analysis
+    </div>
+
+    <div class="card-desc">
+    Torque Evaluation<br>
+    Tensile Loads<br>
+    PCP Design
+    </div>
+
     </div>
     """, unsafe_allow_html=True)
 
@@ -223,20 +262,29 @@ st.write("")
 
 col3, col4 = st.columns(2)
 
+# ==========================================================
+# CARD 3
+# ==========================================================
+
 with col3:
 
     st.markdown("""
     <div class="card">
-        <div class="card-icon">📈</div>
-        <div class="card-title">
-            Goodman Fatigue Assessment
-        </div>
 
-        <div class="card-desc">
-            Fatigue Analysis<br>
-            Goodman Diagram<br>
-            Rod Reliability
-        </div>
+    <div class="card-icon">
+    📈
+    </div>
+
+    <div class="card-title">
+    Goodman Fatigue Assessment
+    </div>
+
+    <div class="card-desc">
+    Fatigue Evaluation<br>
+    Goodman Diagram<br>
+    Reliability Analysis
+    </div>
+
     </div>
     """, unsafe_allow_html=True)
 
@@ -246,20 +294,29 @@ with col3:
         use_container_width=True
     )
 
+# ==========================================================
+# CARD 4
+# ==========================================================
+
 with col4:
 
     st.markdown("""
     <div class="card">
-        <div class="card-icon">🔩</div>
-        <div class="card-title">
-            Rod String Design
-        </div>
 
-        <div class="card-desc">
-            Beam Pump Design<br>
-            Rod Loads<br>
-            Production Optimization
-        </div>
+    <div class="card-icon">
+    🔩
+    </div>
+
+    <div class="card-title">
+    Rod String Design
+    </div>
+
+    <div class="card-desc">
+    Beam Pump Design<br>
+    Rod Loads<br>
+    Production Optimization
+    </div>
+
     </div>
     """, unsafe_allow_html=True)
 
@@ -269,9 +326,9 @@ with col4:
         use_container_width=True
     )
 
-# =====================================================
+# ==========================================================
 # LIBRARY
-# =====================================================
+# ==========================================================
 
 st.markdown(
     '<div class="section-title">Technical Library</div>',
@@ -292,7 +349,7 @@ st.markdown("""
 
 st.markdown("""
 <div class="paper">
-📄 Rod Fatigue Assessment using Goodman Criteria
+📄 Goodman Fatigue Assessment for Sucker Rods
 </div>
 """, unsafe_allow_html=True)
 
@@ -302,18 +359,18 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# =====================================================
+# ==========================================================
 # FOOTER
-# =====================================================
+# ==========================================================
 
 st.markdown("""
 <div class="footer">
 
 Petroleum Engineering Hub v2.0
 
-<br>
+<br><br>
 
-OCTG • PCP • SRP • Integrity Engineering
+OCTG • PCP • SRP • Reliability Engineering
 
 </div>
 """, unsafe_allow_html=True)
