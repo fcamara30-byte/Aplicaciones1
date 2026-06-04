@@ -455,7 +455,7 @@ sy = sig_hoop[i_crit]
 vm_crit = vm_list[i_crit]
 modo_falla = "OK"
 
-if vm_crit > SMYS:
+if vm_crit > 0.8*SMYS:
 
     if abs(sy) > abs(sx):
         if sy > 0:
