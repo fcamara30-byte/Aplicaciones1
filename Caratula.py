@@ -325,7 +325,7 @@ with col4:
     <div class="card">
 
     <div class="card-icon">
-    🔩
+    📅
     </div>
     <div class="card-title">
     Rod String Design
