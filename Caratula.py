@@ -16,12 +16,20 @@ st.set_page_config(
     page_icon="⚙",
     layout="wide"
 )
-with open(VISIT_FILE, "r") as f:
-    visitas = int(f.read())
+try:
 
-visitas += 1
+    with open(VISIT_FILE, "r") as f:
+        contenido = f.read().strip()
 
-with open(VISIT_FILE, "w") as f:
+    visitas = int(contenido)
+
+except:
+
+    visitas = 0
+
+    visitas += 1
+
+   with open(VISIT_FILE, "w") as f:
     f.write(str(visitas))
 # ==========================================================
 # CSS
