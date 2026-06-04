@@ -8,6 +8,23 @@ st.session_state.setdefault("run_id", 0)
 
 st.markdown("""
 <style>
+/* Expander cerrado y abierto */
+details {
+    background-color: #d4f7d4 !important;  /* verde claro elegante */
+    border-radius: 10px;
+    padding: 8px;
+}
+
+/* Texto del título del expander */
+summary {
+    font-weight: bold !important;
+    color: #1b5e20 !important;  /* verde más oscuro */
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
 /* Fondo general */
 .stApp {
     background-color: #f4f6f8;
