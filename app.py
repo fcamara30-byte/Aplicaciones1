@@ -162,7 +162,7 @@ ID = OD - 2 * t
 
 peso = peso * 1.02
 liner = st.sidebar.selectbox(
-    "liner interno",
+    "Liner?",
     ["No Liner", "With Liner"]
 )
 if liner == "With Liner":
