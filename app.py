@@ -4,7 +4,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 st.session_state.setdefault("run_id", 0)
-def
+
 def color_vm(val):
     util = val / SMYS   # ← relación vs resistencia (no %, no hace falta *100)
 
