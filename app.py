@@ -4,17 +4,17 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 st.session_state.setdefault("run_id", 0)
+
 def color_vm(val):
-    if val <= 20:
+    if val <= 60:
         return "background-color: #2ecc71"
-    elif val <= 30:
+    elif val <= 80:
         return "background-color: #f1c40f"
-    elif val <= 45:
+    elif val <= 100:
         return "background-color: #e67e22"
-    elif val <= 55:
-        return "background-color: #e74c3c"
     else:
-        return "background-color: #8e0000"
+        return "background-color: #e74c3c"
+
 
 st.set_page_config(layout="wide")
 st.title("Diseño OCTG - Von Misses")
@@ -474,32 +474,39 @@ st.pyplot(fig)
 if st.button("Generar Reporte"):
     st.session_state.run_id += 1
 
-    profundidades = np.arange(500, 3001, 500)
-    presiones = np.arange(0, 6001, 500)
+   # =========================================
+# TABLA VM
+# =========================================
 
-    tabla_vm = np.zeros((len(presiones), len(profundidades)))
+profundidades = np.arange(500, 3001, 500)
+presiones = np.arange(0, 6001, 500)
 
-    for i_p, Piny in enumerate(presiones):
-        for i_z, prof in enumerate(profundidades):
+tabla_vm = np.zeros((len(presiones), len(profundidades)))
 
-            tabla_vm[i_p, i_z] = calc_vm(
-                prof,
-                Piny,
-                OD, ID, peso,
-                rho_int, rho_ext,
-                fill_int, fill_ext,
-                Pext_surface,
-                Torque, F_ext,
-                condicion
-            )
+for i_p, Piny in enumerate(presiones):
+    for i_z, prof in enumerate(profundidades):
 
-    df_vm = pd.DataFrame(
-        tabla_vm,
-        index=[f"{p} psi" for p in presiones],
-        columns=[f"{p} m" for p in profundidades]
-    )
+        tabla_vm[i_p, i_z] = calc_vm(
+            prof,
+            Piny,
+            OD, ID, peso,
+            rho_int, rho_ext,
+            fill_int, fill_ext,
+            Pext_surface,
+            Torque, F_ext,
+            condicion
+        )
 
-with st.expander("Tabla Von Mises [ksi]", expanded=False):
+df_vm = pd.DataFrame(
+    tabla_vm,
+    index=[f"{p} psi" for p in presiones],
+    columns=[f"{p} m" for p in profundidades]
+)
+
+# =========================================
+# EXPANDER (CORRECTO)
+# =========================================
+with st.expander("Tabla Von Mises [% SMYS]", expanded=False):
 
     df_vm_percent = df_vm / SMYS * 100
 
@@ -509,6 +516,8 @@ with st.expander("Tabla Von Mises [ksi]", expanded=False):
         .map(color_vm),
         use_container_width=True
     )
+
+
 # =========================================
 # Conclusions
 # =========================================
