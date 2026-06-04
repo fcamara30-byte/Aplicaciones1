@@ -5,6 +5,44 @@ import numpy as np
 import matplotlib.pyplot as plt
 st.session_state.setdefault("run_id", 0)
 
+
+st.markdown("""
+<style>
+/* Fondo general */
+.stApp {
+    background-color: #f4f6f8;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: #e9edf2;
+}
+
+/* Cards / métricas */
+[data-testid="stMetric"] {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* Expander */
+details {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* Título */
+h1 {
+    color: #1f2933;
+}
+
+/* Texto general */
+body {
+    color: #2e3a46;
+}
+</style>
+""", unsafe_allow_html=True)
 def color_vm(val):
     util = val / SMYS   # ← relación vs resistencia (no %, no hace falta *100)
 
