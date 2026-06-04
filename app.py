@@ -5,6 +5,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 st.session_state.setdefault("run_id", 0)
 
+st.markdown("""
+<style>
+
+/* TABLA COMPLETA */
+[data-testid="stDataFrame"] table {
+    font-size: 12px !important;  /* texto más chico */
+}
+
+/* CELDAS */
+[data-testid="stDataFrame"] td {
+    padding: 3px 6px !important;   /* menos padding */
+}
+
+/* HEADERS */
+[data-testid="stDataFrame"] th {
+    padding: 4px 6px !important;
+    font-size: 12px !important;
+}
+
+/* ALTURA DE FILA */
+[data-testid="stDataFrame"] tr {
+    height: 20px !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
