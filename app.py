@@ -116,7 +116,11 @@ reduccion = st.sidebar.slider(
     0
 ) / 100
 
-ID = ID * (1 + reduccion)
+
+t = (OD - ID) / 2
+t = t * (1 - reduccion)
+ID = OD - 2 * t
+
 
 peso = peso * 1.02
 liner = st.sidebar.selectbox(
