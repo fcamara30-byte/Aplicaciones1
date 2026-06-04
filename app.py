@@ -10,28 +10,32 @@ st.markdown("""
 
 /* TABLA COMPLETA */
 [data-testid="stDataFrame"] table {
-    font-size: 12px !important;  /* texto más chico */
+    table-layout: fixed !important;
+    width: 100% !important;
 }
 
-/* CELDAS */
+/* COLUMNAS MÁS ANGOSTAS */
+[data-testid="stDataFrame"] th,
 [data-testid="stDataFrame"] td {
-    padding: 3px 6px !important;   /* menos padding */
+    text-align: center !important;   /* ✅ centra el texto */
+    font-size: 12px !important;
+    padding: 3px !important;
+    width: 60px !important;          /* ✅ clave: ancho fijo */
+    max-width: 60px !important;
+}
+
+/* FILAS MÁS BAJAS */
+[data-testid="stDataFrame"] tr {
+    height: 24px !important;
 }
 
 /* HEADERS */
 [data-testid="stDataFrame"] th {
-    padding: 4px 6px !important;
-    font-size: 12px !important;
-}
-
-/* ALTURA DE FILA */
-[data-testid="stDataFrame"] tr {
-    height: 20px !important;
+    font-weight: bold;
 }
 
 </style>
 """, unsafe_allow_html=True)
-
 st.markdown("""
 <style>
 /* Expander cerrado y abierto */
