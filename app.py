@@ -57,7 +57,7 @@ def color_vm(val):
 
 
 st.set_page_config(layout="wide")
-st.title("Diseño OCTG - Von Misses")
+st.title("OCTG - Von Misses Calculation")
 
 # =========================================
 # CONVERSIONES
@@ -80,7 +80,7 @@ def area_metal(OD, ID):
     return np.pi * (OD**2 - ID**2) / 4
 def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
             fill_int, fill_ext, Pext_surface,
-            Torque, F_ext, condicion):
+            Torque, F_ext, Condition):
 
     depth_ft = m_to_ft(depth_m)
 
@@ -102,7 +102,7 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
     sigma_ax = (F_weight - F_buoy + F_ext) / A
 
     # ✅ CORREGIDO (igual que el perfil)
-    if condicion == "Libre":
+    if Condition == "Free":
         sigma_pressure = 0
     else:
         sigma_pressure = (
@@ -148,7 +148,7 @@ tubo = st.sidebar.selectbox(
 OD, ID, peso = tubos[tubo]
 
 reduccion = st.sidebar.slider(
-    "Reducción espesor [%]",
+    "Wallthickness Reduction [%]",
     0,
     50,
     0
@@ -163,9 +163,9 @@ ID = OD - 2 * t
 peso = peso * 1.02
 liner = st.sidebar.selectbox(
     "liner interno",
-    ["Sin liner", "Con liner"]
+    ["No Liner", "With Liner"]
 )
-if liner == "Con liner":
+if liner == "With Liner":
 
     t_liner = 4 / 25.4      # in
     t_cemento = 1 / 25.4    # in
@@ -201,9 +201,9 @@ SMYS = {
     "Q125":125
 }[grado]
 
-condicion = st.sidebar.selectbox(
+Condition = st.sidebar.selectbox(
     "Condición",
-    ["Libre","Anclado","Packer"]
+    ["Free","Anchored","Packer"]
 )
 
 P_iny = st.sidebar.number_input(
@@ -217,7 +217,7 @@ Pext_surface = st.sidebar.number_input(
 )
 
 rho_int = st.sidebar.number_input(
-    "ρ interno [kg/m³]",
+    "ρ int.[kg/m³]",
     value=1090.0
 )
 
@@ -325,7 +325,7 @@ for i in range(200):
     # ==========================
     # AXIAL POR PRESION
     # ==========================
-    if condicion == "Libre":
+    if Condition == "Free":
 
         sigma_pressure = 0
 
@@ -550,7 +550,7 @@ for i_p, Piny in enumerate(presiones):
             fill_int, fill_ext,
             Pext_surface,
             Torque, F_ext,
-            condicion
+            Condition
         )
 
 df_vm = pd.DataFrame(
