@@ -284,7 +284,7 @@ fill_int = (
 
 fill_ext = (
     st.sidebar.slider(
-        "Casing filled (%)",
+        "Intercolumn filled (%)",
         0,
         100,
         0
