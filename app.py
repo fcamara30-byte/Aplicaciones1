@@ -57,14 +57,19 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
     Po = Pext_surface + rho_ext * depth_ft * fill_ext / 144
 
     F_weight = peso * depth_ft
-    F_buoy = rho_ext * depth_ft * A_ext_ft2
+
+    # ✅ CORREGIDO (igual que el perfil)
+    F_buoy = rho_ext * depth_ft * fill_ext * A_ext_ft2
 
     sigma_ax = (F_weight - F_buoy + F_ext) / A
 
+    # ✅ CORREGIDO (igual que el perfil)
     if condicion == "Libre":
         sigma_pressure = 0
     else:
-        sigma_pressure = Pi * ri**2 / (ro**2 - ri**2)
+        sigma_pressure = (
+            Pi * ri**2 - Po * ro**2
+        ) / (ro**2 - ri**2)
 
     sa = sigma_ax + sigma_pressure
 
@@ -78,7 +83,6 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
     vm = np.sqrt(sa**2 + sh**2 - sa * sh + 3 * tau**2)
 
     return vm / 1000
-
 
 
 # =========================================
