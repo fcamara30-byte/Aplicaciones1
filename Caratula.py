@@ -1,149 +1,319 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Engineering Hub",
+    page_title="Petroleum Engineering Hub",
     page_icon="⚙️",
     layout="wide"
 )
 
+# =====================================================
+# CSS
+# =====================================================
+
 st.markdown("""
 <style>
 
-.main {
-    background: linear-gradient(
+.stApp {
+    background:
+    linear-gradient(
         135deg,
-        #0f172a,
-        #1e293b
+        #07111f 0%,
+        #0c1f36 40%,
+        #081220 100%
     );
 }
 
-.title {
+/* Oculta menú streamlit */
+#MainMenu {visibility:hidden;}
+footer {visibility:hidden;}
+header {visibility:hidden;}
+
+/* HERO */
+
+.hero {
     text-align:center;
-    color:white;
-    font-size:42px;
-    font-weight:700;
+    padding-top:30px;
+    padding-bottom:40px;
 }
 
-.subtitle {
-    text-align:center;
-    color:#cbd5e1;
-    font-size:18px;
-    margin-bottom:40px;
+.hero-icon {
+    font-size:80px;
 }
+
+.hero-title {
+    font-size:64px;
+    font-weight:800;
+    color:white;
+    letter-spacing:2px;
+    margin-bottom:10px;
+}
+
+.hero-subtitle {
+    font-size:24px;
+    color:#9fb3c8;
+    margin-bottom:15px;
+}
+
+.hero-line {
+    width:200px;
+    height:4px;
+    background:#2ea8ff;
+    margin:auto;
+    border-radius:10px;
+}
+
+/* SECTION TITLE */
+
+.section-title {
+    color:white;
+    font-size:34px;
+    font-weight:700;
+    margin-top:40px;
+    margin-bottom:20px;
+}
+
+/* CARDS */
 
 .card {
-    background-color:#1e293b;
-    padding:25px;
-    border-radius:20px;
-    border:1px solid #334155;
-    text-align:center;
-    height:220px;
+    background:
+    linear-gradient(
+        160deg,
+        #16243a,
+        #0d1728
+    );
+
+    border:1px solid #223a58;
+    border-radius:25px;
+
+    padding:35px;
+
+    min-height:280px;
+
+    transition:0.3s;
 }
 
-.card h2{
+.card:hover {
+    transform:translateY(-8px);
+    box-shadow:0px 0px 35px rgba(46,168,255,0.35);
+}
+
+.card-icon {
+    font-size:55px;
+    text-align:center;
+}
+
+.card-title {
+    color:white;
+    text-align:center;
+    font-size:38px;
+    font-weight:700;
+    margin-top:15px;
+}
+
+.card-desc {
+    color:#b5c5d6;
+    text-align:center;
+    font-size:20px;
+    margin-top:15px;
+}
+
+/* Papers */
+
+.paper {
+    background:#111c2f;
+    border-left:5px solid #2ea8ff;
+    border-radius:10px;
+    padding:15px;
+    margin-bottom:12px;
     color:white;
 }
 
-.card p{
-    color:#cbd5e1;
-}
+/* Footer */
 
-.stButton button{
-    width:100%;
-    height:50px;
-    border-radius:10px;
-    font-weight:bold;
+.footer {
+    text-align:center;
+    color:#8aa1b7;
+    margin-top:50px;
+    margin-bottom:20px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
+# =====================================================
+# HERO
+# =====================================================
+
+st.markdown("""
+<div class="hero">
+
+<div class="hero-icon">⚙️</div>
+
+<div class="hero-title">
+PETROLEUM ENGINEERING HUB
+</div>
+
+<div class="hero-subtitle">
+OCTG • Artificial Lift • Reliability • Integrity
+</div>
+
+<div class="hero-line"></div>
+
+</div>
+""", unsafe_allow_html=True)
+
+# =====================================================
+# APPLICATIONS
+# =====================================================
+
 st.markdown(
-    '<div class="title">⚙️ Engineering Hub</div>',
+    '<div class="section-title">Engineering Applications</div>',
     unsafe_allow_html=True
 )
 
-st.markdown(
-    '<div class="subtitle">OCTG & Artificial Lift Engineering Suite</div>',
-    unsafe_allow_html=True
-)
-
-col1,col2 = st.columns(2)
+col1, col2 = st.columns(2)
 
 with col1:
 
     st.markdown("""
     <div class="card">
-    <h2>🛢️ Von Mises en Tubos</h2>
-    <p>Diseño OCTG bajo criterio Von Mises</p>
+        <div class="card-icon">🛢️</div>
+        <div class="card-title">
+            Von Mises Tube Analyzer
+        </div>
+
+        <div class="card-desc">
+            OCTG Stress Envelope<br>
+            Yield Assessment<br>
+            Design Verification
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.link_button(
-        "Abrir Aplicación",
-        "https://tubovonmisses.streamlit.app/"
+        "ENTER PLATFORM →",
+        "https://tubovonmisses.streamlit.app/",
+        use_container_width=True
     )
 
 with col2:
 
     st.markdown("""
     <div class="card">
-    <h2>⚙️ Tensiones Sistema BCP</h2>
-    <p>Cálculo de esfuerzos en sarta PCP</p>
+        <div class="card-icon">⚙️</div>
+        <div class="card-title">
+            PCP String Stress Analysis
+        </div>
+
+        <div class="card-desc">
+            Torque Evaluation<br>
+            Tensile Loads<br>
+            PCP Design
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.link_button(
-        "Abrir Aplicación",
-        "https://pcpsuckerod.streamlit.app/"
+        "ENTER PLATFORM →",
+        "https://pcpsuckerod.streamlit.app/",
+        use_container_width=True
     )
 
-col3,col4 = st.columns(2)
+st.write("")
+
+col3, col4 = st.columns(2)
 
 with col3:
 
     st.markdown("""
     <div class="card">
-    <h2>📈 Tensiones Goodman</h2>
-    <p>Evaluación de fatiga en varillas</p>
+        <div class="card-icon">📈</div>
+        <div class="card-title">
+            Goodman Fatigue Assessment
+        </div>
+
+        <div class="card-desc">
+            Fatigue Analysis<br>
+            Goodman Diagram<br>
+            Rod Reliability
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.link_button(
-        "Abrir Aplicación",
-        "https://selectorvarillas.streamlit.app/"
+        "ENTER PLATFORM →",
+        "https://selectorvarillas.streamlit.app/",
+        use_container_width=True
     )
 
 with col4:
 
     st.markdown("""
     <div class="card">
-    <h2>🔧 Bombeo Mecánico</h2>
-    <p>Dimensionamiento y cálculo de varillas</p>
+        <div class="card-icon">🔩</div>
+        <div class="card-title">
+            Rod String Design
+        </div>
+
+        <div class="card-desc">
+            Beam Pump Design<br>
+            Rod Loads<br>
+            Production Optimization
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.link_button(
-        "Abrir Aplicación",
-        "https://calculoapi.streamlit.app/"
+        "ENTER PLATFORM →",
+        "https://calculoapi.streamlit.app/",
+        use_container_width=True
     )
 
-st.divider()
+# =====================================================
+# LIBRARY
+# =====================================================
 
-st.header("📚 Papers Técnicos")
-
-st.info(
-    """
-    Próximamente:
-    - Corrosión CO₂
-    - Diseño OCTG
-    - Fatiga de varillas
-    - BCP y Bombeo Mecánico
-    """
+st.markdown(
+    '<div class="section-title">Technical Library</div>',
+    unsafe_allow_html=True
 )
 
-st.divider()
+st.markdown("""
+<div class="paper">
+📄 CO₂ Corrosion Mechanisms in OCTG
+</div>
+""", unsafe_allow_html=True)
 
-st.caption(
-    "Engineering Suite v1.0 | Federico CG"
-)
+st.markdown("""
+<div class="paper">
+📄 PCP Failure Analysis and Design Practices
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="paper">
+📄 Rod Fatigue Assessment using Goodman Criteria
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="paper">
+📄 Artificial Lift Optimization Techniques
+</div>
+""", unsafe_allow_html=True)
+
+# =====================================================
+# FOOTER
+# =====================================================
+
+st.markdown("""
+<div class="footer">
+
+Petroleum Engineering Hub v2.0
+
+<br>
+
+OCTG • PCP • SRP • Integrity Engineering
+
+</div>
+""", unsafe_allow_html=True)
