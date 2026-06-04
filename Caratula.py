@@ -167,7 +167,7 @@ st.markdown("""
 <div class="hero">
 
 <div class="hero-title">
-PETROLEUM
+ONSHORE
 </div>
 
 <div class="hero-title2">
@@ -366,11 +366,11 @@ st.markdown("""
 st.markdown("""
 <div class="footer">
 
-Petroleum Engineering Hub v2.0
+Petroleum Engineering 
 
 <br><br>
 
-OCTG • PCP • SRP • Reliability Engineering
+OCTG • PCP • SRP 
 
 </div>
 """, unsafe_allow_html=True)
