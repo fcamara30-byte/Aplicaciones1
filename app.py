@@ -581,7 +581,7 @@ st.pyplot(fig)
 # TABLA VM
 # =========================================
 
-profundidades = np.arange(500, 6001, 500)
+profundidades = np.arange(500, 5500, 500)
 presiones = np.arange(0, 10000, 500)
 
 tabla_vm = np.zeros((len(presiones), len(profundidades)))
