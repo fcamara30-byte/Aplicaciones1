@@ -4,16 +4,18 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 st.session_state.setdefault("run_id", 0)
-
+def
 def color_vm(val):
-    if val <= 60:
-        return "background-color: #2ecc71"
-    elif val <= 80:
-        return "background-color: #f1c40f"
-    elif val <= 100:
-        return "background-color: #e67e22"
+    util = val / SMYS   # ← relación vs resistencia (no %, no hace falta *100)
+
+    if util <= 0.6:
+        return "background-color: #2ecc71"   # verde
+    elif util <= 0.8:
+        return "background-color: #f1c40f"   # amarillo
+    elif util <= 1.0:
+        return "background-color: #e67e22"   # naranja
     else:
-        return "background-color: #e74c3c"
+        return "background-color: #e74c3c"   # rojo
 
 
 st.set_page_config(layout="wide")
