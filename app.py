@@ -287,7 +287,7 @@ fill_ext = (
         "Casing filled (%)",
         0,
         100,
-        100
+        0
     ) / 100
 )
 
