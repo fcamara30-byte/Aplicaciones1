@@ -108,6 +108,16 @@ tubo = st.sidebar.selectbox(
     list(tubos.keys())
 )
 OD, ID, peso = tubos[tubo]
+
+reduccion = st.sidebar.slider(
+    "Reducción espesor [%]",
+    0,
+    50,
+    0
+) / 100
+
+ID = ID * (1 + reduccion)
+
 peso = peso * 1.02
 liner = st.sidebar.selectbox(
     "liner interno",
