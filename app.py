@@ -66,7 +66,6 @@ def run_model():
 
     return tabla_vm, profundidades, presiones
 
-
                 
     depth_ft = m_to_ft(depth_m)
 
