@@ -501,13 +501,16 @@ if st.button("Generar Reporte"):
 
     with st.expander("Tabla Von Mises [ksi]", expanded=False):
 
-        st.dataframe(
-            df_vm.style
-            .format("{:.1f}")
-            .map(color_vm),
-            use_container_width=True
-        )
+  
 
+df_vm_percent = df_vm / SMYS * 100
+
+st.dataframe(
+    df_vm_percent.style
+    .format("{:.1f}")
+    .map(color_vm),
+    use_container_width=True
+)
 # =========================================
 # Conclusions
 # =========================================
