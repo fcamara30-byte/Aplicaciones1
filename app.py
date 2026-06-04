@@ -608,7 +608,7 @@ df_vm = pd.DataFrame(
 # =========================================
 # EXPANDER (CORRECTO)
 # =========================================
-with st.expander(" Inj Pressure/depth then Von Misses results", expanded=False):
+with st.expander(" 🖲️Inj Pressure/depth then Von Misses results", expanded=True):
 
    
 
