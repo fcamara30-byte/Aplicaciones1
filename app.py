@@ -483,7 +483,7 @@ st.pyplot(fig)
 # =========================================
 with st.expander("Tabla Von Mises [% SMYS]", expanded=False):
 
-    df_vm_percent = df_vm / SMYS * 100
+   
 
     st.dataframe(
         df_vm_percent.style
