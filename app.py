@@ -662,6 +662,11 @@ c1.metric(
     round(sy,2)
 )
 
+c1.metric(
+    "τ torque [ksi]",
+    round(tau/1000, 2)
+)
+
 c2.metric(
     "Von Mises [ksi]",
     round(vm_crit,2)
