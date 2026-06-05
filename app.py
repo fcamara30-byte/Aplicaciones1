@@ -610,12 +610,12 @@ df_vm = pd.DataFrame(
 # TITULO NUEVO (GRANDE Y NEGRITA)
 # =========================================
 st.markdown(
-    "<h4 style='font-weight:400;'>📊 Vert Axis: Inj Pressure | Horiz Axis: Depth | Table content: Von Mises (KSI)</h4>",
+    "<h4 style='font-weight:400;'>📊 Sensitive Table: Inj Pressure Vs Depth | Content: Von Mises (KSI)</h4>",
     unsafe_allow_html=True)
 
 
 
-with st.expander(" 🖲️Expand/Contract Table)", expanded=True):
+with st.expander(" 🖲️Expand/Contract Table)", expanded=False):
 
    
 
