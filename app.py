@@ -666,3 +666,36 @@ st.markdown(
     "</p>",
     unsafe_allow_html=True
 )
+st.markdown("---")
+
+st.markdown("""
+<div style="
+font-size:11px;
+color:#8a99a8;
+text-align:center;
+line-height:1.5;
+padding-top:10px;
+padding-bottom:20px;
+">
+
+<b>DISCLAIMER</b><br>
+
+The calculations and results provided by this application are based on
+industry-standard methodologies and API formulas applicable to tubulars
+in new condition. For used, corroded, worn, damaged, or otherwise
+degraded tubulars, the results should be considered for guidance
+purposes only and shall not be used as the sole basis for operational,
+engineering, or safety-critical decisions.
+
+The user is solely responsible for verifying the suitability,
+integrity, condition, and fitness-for-service of any equipment,
+tubulars, or components evaluated using this software.
+The developers, authors, and distributors of this application assume
+no responsibility or liability for any losses, damages, operational
+failures, injuries, or consequences arising from the use,
+interpretation, or reliance upon the calculations presented herein.
+
+Use of this application constitutes acceptance of these limitations.
+
+</div>
+""", unsafe_allow_html=True)
