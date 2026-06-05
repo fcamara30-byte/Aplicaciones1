@@ -103,17 +103,7 @@ def color_vm(val):
         return "background-color: #e74c3c"   # rojo
 
 
-st.markdown("""
-<style>
 
-/* Selector correcto del expander */
-[data-testid="stExpander"] summary {
-    font-weight: 800 !important;
-    font-size: 18px !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
 
 st.set_page_config(layout="wide")
 st.title("OCTG - Von Misses Calculation")
@@ -615,6 +605,16 @@ df_vm = pd.DataFrame(
 # =========================================
 # EXPANDER (CORRECTO)
 # =========================================
+
+# =========================================
+# TITULO NUEVO (GRANDE Y NEGRITA)
+# =========================================
+st.markdown(
+    "<h3 style='font-weight:800;'>📊 Vert Axis: Inj Pressure | Horiz Axis: Depth | Von Mises (KSI)</h3>",
+    unsafe_allow_html=True
+
+
+
 with st.expander(" 🖲️Vert Axis: Inj Pressure , Horiz Axis: depth , Table content: Von Misses (KSI)", expanded=True):
 
    
