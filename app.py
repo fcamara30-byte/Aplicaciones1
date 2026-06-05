@@ -544,7 +544,7 @@ ax.scatter(
 # Aviso correcto según causa
 if vm_crit > SMYS:
     if Torque > 0:
-        txt = "FAIL (incluye torque)"
+        txt = "FAIL (including torque)"
     else:
         txt = "FAIL (axial + pressure)"
     
