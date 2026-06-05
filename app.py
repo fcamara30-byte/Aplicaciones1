@@ -106,15 +106,14 @@ def color_vm(val):
 st.markdown("""
 <style>
 
-/* TEXTO DEL EXPANDER (título) */
-summary {
-    font-weight: 800 !important;   /* negrita fuerte */
-    font-size: 22px !important;    /* tamaño más grande */
+/* Selector correcto del expander */
+[data-testid="stExpander"] summary {
+    font-weight: 800 !important;
+    font-size: 18px !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
-
 
 st.set_page_config(layout="wide")
 st.title("OCTG - Von Misses Calculation")
