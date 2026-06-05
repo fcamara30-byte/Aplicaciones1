@@ -540,7 +540,17 @@ ax.scatter(
     linewidths=2,
     zorder=10
 )
-
+# Aviso si falla por torque / VM total
+if vm_crit > SMYS:
+    ax.text(
+        0,
+        SMYS * 0.85,
+        "FAIL by torque",
+        color="red",
+        fontsize=12,
+        fontweight="bold",
+        ha="center"
+    )
 ax.annotate(
     f"VM={vm_crit:.1f} ksi",
     (sx, sy),
