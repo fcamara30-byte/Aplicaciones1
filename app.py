@@ -667,10 +667,27 @@ c1.metric(
     round(tau/1000, 2)
 )
 
-c2.metric(
-    "Von Mises [ksi]",
-    round(vm_crit,2)
-)
+# color dinámico
+color_vm = "green" if vm_crit < SMYS else "red"
+
+# VON MISES CUSTOM
+c2.markdown(f"""
+<div style="
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 15px;
+">
+    <div style="font-size:14px;">Von Mises [ksi]</div>
+    <div style="
+        font-size:40px;
+        font-weight:bold;
+        color:{color_vm};
+    ">
+        {vm_crit:.2f}
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 
 c2.metric(
     "Prof crítica [m]",
