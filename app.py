@@ -616,7 +616,7 @@ df_vm = pd.DataFrame(
 # =========================================
 # EXPANDER (CORRECTO)
 # =========================================
-with st.expander(" 🖲️Inj Pressure/depth then Von Misses results", expanded=True):
+with st.expander(" 🖲️Vert Axis: Inj Pressure , Horiz Axis: depth , Table content: Von Misses (KSI)", expanded=True):
 
    
 
