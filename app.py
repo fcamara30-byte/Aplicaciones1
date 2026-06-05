@@ -109,7 +109,7 @@ st.markdown("""
 /* TEXTO DEL EXPANDER (título) */
 summary {
     font-weight: 800 !important;   /* negrita fuerte */
-    font-size: 16px !important;    /* tamaño más grande */
+    font-size: 22px !important;    /* tamaño más grande */
 }
 
 </style>
