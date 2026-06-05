@@ -611,7 +611,7 @@ df_vm = pd.DataFrame(
 # =========================================
 st.markdown(
     "<h3 style='font-weight:800;'>📊 Vert Axis: Inj Pressure | Horiz Axis: Depth | Von Mises (KSI)</h3>",
-    unsafe_allow_html=True
+    unsafe_allow_html=True)
 
 
 
