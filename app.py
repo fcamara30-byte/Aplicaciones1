@@ -541,16 +541,23 @@ ax.scatter(
     zorder=10
 )
 # Aviso si falla por torque / VM total
+# Aviso correcto según causa
 if vm_crit > SMYS:
+    if Torque > 0:
+        txt = "FAIL (incluye torque)"
+    else:
+        txt = "FAIL (axial + pressure)"
+    
     ax.text(
         0,
         SMYS * 0.85,
-        "FAIL by torque",
+        txt,
         color="red",
         fontsize=12,
         fontweight="bold",
         ha="center"
     )
+
 ax.annotate(
     f"VM={vm_crit:.1f} ksi",
     (sx, sy),
