@@ -610,7 +610,7 @@ df_vm = pd.DataFrame(
 # TITULO NUEVO (GRANDE Y NEGRITA)
 # =========================================
 st.markdown(
-    "<h3 style='font-weight:600;'>📊 Vert Axis: Inj Pressure | Horiz Axis: Depth | Von Mises (KSI)</h3>",
+    "<h4 style='font-weight:400;'>📊 Vert Axis: Inj Pressure | Horiz Axis: Depth | Table content: Von Mises (KSI)</h4>",
     unsafe_allow_html=True)
 
 
