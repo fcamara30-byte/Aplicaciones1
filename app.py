@@ -683,7 +683,7 @@ c2.markdown(f"""
         font-weight:bold;
         color:{color_vm};
     ">
-        {vm_crit:.2f}
+        {vm_crit:.1f}
     </div>
 </div>
 """, unsafe_allow_html=True)
