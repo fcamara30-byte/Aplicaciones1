@@ -386,7 +386,7 @@ for i in range(200):
         )
 
     sa = sigma_ax + sigma_pressure
-    if i == 199:
+
 
 
 
