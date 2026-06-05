@@ -103,6 +103,19 @@ def color_vm(val):
         return "background-color: #e74c3c"   # rojo
 
 
+st.markdown("""
+<style>
+
+/* TEXTO DEL EXPANDER (título) */
+summary {
+    font-weight: 800 !important;   /* negrita fuerte */
+    font-size: 16px !important;    /* tamaño más grande */
+}
+
+</style>
+""", unsafe_allow_html=True
+
+
 st.set_page_config(layout="wide")
 st.title("OCTG - Von Misses Calculation")
 
