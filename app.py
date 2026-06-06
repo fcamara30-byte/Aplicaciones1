@@ -264,7 +264,8 @@ P_iny = st.sidebar.number_input(
 
 Pext_surface = st.sidebar.number_input(
     "Pressure Casing [psi]",
-    value=0.0
+    value=0.0,
+    step=150.0,
 )
 
 rho_int = st.sidebar.number_input(
