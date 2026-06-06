@@ -574,7 +574,11 @@ burst_util = max(
     0,
     (P_iny - Pext_surface) / burst_rating * 100
 )
+fail_vm = vm_crit > SMYS
 
+fail_burst = burst_util > 100
+
+fail_collapse = collapse_util > 100
 # Ballooning force
 ballooning_lbf = (
     np.pi * ID**2 / 4
@@ -617,18 +621,25 @@ ax.scatter(
 )
 # Aviso si falla por torque / VM total
 # Aviso correcto según causa
-if vm_crit > SMYS:
-    if Torque > 0:
-        txt = "FAIL (including torque)"
-    else:
-        txt = "FAIL (axial + pressure)"
-    
+if fail_burst:
+    txt = "FAIL - BURST"
+
+elif fail_collapse:
+    txt = "FAIL - COLLAPSE"
+
+elif fail_vm:
+    txt = "FAIL - VON MISES"
+
+else:
+    txt = ""
+
+if txt != "":
     ax.text(
         0,
         SMYS * 0.85,
         txt,
         color="red",
-        fontsize=12,
+        fontsize=14,
         fontweight="bold",
         ha="center"
     )
@@ -851,11 +862,7 @@ collapse_util = max(
     0,
     (Po - Pi) / collapse_api * 100
 )
-fail_vm = vm_crit > SMYS
 
-fail_burst = burst_util > 100
-
-fail_collapse = collapse_util > 100
 
 status = "FAIL" if (
     fail_vm
