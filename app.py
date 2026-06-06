@@ -150,19 +150,34 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
     F_weight = peso * depth_ft
 
     # ✅ CORREGIDO (igual que el perfil)
-    F_buoy = rho_ext * depth_ft * fill_ext * A_ext_ft2
+   F_buoy = rho_ext * z * A_ext_ft2
 
     sigma_ax = (F_weight - F_buoy + F_ext) / A
 
     # ✅ CORREGIDO (igual que el perfil)
-    if Condition == "Free":
-        sigma_pressure = 0
-    else:
-        sigma_pressure = (
-            Pi * ri**2 - Po * ro**2
-        ) / (ro**2 - ri**2)
+# ==========================
+# AXIAL POR PRESIÓN (CORREGIDO)
+# ==========================
 
-    sa = sigma_ax + sigma_pressure
+if Condition == "Free":
+    sigma_pressure = 0
+
+elif Condition == "Anchored":
+    sigma_pressure = 0.5 * (
+        (Pi * ri**2 - Po * ro**2)
+        / (ro**2 - ri**2)
+    )
+
+elif Condition == "Packer":
+    sigma_pressure = (
+        (Pi * ri**2 - Po * ro**2)
+        / (ro**2 - ri**2)
+    )
+
+else:
+    sigma_pressure = 0
+
+sa = sigma_ax + sigma_pressure
 
     sh = (Pi - Po) * OD / (2 * t)
 
