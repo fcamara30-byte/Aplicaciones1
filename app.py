@@ -256,10 +256,16 @@ SMYS = {
 }[grado]
 YP = SMYS * 1000   # psi
 burst_api = 0.875 * 2 * YP * t / OD
-collapse_api = (
-    2 * YP *
-    (t / OD)
-)
+# SLENDERNESS PARAMETER
+D_t = OD / t
+
+if D_t < 20:
+    collapse_api = 2 * YP * (t / OD)   # yield
+elif D_t < 40:
+    collapse_api = 0.875 * 2 * YP * (t / OD)  # plastic
+else:
+    collapse_api = 46.95e6 / (D_t**3)  # elastic simplificado
+
 
 Condition = st.sidebar.selectbox(
     "Condición",
@@ -438,7 +444,7 @@ for i in range(200):
     # ==========================
     # RADIAL
     # ==========================
-    sr = -Po
+    sr = -Pi
 
     # ==========================
     # TORSION
@@ -587,9 +593,7 @@ fail_burst = burst_util > 100
 fail_collapse = collapse_util > 100
 
 # Ballooning force
-ballooning_lbf = (
-    np.pi * ID**2 / 4
-) * (P_iny - Pext_surface)
+ballooning_lbf = (np.pi * ID**2 / 4) * (Pi - Po)
 cbar.ax.plot(
     [0.5],
     [util_pt],
@@ -810,8 +814,10 @@ burst_util = burst_load / burst_api * 100
 # BALLOONING
 # =========================================
 
-Pi = P_iny + rho_int * depth_ft * fill_int / 144
-Po = Pext_surface + rho_ext * depth_ft * fill_ext / 144
+z_crit_ft = z_list[i_crit]
+
+Pi = P_iny + rho_int * (z_crit_ft * fill_int) / 144
+Po = Pext_surface + rho_ext * (z_crit_ft * fill_ext) / 144
 
 if Condition == "Free":
 
