@@ -976,7 +976,7 @@ c2.metric(
 util = vm_crit / SMYS * 100
 
 c3.metric(
-    "Utilización [%]",
+    "VM Utilization [%]",
     round(util,1)
 )
 
