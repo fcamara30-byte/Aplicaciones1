@@ -696,13 +696,22 @@ else:
         color_pt = "#e74c3c"
 
 
+# glow externo
 ax.scatter(
-    sx,
-    sy,
+    sx, sy,
+    s=600,
     color=color_pt,
-    s=250,
-    edgecolors="Gray",
-    linewidths=2,
+    alpha=0.25,
+    zorder=9
+)
+
+# punto real
+ax.scatter(
+    sx, sy,
+    s=220,
+    color=color_pt,
+    edgecolors="white",
+    linewidths=1.5,
     zorder=10
 )
 
