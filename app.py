@@ -259,7 +259,7 @@ Condition = st.sidebar.selectbox(
 P_iny = st.sidebar.number_input(
     "Injection Pressure [psi]",
     value=2000.0,
-    step=200,
+    step=200.0,
 )
 
 Pext_surface = st.sidebar.number_input(
