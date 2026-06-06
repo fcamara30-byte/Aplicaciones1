@@ -630,7 +630,13 @@ sc = ax.scatter(
     norm=norm,
     s=25
 )
-
+ax.plot(
+    sig_ax,
+    sig_hoop,
+    color="cyan",
+    alpha=0.25,
+    linewidth=1
+)
 
 cbar = plt.colorbar(sc, ax=ax)
 
