@@ -797,15 +797,9 @@ c3.metric(
 )
 c4, c5 = st.columns(2)
 
-c4.metric(
-    "Burst Rating [psi]",
-    round(burst_api,0)
-)
 
-c4.metric(
-    "Burst Utilization [%]",
-    round(burst_util,1)
-)
+
+
 
 st.markdown(
     "<p style='font-size:11px; color:gray;'>"
