@@ -412,7 +412,7 @@ for i in range(200):
     # ==========================
     # AXIAL MECANICO
     # ==========================
-    A_ext_ft2 = (np.pi * OD**2 / 4) / 144
+  
 
     F_weight = peso * z
 
