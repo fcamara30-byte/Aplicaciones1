@@ -531,7 +531,18 @@ cbar = plt.colorbar(sc, ax=ax, label="Utilización [%]")
 cbar.set_ticks([30, 70, 90, 120])
 cbar.set_ticklabels(["Safe", "Normal", "Critical", "Fail"])
 
-color_pt = "green" if vm_crit < SMYS else "red"
+
+ratio = vm_crit / SMYS * 100
+
+if ratio <= 60:
+    color_pt = "#2ecc71"   # verde
+elif ratio <= 80:
+    color_pt = "#f1c40f"   # amarillo
+elif ratio <= 100:
+    color_pt = "#e67e22"   # naranja
+else:
+    color_pt = "#e74c3c"   # rojo
+
 ax.scatter(
     sx,
     sy,
