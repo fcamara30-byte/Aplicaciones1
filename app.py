@@ -454,7 +454,7 @@ for i in range(200):
     # ==========================
     # VON MISES
     # ==========================
-vm = np.sqrt(
+    vm = np.sqrt(
     (
         (sa - sh)**2 +
         (sh - sr)**2 +
@@ -462,10 +462,10 @@ vm = np.sqrt(
     ) / 2
     + 3*tau**2
 )
-    sig_ax.append(sa / 1000)
-    sig_hoop.append(sh / 1000)
-    vm_list.append(vm / 1000)
-    z_list.append(z)
+sig_ax.append(sa / 1000)
+sig_hoop.append(sh / 1000)
+vm_list.append(vm / 1000)
+z_list.append(z)
 
 sig_ax = np.array(sig_ax)
 sig_hoop = np.array(sig_hoop)
