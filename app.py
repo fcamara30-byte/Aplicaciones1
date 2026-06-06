@@ -2,7 +2,7 @@ import pandas as pd
 from io import BytesIO
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pYPlot as plt
 st.session_state.setdefault("run_id", 0)
 
 st.markdown("""
@@ -255,9 +255,9 @@ SMYS = {
     "Q125":125
 }[grado]
 YP = SMYS * 1000   # psi
-burst_api = 0.875 * 2 * Yp * t / OD
+burst_api = 0.875 * 2 * YP * t / OD
 collapse_api = (
-    2 * Yp *
+    2 * YP *
     (t / OD)
 )
 
@@ -696,7 +696,7 @@ ax.grid(True)
 ax.set_xlabel("σ axial [ksi]")
 ax.set_ylabel("σ hoop [ksi]")
 
-st.pyplot(fig)
+st.pYPlot(fig)
 
 # =========================================
 # TABLA VM
