@@ -800,6 +800,26 @@ c2.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+burst_util = max(
+    0,
+    (Pi - Po) / burst_api * 100
+)
+
+collapse_util = max(
+    0,
+    (Po - Pi) / collapse_api * 100
+)
+fail_vm = vm_crit > SMYS
+
+fail_burst = burst_util > 100
+
+fail_collapse = collapse_util > 100
+
+status = "FAIL" if (
+    fail_vm
+    or fail_burst
+    or fail_collapse
+) else "PASS"
 
 c2.metric(
     "Estado",
@@ -831,26 +851,6 @@ c3.metric(
 )
 
 
-burst_util = max(
-    0,
-    (Pi - Po) / burst_api * 100
-)
-
-collapse_util = max(
-    0,
-    (Po - Pi) / collapse_api * 100
-)
-fail_vm = vm_crit > SMYS
-
-fail_burst = burst_util > 100
-
-fail_collapse = collapse_util > 100
-
-status = "FAIL" if (
-    fail_vm
-    or fail_burst
-    or fail_collapse
-) else "PASS"
 
 c3.metric(
     "Burst Utilization [%]",
