@@ -742,13 +742,22 @@ burst_util = burst_load / burst_api * 100
 # BALLOONING
 # =========================================
 
+# =========================================
+# BALLOONING
+# =========================================
+
 Pi = P_iny + rho_int * depth_ft * fill_int / 144
 Po = Pext_surface + rho_ext * depth_ft * fill_ext / 144
 
-ballooning_lbf = (
-    np.pi * (ID/2)**2 * Pi
-    - np.pi * (OD/2)**2 * Po
-)
+if Condition == "Free":
+
+    ballooning_lbf = 0
+
+else:
+
+    ballooning_lbf = (
+        np.pi * ID**2 / 4
+    ) * (Pi - Po)
 
 ballooning_ksi = ballooning_lbf / A / 1000
 st.subheader("Conclusions")
