@@ -590,7 +590,16 @@ ax.axhline(-SMYS, color="red", ls="--")
 ax.axvline(SMYS, color="red", ls="--")
 ax.axvline(-SMYS, color="red", ls="--")
 
-lim = SMYS * 1.1
+
+max_val = max(
+    np.max(np.abs(sig_ax)),
+    np.max(np.abs(sig_hoop)),
+    abs(sx),
+    abs(sy)
+)
+
+lim = max(SMYS, max_val) * 1.2
+
 
 ax.set_xlim(-lim, lim)
 ax.set_ylim(-lim, lim)
