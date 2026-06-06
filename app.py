@@ -965,13 +965,13 @@ c2.markdown(f"""
 causas = []
 
 if fail_vm:
-    causas.append("Von Mises")
+    causas.append("VM")
 
 if fail_burst:
     causas.append("Burst")
 
 if fail_collapse:
-    causas.append("Collapse")
+    causas.append("Coll")
 
 if len(causas) == 0:
     causas.append("None")
