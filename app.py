@@ -705,24 +705,16 @@ elif fail_vm:
 else:
     txt = ""
 
-import time
-
 if txt != "":
-
-    for i in range(10):   # 👈 ~5 segundos (10 x 0.5)
-
-        ax.text(
-            0,
-            SMYS * 0.85,
-            txt,
-            color="red" if i % 2 == 0 else "white",
-            fontsize=14,
-            fontweight="bold",
-            ha="center"
-        )
-
-        st.pyplot(fig)
-        time.sleep(0.5)
+    ax.text(
+        0,
+        SMYS * 0.85,
+        txt,
+        color="red",
+        fontsize=14,
+        fontweight="bold",
+        ha="center"
+    )
 
 ax.annotate(
     f"VM={vm_crit:.1f} ksi",
