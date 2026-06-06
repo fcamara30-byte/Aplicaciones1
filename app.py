@@ -793,8 +793,8 @@ c2.markdown(f"""
 
 
 c2.metric(
-    "Prof crítica [m]",
-    round(z_crit,0)
+    "Estado",
+    "PASS" if vm_crit < SMYS else "FAIL"
 )
 
 util = vm_crit / SMYS * 100
@@ -821,10 +821,7 @@ c3.metric(
 )
 
 
-c3.metric(
-    "Estado",
-    "PASS" if vm_crit < SMYS else "FAIL"
-)
+
 
 
 
