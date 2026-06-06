@@ -606,16 +606,20 @@ cbar.ax.text(
 )
 
 
-ratio = vm_crit / SMYS * 100
+if fail_burst or fail_collapse:
+    color_pt = "#e74c3c"
 
-if ratio <= 60:
-    color_pt = "#2ecc71"   # verde
-elif ratio <= 80:
-    color_pt = "#f1c40f"   # amarillo
-elif ratio <= 100:
-    color_pt = "#e67e22"   # naranja
 else:
-    color_pt = "#e74c3c"   # rojo
+    ratio = vm_crit / SMYS * 100
+
+    if ratio <= 60:
+        color_pt = "#2ecc71"
+    elif ratio <= 80:
+        color_pt = "#f1c40f"
+    elif ratio <= 100:
+        color_pt = "#e67e22"
+    else:
+        color_pt = "#e74c3c"
 
 ax.scatter(
     sx,
