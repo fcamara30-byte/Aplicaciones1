@@ -982,10 +982,25 @@ c2.metric(
 )
 util = vm_crit / SMYS * 100
 
-c3.metric(
-    "VM Utilization [%]",
-    round(util,1)
-)
+
+color_vm_util = "red" if util > 100 else "black"
+
+c3.markdown(f"""
+<div style="
+    background-color:#ffffff;
+    border-radius:10px;
+    padding:15px;
+">
+    <div style="font-size:14px;">VM Utilization [%]</div>
+    <div style="
+        font-size:38px;
+        font-weight:bold;
+        color:{color_vm_util};
+    ">
+        {util:.1f}
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 color_burst = "red" if burst_util > 100 else "black"
 
