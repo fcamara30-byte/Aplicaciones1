@@ -863,10 +863,10 @@ status = "FAIL" if (
     or fail_collapse
 ) else "PASS"
 
-c2.metric(
-    "Estado",
-    status
-)
+if status == "FAIL":
+    c2.error("FAIL")
+else:
+    c2.success("PASS")
 causas = []
 
 if fail_vm:
