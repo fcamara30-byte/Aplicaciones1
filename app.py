@@ -787,7 +787,11 @@ ax.grid(True)
 ax.set_xlabel("σ axial [ksi]")
 ax.set_ylabel("σ hoop [ksi]")
 
-show_animation = st.sidebar.checkbox("Show running tubing animation", value=False)
+show_animation = st.sidebar.checkbox(
+    "Show running tubing animation",
+    value=False,
+    key="show_animation"
+)
 
 if show_animation:
 
