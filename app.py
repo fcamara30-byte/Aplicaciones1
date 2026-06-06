@@ -567,30 +567,21 @@ z_crit = ft_to_m(z_list[i_crit])
 # =========================================
 # ELIPSE VM
 # =========================================
+
 s = np.linspace(
     -SMYS,
     SMYS,
     2000
 )
+disc = 4 * SMYS**2 - 3 * s**2
+mask = disc >= 0
 
-x_vm = []
-y1 = []
-y2 = []
+root = np.sqrt(disc[mask])
 
-for val in s:
+x_vm = s[mask]
+y1 = (x_vm + root) / 2
+y2 = (x_vm - root) / 2
 
-    disc = (
-        4 * SMYS**2
-        - 3 * val**2
-    )
-
-    if disc >= 0:
-
-        root = np.sqrt(disc)
-
-        x_vm.append(val)
-        y1.append((val + root)/2)
-        y2.append((val - root)/2)
 
 # =========================================
 # GRAFICO
