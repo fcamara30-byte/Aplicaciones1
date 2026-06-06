@@ -791,6 +791,10 @@ show_animation = st.sidebar.checkbox("Show running tubing animation", value=Fals
 
 if show_animation:
 
+ show_animation = st.sidebar.checkbox("Show running tubing animation", value=False)
+
+if show_animation:
+
     placeholder = st.empty()
     progress_bar = st.progress(0)
 
@@ -834,7 +838,6 @@ if show_animation:
         plt.close(fig_anim)
 
         progress_bar.progress(i / len(z_list))
-
 
 # =========================================
 # TABLA VM
