@@ -507,9 +507,21 @@ for i in range(len(z_list)):
     burst_util_i = max(0, (Pi_i - Po_i) / burst_api * 100)
     collapse_util_i = max(0, (Po_i - Pi_i) / collapse_api * 100)
 
-    if (vm_i > SMYS) or (burst_util_i > 100) or (collapse_util_i > 100):
-        first_fail_index = i
-        break
+fail_vm_i = vm_i > SMYS
+fail_burst_i = burst_util_i > 100
+fail_collapse_i = collapse_util_i > 100
+
+if fail_vm_i or fail_burst_i or fail_collapse_i:
+
+    # PRIORIZAR el primer modo que aparece REALMENTE
+    first_fail_index = i
+    first_fail_mode = (
+        "VM" if fail_vm_i else
+        "Burst" if fail_burst_i else
+        "Collapse"
+    )
+    break
+
 
 if first_fail_index is not None:
     z_first_fail = ft_to_m(z_list[first_fail_index])
