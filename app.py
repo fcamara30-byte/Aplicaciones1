@@ -522,7 +522,7 @@ for i in range(len(z_list)):
         else:
             first_fail_mode = "VM"
 
-        break   ✅ ← ESTE TIENE QUE ESTAR DENTRO DEL FOR
+        break   
 
 
 if first_fail_index is not None:
