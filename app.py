@@ -260,6 +260,7 @@ P_iny = st.sidebar.number_input(
     "Injection Pressure [psi]",
     value=2000.0,
     step=200.0,
+    format="%.0f"
 )
 
 Pext_surface = st.sidebar.number_input(
@@ -271,11 +272,19 @@ Pext_surface = st.sidebar.number_input(
 rho_int = st.sidebar.number_input(
     "ρ int.[kg/m³]",
     value=1090.0
+    
+    step=100.0,
+    format="%.0f"
+
 )
 
 rho_ext = st.sidebar.number_input(
     "ρ Ext. [kg/m³]",
-    value=1000.0
+    value=1000.0,
+    
+    step=100.0,
+    format="%.0f"
+
 )
 
 fill_int = (
