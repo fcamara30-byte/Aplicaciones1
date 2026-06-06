@@ -572,13 +572,20 @@ burst_rating = 2 * SMYS * 1000 * t / OD
 
 burst_util = max(
     0,
-    (P_iny - Pext_surface) / burst_rating * 100
+    (Pi - Po) / burst_api * 100
 )
+
+collapse_util = max(
+    0,
+    (Po - Pi) / collapse_api * 100
+)
+
 fail_vm = vm_crit > SMYS
 
 fail_burst = burst_util > 100
 
 fail_collapse = collapse_util > 100
+
 # Ballooning force
 ballooning_lbf = (
     np.pi * ID**2 / 4
