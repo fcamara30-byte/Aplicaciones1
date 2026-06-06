@@ -529,7 +529,7 @@ sc = ax.scatter(
 cbar = plt.colorbar(sc, ax=ax, label="Utilización [%]")
 
 cbar.set_ticks([30, 70, 90, 120])
-cbar.set_ticklabels(["Baja", "Media", "Alta", "Fluencia"])
+cbar.set_ticklabels(["Safe", "Medium Stress", "High Stress", "Yield Stress"])
 
 ax.scatter(
     sx,
