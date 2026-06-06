@@ -529,7 +529,7 @@ sc = ax.scatter(
 
 
 cbar = plt.colorbar(sc, ax=ax)
-cbar.set_label("VM Utilization [%]")
+cbar.set_label("VM  [%]")
 
 cbar.set_ticks([0, 60, 80, 100, 120])
 cbar.set_ticklabels(["0", "60", "80", "100", "120"])
