@@ -104,7 +104,7 @@ def color_vm(val):
     elif util <= 1.0:
         return "background-color: #e67e22"
     else:
-       return "background-color: #e74c3c; color: white; font-weight: bold;"
+      return "background-color: #e74c3c"
 
 
 
@@ -863,10 +863,24 @@ status = "FAIL" if (
     or fail_collapse
 ) else "PASS"
 
-if status == "FAIL":
-    c2.error("FAIL")
-else:
-    c2.success("PASS")
+color_estado = "red" if status == "FAIL" else "green"
+
+c2.markdown(f"""
+<div style="
+    background-color:#ffffff;
+    border-radius:10px;
+    padding:15px;
+">
+    <div style="font-size:14px;">Estado</div>
+    <div style="
+        font-size:42px;
+        font-weight:900;
+        color:{color_estado};
+    ">
+        {status}
+    </div>
+</div>
+""", unsafe_allow_html=True)
 causas = []
 
 if fail_vm:
