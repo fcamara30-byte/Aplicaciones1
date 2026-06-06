@@ -563,7 +563,18 @@ cbar = plt.colorbar(sc, ax=ax)
 cbar.set_ticks([0, 60, 80, 100, 120])
 cbar.set_ticklabels(["0", "60", "80", "100", "120"])
 util_pt = vm_crit / SMYS * 100
+# Burst (Barlow)
+burst_rating = 2 * SMYS * 1000 * t / OD
 
+burst_util = max(
+    0,
+    (P_iny - Pext_surface) / burst_rating * 100
+)
+
+# Ballooning force
+ballooning_lbf = (
+    np.pi * ID**2 / 4
+) * (P_iny - Pext_surface)
 cbar.ax.plot(
     [0.5],
     [util_pt],
@@ -727,9 +738,22 @@ burst_util = burst_load / burst_api * 100
 # =========================================
 # Conclusions
 # =========================================
+# =========================================
+# BALLOONING
+# =========================================
+
+Pi = P_iny + rho_int * depth_ft * fill_int / 144
+Po = Pext_surface + rho_ext * depth_ft * fill_ext / 144
+
+ballooning_lbf = (
+    np.pi * (ID/2)**2 * Pi
+    - np.pi * (OD/2)**2 * Po
+)
+
+ballooning_ksi = ballooning_lbf / A / 1000
 st.subheader("Conclusions")
 
-c1, c2, c3 = st.columns(3)
+c1, c2, c3, c4 = st.columns(4)
 
 c1.metric(
     "σ axial [ksi]",
@@ -787,12 +811,15 @@ c3.metric(
     "Burst Utilization [%]",
     round(burst_util,1)
 )
-
 c3.metric(
     "Collapse Utilization [%]",
     round(collapse_util,1)
 )
-c4, c5 = st.columns(2)
+c3.metric(
+    "Ballooning [lbf]",
+    round(ballooning_lbf,0)
+)
+
 
 c3.metric(
     "Estado",
