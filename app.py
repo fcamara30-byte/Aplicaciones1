@@ -104,7 +104,7 @@ def color_vm(val):
     elif util <= 1.0:
         return "background-color: #e67e22"
     else:
-        return "background-color: #e74c3c"
+       return "background-color: #e74c3c; color: white; font-weight: bold;"
 
 
 
