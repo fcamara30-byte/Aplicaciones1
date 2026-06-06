@@ -480,6 +480,35 @@ z_list.append(z)
 sig_ax = np.array(sig_ax)
 sig_hoop = np.array(sig_hoop)
 vm_list = np.array(vm_list)
+# =========================================
+# PRIMER FALLO
+# =========================================
+first_fail_index = None
+
+for i in range(len(z_list)):
+
+    z = z_list[i]
+
+    z_int = z * fill_int
+    z_ext = z * fill_ext
+
+    Pi_i = P_iny + rho_int * z_int / 144
+    Po_i = Pext_surface + rho_ext * z_ext / 144
+
+    vm_i = vm_list[i]
+
+    burst_util_i = max(0, (Pi_i - Po_i) / burst_api * 100)
+    collapse_util_i = max(0, (Po_i - Pi_i) / collapse_api * 100)
+
+    if (vm_i > SMYS) or (burst_util_i > 100) or (collapse_util_i > 100):
+        first_fail_index = i
+        break
+
+if first_fail_index is not None:
+    z_first_fail = ft_to_m(z_list[first_fail_index])
+else:
+    z_first_fail = None
+
 
 # =========================================
 # CRITICO
