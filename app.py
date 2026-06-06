@@ -787,48 +787,53 @@ ax.grid(True)
 ax.set_xlabel("σ axial [ksi]")
 ax.set_ylabel("σ hoop [ksi]")
 
-placeholder = st.empty()
-progress_bar = st.progress(0)
+show_animation = st.sidebar.checkbox("Show running tubing animation", value=False)
 
-for i in range(10, len(z_list), 5):
+if show_animation:
 
-    fig_anim, ax_anim = plt.subplots(figsize=(8,8))
+    placeholder = st.empty()
+    progress_bar = st.progress(0)
 
-    # envelope VM (igual que tu gráfico original)
-    ax_anim.fill(x_vm, y1, alpha=0.15)
-    ax_anim.plot(x_vm, y1, lw=2)
-    ax_anim.plot(x_vm, y2, lw=2)
+    step_size = max(1, len(z_list) // 30)
 
-    # puntos hasta la profundidad actual
-    ax_anim.scatter(
-        sig_ax[:i],
-        sig_hoop[:i],
-        c=util_profile[:i],
-        cmap=cmap,
-        norm=norm,
-        s=25
-    )
+    for i in range(step_size, len(z_list), step_size):
 
-    # punto “activo”
-    ax_anim.scatter(
-        sig_ax[i-1],
-        sig_hoop[i-1],
-        s=200,
-        color="cyan",
-        edgecolors="white",
-        linewidths=2
-    )
+        fig_anim, ax_anim = plt.subplots(figsize=(8,8))
 
-    ax_anim.set_xlim(-lim, lim)
-    ax_anim.set_ylim(-lim, lim)
-    ax_anim.set_aspect("equal")
-    ax_anim.grid(True)
+        ax_anim.fill(x_vm, y1, alpha=0.15)
+        ax_anim.plot(x_vm, y1, lw=2)
+        ax_anim.plot(x_vm, y2, lw=2)
 
-    ax_anim.set_title(f"Running Tubing - Step {i}/{len(z_list)}")
+        ax_anim.scatter(
+            sig_ax[:i],
+            sig_hoop[:i],
+            c=util_profile[:i],
+            cmap=cmap,
+            norm=norm,
+            s=25
+        )
 
-    placeholder.pyplot(fig_anim)
-    progress_bar.progress(i / len(z_list))
+        ax_anim.scatter(
+            sig_ax[i-1],
+            sig_hoop[i-1],
+            s=200,
+            color="cyan",
+            edgecolors="white",
+            linewidths=2
+        )
 
+        ax_anim.set_xlim(-lim, lim)
+        ax_anim.set_ylim(-lim, lim)
+        ax_anim.set_aspect("equal")
+        ax_anim.grid(True)
+
+        ax_anim.set_title(f"Running Tubing - Step {i}/{len(z_list)}")
+
+        placeholder.pyplot(fig_anim)
+
+        plt.close(fig_anim)
+
+        progress_bar.progress(i / len(z_list))
 
 
 # =========================================
