@@ -250,6 +250,12 @@ SMYS = {
     "P110":110,
     "Q125":125
 }[grado]
+YP = SMYS * 1000   # psi
+burst_api = 0.875 * 2 * SMYS * t / OD
+collapse_api = (
+    2 * SMYS *
+    (t / OD)
+)
 
 Condition = st.sidebar.selectbox(
     "Condición",
@@ -448,11 +454,13 @@ for i in range(200):
     # ==========================
     # VON MISES
     # ==========================
-    vm = np.sqrt(
-     sa**2
-     + sh**2
-     - sa*sh
-     + 3*tau**2
+vm = np.sqrt(
+    (
+        (sa - sh)**2 +
+        (sh - sr)**2 +
+        (sr - sa)**2
+    ) / 2
+    + 3*tau**2
 )
     sig_ax.append(sa / 1000)
     sig_hoop.append(sh / 1000)
@@ -705,7 +713,17 @@ with st.expander(" 🖲️Expand/Contract Table)", expanded=False):
         use_container_width=False
     )
 
+# =========================================
+# BURST CHECK
+# =========================================
 
+t = (OD - ID) / 2
+
+burst_api = 0.875 * 2 * YP * t / OD
+
+burst_load = Pi - Po
+
+burst_util = burst_load / burst_api * 100
 # =========================================
 # Conclusions
 # =========================================
@@ -766,7 +784,29 @@ c3.metric(
     "Estado",
     "PASS" if vm_crit < SMYS else "FAIL"
 )
+burst_util = Pi / burst_api * 100
+collapse_util = Po / collapse_api * 100
+c3.metric(
+    "Burst Utilization [%]",
+    round(burst_util,1)
+)
 
+c3.metric(
+    "Collapse Utilization [%]",
+    round(collapse_util,1)
+
+    c4, c5 = st.columns(2)
+
+c4.metric(
+    "Burst Rating [psi]",
+    round(burst_api,0)
+)
+
+c4.metric(
+    "Burst Utilization [%]",
+    round(burst_util,1)
+)
+)
 st.markdown(
     "<p style='font-size:11px; color:gray;'>"
     "Developed by FCAM & Pro-Eng - June 2026 "
