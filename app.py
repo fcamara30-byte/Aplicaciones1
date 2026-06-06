@@ -780,10 +780,7 @@ c3.metric(
     round(util,1)
 )
 
-c3.metric(
-    "Estado",
-    "PASS" if vm_crit < SMYS else "FAIL"
-)
+
 burst_util = Pi / burst_api * 100
 collapse_util = Po / collapse_api * 100
 c3.metric(
@@ -797,7 +794,10 @@ c3.metric(
 )
 c4, c5 = st.columns(2)
 
-
+c3.metric(
+    "Estado",
+    "PASS" if vm_crit < SMYS else "FAIL"
+)
 
 
 
