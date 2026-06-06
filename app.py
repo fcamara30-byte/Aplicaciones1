@@ -987,12 +987,27 @@ c3.metric(
     round(util,1)
 )
 
+color_burst = "red" if burst_util > 100 else "black"
+
+c3.markdown(f"""
+<div style="
+    background-color:#ffffff;
+    border-radius:10px;
+    padding:15px;
+">
+    <div style="font-size:14px;">Burst Utilization [%]</div>
+    <div style="
+        font-size:38px;
+        font-weight:bold;
+        color:{color_burst};
+    ">
+        {burst_util:.1f}
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 
-c3.metric(
-    "Burst Utilization [%]",
-    round(burst_util,1)
-)
+
 c3.metric(
     "Collapse Utilization [%]",
     round(collapse_util,1)
