@@ -680,36 +680,17 @@ else:
     else:
         color_pt = "#e74c3c"
 
-import time
 
-if vm_crit > SMYS:
+ax.scatter(
+    sx,
+    sy,
+    color=color_pt,
+    s=250,
+    edgecolors="Gray",
+    linewidths=2,
+    zorder=10
+)
 
-    for i in range(6):
-        color_flash = "red" if i % 2 == 0 else "white"
-
-        ax.scatter(
-            sx,
-            sy,
-            color=color_flash,
-            s=250,
-            edgecolors="black",
-            linewidths=2,
-            zorder=10
-        )
-
-        st.pyplot(fig)
-        time.sleep(0.3)
-
-else:
-    ax.scatter(
-        sx,
-        sy,
-        color=color_pt,
-        s=250,
-        edgecolors="black",
-        linewidths=2,
-        zorder=10
-    )
 # Aviso si falla por torque / VM total
 # Aviso correcto según causa
 if fail_burst:
