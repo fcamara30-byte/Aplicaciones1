@@ -997,7 +997,7 @@ c3.markdown(f"""
         font-weight:bold;
         color:{color_vm_util};
     ">
-        {util:.1f}
+        {util:.0f}
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -1016,7 +1016,7 @@ c3.markdown(f"""
         font-weight:bold;
         color:{color_burst};
     ">
-        {burst_util:.1f}
+        {burst_util:.0f}
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -1028,9 +1028,10 @@ c3.metric(
     round(collapse_util,1)
 )
 c3.metric(
-    "Ballooning [lbf]",
-    round(ballooning_lbf,0)
+    "Ballooning [Klb]",
+    f"{ballooning_lbf/1000:.0f}"
 )
+
 
 
 
