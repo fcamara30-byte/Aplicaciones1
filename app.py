@@ -255,9 +255,9 @@ SMYS = {
     "Q125":125
 }[grado]
 YP = SMYS * 1000   # psi
-burst_api = 0.875 * 2 * SMYS * t / OD
+burst_api = 0.875 * 2 * Yp * t / OD
 collapse_api = (
-    2 * SMYS *
+    2 * Yp *
     (t / OD)
 )
 
