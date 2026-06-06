@@ -513,9 +513,10 @@ util_profile = vm_list / SMYS * 100
 # >100% rojo
 
 bounds = [0, 60, 80, 100, 150]
-cmap = plt.cm.get_cmap("RdYlGn_r", len(bounds)-1)
+cmap = plt.cm.RdYlGn_r
 
-norm = Normalize(vmin=0, vmax=150)
+
+norm = Normalize(vmin=0, vmax=120)
 
 sc = ax.scatter(
     sig_ax,
@@ -526,10 +527,28 @@ sc = ax.scatter(
     s=25
 )
 
-cbar = plt.colorbar(sc, ax=ax, label="Utilización [%]")
 
-cbar.set_ticks([30, 70, 90, 120])
-cbar.set_ticklabels(["Safe", "Normal", "Critical", "Fail"])
+cbar = plt.colorbar(sc, ax=ax)
+cbar.set_label("VM Utilization [%]")
+
+cbar.set_ticks([0, 60, 80, 100, 120])
+cbar.set_ticklabels(["0", "60", "80", "100", "120"])
+util_pt = vm_crit / SMYS * 100
+
+cbar.ax.plot(
+    [0.5],
+    [util_pt],
+    marker='o',
+    markersize=8,
+    color='black'
+)
+
+cbar.ax.text(
+    1.2,
+    util_pt,
+    f"{util_pt:.0f}%",
+    va='center'
+)
 
 
 ratio = vm_crit / SMYS * 100
