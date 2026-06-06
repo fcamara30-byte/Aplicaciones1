@@ -851,6 +851,7 @@ status = "FAIL" if (
     or fail_burst
     or fail_collapse
 ) else "PASS"
+
 c3.metric(
     "Burst Utilization [%]",
     round(burst_util,1)
