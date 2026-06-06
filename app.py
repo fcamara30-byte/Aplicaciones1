@@ -91,16 +91,20 @@ body {
 </style>
 """, unsafe_allow_html=True)
 def color_vm(val):
-    util = val / SMYS   # ← relación vs resistencia (no %, no hace falta *100)
+
+    if val < 0:
+        return "background-color: #e74c3c"
+
+    util = val / SMYS
 
     if util <= 0.6:
-        return "background-color: #2ecc71"   # verde
+        return "background-color: #2ecc71"
     elif util <= 0.8:
-        return "background-color: #f1c40f"   # amarillo
+        return "background-color: #f1c40f"
     elif util <= 1.0:
-        return "background-color: #e67e22"   # naranja
+        return "background-color: #e67e22"
     else:
-        return "background-color: #e74c3c"   # rojo
+        return "background-color: #e74c3c"
 
 
 
@@ -680,9 +684,33 @@ profundidades = np.arange(500, 5501, 500)
 presiones = np.arange(0, 10000, 500)
 
 tabla_vm = np.zeros((len(presiones), len(profundidades)))
+tabla_fail = np.zeros((len(presiones), len(profundidades)))
 
 for i_p, Piny in enumerate(presiones):
+
     for i_z, prof in enumerate(profundidades):
+
+        depth_ft_tab = m_to_ft(prof)
+
+        Pi_tab = (
+            Piny
+            + rho_int * depth_ft_tab * fill_int / 144
+        )
+
+        Po_tab = (
+            Pext_surface
+            + rho_ext * depth_ft_tab * fill_ext / 144
+        )
+
+        burst_util_tab = max(
+            0,
+            (Pi_tab - Po_tab) / burst_api * 100
+        )
+
+        collapse_util_tab = max(
+            0,
+            (Po_tab - Pi_tab) / collapse_api * 100
+        )
 
         tabla_vm[i_p, i_z] = calc_vm(
             prof,
@@ -694,6 +722,13 @@ for i_p, Piny in enumerate(presiones):
             Torque, F_ext,
             Condition
         )
+
+        if (
+            tabla_vm[i_p, i_z] > SMYS
+            or burst_util_tab > 100
+            or collapse_util_tab > 100
+        ):
+            tabla_fail[i_p, i_z] = 1
 
 df_vm = pd.DataFrame(
     tabla_vm,
