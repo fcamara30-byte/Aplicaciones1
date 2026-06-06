@@ -137,6 +137,7 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
 
     depth_ft = m_to_ft(depth_m)
 
+    # Geometría
     A = area_metal(OD, ID)
     ri = ID / 2
     ro = OD / 2
@@ -144,51 +145,54 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
 
     A_ext_ft2 = (np.pi * OD**2 / 4) / 144
 
+    # Presiones
     Pi = Piny + rho_int * depth_ft * fill_int / 144
     Po = Pext_surface + rho_ext * depth_ft * fill_ext / 144
 
+    # Axial mecánico
     F_weight = peso * depth_ft
 
-    # ✅ CORREGIDO (igual que el perfil)
-   F_buoy = rho_ext * z * A_ext_ft2
+    F_buoy = rho_ext * depth_ft * fill_ext * A_ext_ft2
 
     sigma_ax = (F_weight - F_buoy + F_ext) / A
 
-    # ✅ CORREGIDO (igual que el perfil)
-# ==========================
-# AXIAL POR PRESIÓN (CORREGIDO)
-# ==========================
+    # Axial por presión
+    if Condition == "Free":
+        sigma_pressure = 0
 
-if Condition == "Free":
-    sigma_pressure = 0
+    elif Condition == "Anchored":
+        sigma_pressure = 0.5 * (
+            (Pi * ri**2 - Po * ro**2)
+            / (ro**2 - ri**2)
+        )
 
-elif Condition == "Anchored":
-    sigma_pressure = 0.5 * (
-        (Pi * ri**2 - Po * ro**2)
-        / (ro**2 - ri**2)
-    )
+    elif Condition == "Packer":
+        sigma_pressure = (
+            (Pi * ri**2 - Po * ro**2)
+            / (ro**2 - ri**2)
+        )
 
-elif Condition == "Packer":
-    sigma_pressure = (
-        (Pi * ri**2 - Po * ro**2)
-        / (ro**2 - ri**2)
-    )
+    else:
+        sigma_pressure = 0
 
-else:
-    sigma_pressure = 0
+    # Axial total
+    sa = sigma_ax + sigma_pressure
 
-sa = sigma_ax + sigma_pressure
-
+    # Hoop
     sh = (Pi - Po) * OD / (2 * t)
 
+    # Torsión
     T = Torque * 12
+
     J = (np.pi / 2) * (ro**4 - ri**4)
 
     tau = T * ro / J if J > 0 else 0
 
+    # Von Mises
     vm = np.sqrt(sa**2 + sh**2 - sa * sh + 3 * tau**2)
 
     return vm / 1000
+
 
 
 # =========================================
