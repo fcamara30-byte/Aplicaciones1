@@ -877,7 +877,10 @@ c1.metric(
     "τ torque [ksi]",
     round(tau/1000, 2)
 )
-
+c1.metric(
+    "First Fail Depth [m]",
+    "No failure" if z_first_fail is None else int(z_first_fail)
+)
 # color dinámico
 color_vm = "green" if vm_crit < SMYS else "red"
 
