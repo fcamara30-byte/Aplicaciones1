@@ -652,12 +652,17 @@ cbar.ax.plot(
     color='black'
 )
 
+
 cbar.ax.text(
     -0.9,
     util_pt,
     f"{util_pt:.0f}%",
-    va='center'
+    va='center',
+    fontsize=8,       
+    color="blue",     
+    fontweight='bold'
 )
+
 
 
 if fail_burst or fail_collapse:
