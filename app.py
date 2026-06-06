@@ -653,7 +653,7 @@ cbar.ax.plot(
 )
 
 cbar.ax.text(
-    -1.2,
+    -0.9,
     util_pt,
     f"{util_pt:.0f}%",
     va='center'
