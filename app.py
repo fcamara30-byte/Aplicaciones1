@@ -3,6 +3,8 @@ from io import BytesIO
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+
+
 st.session_state.setdefault("run_id", 0)
 
 st.markdown("""
@@ -91,16 +93,20 @@ body {
 </style>
 """, unsafe_allow_html=True)
 def color_vm(val):
-    util = val / SMYS   # ← relación vs resistencia (no %, no hace falta *100)
+
+    if val < 0:
+        return "background-color: #e74c3c"
+
+    util = val / SMYS
 
     if util <= 0.6:
-        return "background-color: #2ecc71"   # verde
+        return "background-color: #2ecc71"
     elif util <= 0.8:
-        return "background-color: #f1c40f"   # amarillo
+        return "background-color: #f1c40f"
     elif util <= 1.0:
-        return "background-color: #e67e22"   # naranja
+        return "background-color: #e67e22"
     else:
-        return "background-color: #e74c3c"   # rojo
+      return "background-color: #e74c3c"
 
 
 
@@ -133,6 +139,7 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
 
     depth_ft = m_to_ft(depth_m)
 
+    # Geometría
     A = area_metal(OD, ID)
     ri = ID / 2
     ro = OD / 2
@@ -140,36 +147,54 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
 
     A_ext_ft2 = (np.pi * OD**2 / 4) / 144
 
+    # Presiones
     Pi = Piny + rho_int * depth_ft * fill_int / 144
     Po = Pext_surface + rho_ext * depth_ft * fill_ext / 144
 
+    # Axial mecánico
     F_weight = peso * depth_ft
 
-    # ✅ CORREGIDO (igual que el perfil)
     F_buoy = rho_ext * depth_ft * fill_ext * A_ext_ft2
 
     sigma_ax = (F_weight - F_buoy + F_ext) / A
 
-    # ✅ CORREGIDO (igual que el perfil)
+    # Axial por presión
     if Condition == "Free":
         sigma_pressure = 0
-    else:
-        sigma_pressure = (
-            Pi * ri**2 - Po * ro**2
-        ) / (ro**2 - ri**2)
 
+    elif Condition == "Anchored":
+        sigma_pressure = 0.5 * (
+            (Pi * ri**2 - Po * ro**2)
+            / (ro**2 - ri**2)
+        )
+
+    elif Condition == "Packer":
+        sigma_pressure = (
+            (Pi * ri**2 - Po * ro**2)
+            / (ro**2 - ri**2)
+        )
+
+    else:
+        sigma_pressure = 0
+
+    # Axial total
     sa = sigma_ax + sigma_pressure
 
+    # Hoop
     sh = (Pi - Po) * OD / (2 * t)
 
+    # Torsión
     T = Torque * 12
+
     J = (np.pi / 2) * (ro**4 - ri**4)
 
     tau = T * ro / J if J > 0 else 0
 
+    # Von Mises
     vm = np.sqrt(sa**2 + sh**2 - sa * sh + 3 * tau**2)
 
     return vm / 1000
+
 
 
 # =========================================
@@ -251,11 +276,17 @@ SMYS = {
     "Q125":125
 }[grado]
 YP = SMYS * 1000   # psi
-burst_api = 0.875 * 2 * SMYS * t / OD
-collapse_api = (
-    2 * SMYS *
-    (t / OD)
-)
+burst_api = 0.875 * 2 * YP * t / OD
+# SLENDERNESS PARAMETER
+D_t = OD / t
+
+if D_t < 20:
+    collapse_api = 2 * YP * (t / OD)   # yield
+elif D_t < 40:
+    collapse_api = 0.875 * 2 * YP * (t / OD)  # plastic
+else:
+    collapse_api = 46.95e6 / (D_t**3)  # elastic simplificado
+
 
 Condition = st.sidebar.selectbox(
     "Condición",
@@ -348,6 +379,15 @@ sig_ax = []
 sig_hoop = []
 vm_list = []
 z_list = []
+# =========================================
+# GEOMETRIA (PRECOMPUTADA)
+# =========================================
+A = area_metal(OD, ID)
+ri = ID / 2
+ro = OD / 2
+t = (OD - ID) / 2
+A_ext_ft2 = (np.pi * OD**2 / 4) / 144
+
 
 for i in range(200):
 
@@ -369,18 +409,12 @@ for i in range(200):
         + rho_ext * z_ext / 144
     )
 
-    # ==========================
-    # GEOMETRIA
-    # ==========================
-    A = area_metal(OD, ID)
-
-    ri = ID / 2
-    ro = OD / 2
+ 
 
     # ==========================
     # AXIAL MECANICO
     # ==========================
-    A_ext_ft2 = (np.pi * OD**2 / 4) / 144
+  
 
     F_weight = peso * z
 
@@ -391,11 +425,18 @@ for i in range(200):
         A_ext_ft2
     )
 
+# distribución progresiva de carga externa (sin romper modelo)
+    if F_ext < 0:
+       F_ext_eff = F_ext * (1 - z / depth_ft)
+    else:
+       F_ext_eff = F_ext
+
     F_total = (
-        F_weight
-        - F_buoy
-        + F_ext
-    )
+      F_weight
+      - F_buoy
+      + F_ext_eff
+)
+
 
     sigma_ax = F_total / A
 
@@ -423,7 +464,7 @@ for i in range(200):
     # ==========================
     # HOOP
     # ==========================
-    t = (OD - ID) / 2
+ 
 
     sh = (
         (Pi - Po)
@@ -434,7 +475,7 @@ for i in range(200):
     # ==========================
     # RADIAL
     # ==========================
-    sr = -Po
+    sr = -Pi
 
     # ==========================
     # TORSION
@@ -470,6 +511,49 @@ z_list.append(z)
 sig_ax = np.array(sig_ax)
 sig_hoop = np.array(sig_hoop)
 vm_list = np.array(vm_list)
+# =========================================
+# PRIMER FALLO
+# =========================================
+first_fail_index = None
+
+for i in range(len(z_list)):
+
+    z = z_list[i]
+
+    z_int = z * fill_int
+    z_ext = z * fill_ext
+
+    Pi_i = P_iny + rho_int * z_int / 144
+    Po_i = Pext_surface + rho_ext * z_ext / 144
+
+    vm_i = vm_list[i]
+
+    burst_util_i = max(0, (Pi_i - Po_i) / burst_api * 100)
+    collapse_util_i = max(0, (Po_i - Pi_i) / collapse_api * 100)
+
+    fail_vm_i = vm_i > SMYS
+    fail_burst_i = burst_util_i > 100
+    fail_collapse_i = collapse_util_i > 100
+
+    if fail_vm_i or fail_burst_i or fail_collapse_i:
+
+        first_fail_index = i
+
+        if fail_burst_i:
+            first_fail_mode = "Burst"
+        elif fail_collapse_i:
+            first_fail_mode = "Collapse"
+        else:
+            first_fail_mode = "VM"
+
+        break   
+
+
+if first_fail_index is not None:
+    z_first_fail = ft_to_m(z_list[first_fail_index])
+else:
+    z_first_fail = None
+
 
 # =========================================
 # CRITICO
@@ -485,30 +569,21 @@ z_crit = ft_to_m(z_list[i_crit])
 # =========================================
 # ELIPSE VM
 # =========================================
+
 s = np.linspace(
     -SMYS,
     SMYS,
     2000
 )
+disc = 4 * SMYS**2 - 3 * s**2
+mask = disc >= 0
 
-x_vm = []
-y1 = []
-y2 = []
+root = np.sqrt(disc[mask])
 
-for val in s:
+x_vm = s[mask]
+y1 = (x_vm + root) / 2
+y2 = (x_vm - root) / 2
 
-    disc = (
-        4 * SMYS**2
-        - 3 * val**2
-    )
-
-    if disc >= 0:
-
-        root = np.sqrt(disc)
-
-        x_vm.append(val)
-        y1.append((val + root)/2)
-        y2.append((val - root)/2)
 
 # =========================================
 # GRAFICO
@@ -555,7 +630,13 @@ sc = ax.scatter(
     norm=norm,
     s=25
 )
-
+ax.plot(
+    sig_ax,
+    sig_hoop,
+    color="cyan",
+    alpha=0.25,
+    linewidth=1
+)
 
 cbar = plt.colorbar(sc, ax=ax)
 
@@ -568,63 +649,99 @@ burst_rating = 2 * SMYS * 1000 * t / OD
 
 burst_util = max(
     0,
-    (P_iny - Pext_surface) / burst_rating * 100
+    (Pi - Po) / burst_api * 100
 )
 
+collapse_util = max(
+    0,
+    (Po - Pi) / collapse_api * 100
+)
+
+fail_vm = vm_crit > SMYS
+
+fail_burst = burst_util > 100
+
+fail_collapse = collapse_util > 100
+
 # Ballooning force
-ballooning_lbf = (
-    np.pi * ID**2 / 4
-) * (P_iny - Pext_surface)
+ballooning_lbf = (np.pi * ID**2 / 4) * (Pi - Po)
 cbar.ax.plot(
     [0.5],
     [util_pt],
     marker='o',
-    markersize=8,
+    markersize=6,
     color='black'
 )
 
+
 cbar.ax.text(
-    1.2,
+    -0.9,
     util_pt,
     f"{util_pt:.0f}%",
-    va='center'
+    va='center',
+    fontsize=8,       
+    color="blue",     
+    fontweight='bold'
 )
 
 
-ratio = vm_crit / SMYS * 100
 
-if ratio <= 60:
-    color_pt = "#2ecc71"   # verde
-elif ratio <= 80:
-    color_pt = "#f1c40f"   # amarillo
-elif ratio <= 100:
-    color_pt = "#e67e22"   # naranja
+if fail_burst or fail_collapse:
+    color_pt = "#e74c3c"
+
 else:
-    color_pt = "#e74c3c"   # rojo
+    ratio = vm_crit / SMYS * 100
 
+    if ratio <= 60:
+        color_pt = "#2ecc71"
+    elif ratio <= 80:
+        color_pt = "#f1c40f"
+    elif ratio <= 100:
+        color_pt = "#e67e22"
+    else:
+        color_pt = "#e74c3c"
+
+
+# glow externo
 ax.scatter(
-    sx,
-    sy,
+    sx, sy,
+    s=600,
     color=color_pt,
-    s=250,
-    edgecolors="black",
-    linewidths=2,
+    alpha=0.25,
+    zorder=9
+)
+
+# punto real
+ax.scatter(
+    sx, sy,
+    s=220,
+    color=color_pt,
+    edgecolors="white",
+    linewidths=1.5,
     zorder=10
 )
+
 # Aviso si falla por torque / VM total
 # Aviso correcto según causa
-if vm_crit > SMYS:
-    if Torque > 0:
-        txt = "FAIL (including torque)"
-    else:
-        txt = "FAIL (axial + pressure)"
-    
+if fail_burst:
+    txt = "FAIL - BURST"
+
+elif fail_collapse:
+    txt = "FAIL - COLLAPSE"
+
+elif fail_vm:
+    txt = "FAIL - VON MISES"
+
+else:
+    txt = ""
+
+if txt != "":
     ax.text(
         0,
         SMYS * 0.85,
         txt,
         color="red",
-        fontsize=12,
+        fontsize=14,
         fontweight="bold",
         ha="center"
     )
@@ -680,9 +797,33 @@ profundidades = np.arange(500, 5501, 500)
 presiones = np.arange(0, 10000, 500)
 
 tabla_vm = np.zeros((len(presiones), len(profundidades)))
+tabla_fail = np.zeros((len(presiones), len(profundidades)))
 
 for i_p, Piny in enumerate(presiones):
+
     for i_z, prof in enumerate(profundidades):
+
+        depth_ft_tab = m_to_ft(prof)
+
+        Pi_tab = (
+            Piny
+            + rho_int * depth_ft_tab * fill_int / 144
+        )
+
+        Po_tab = (
+            Pext_surface
+            + rho_ext * depth_ft_tab * fill_ext / 144
+        )
+
+        burst_util_tab = max(
+            0,
+            (Pi_tab - Po_tab) / burst_api * 100
+        )
+
+        collapse_util_tab = max(
+            0,
+            (Po_tab - Pi_tab) / collapse_api * 100
+        )
 
         tabla_vm[i_p, i_z] = calc_vm(
             prof,
@@ -695,8 +836,22 @@ for i_p, Piny in enumerate(presiones):
             Condition
         )
 
+        if (
+            tabla_vm[i_p, i_z] > SMYS
+            or burst_util_tab > 100
+            or collapse_util_tab > 100
+        ):
+      
+   
+            tabla_fail[i_p, i_z] = 1
+
+
+
+
+
 df_vm = pd.DataFrame(
     tabla_vm,
+    
     index=[f"{p} psi" for p in presiones],
     columns=[f"{p} m" for p in profundidades]
 )
@@ -746,8 +901,10 @@ burst_util = burst_load / burst_api * 100
 # BALLOONING
 # =========================================
 
-Pi = P_iny + rho_int * depth_ft * fill_int / 144
-Po = Pext_surface + rho_ext * depth_ft * fill_ext / 144
+z_crit_ft = z_list[i_crit]
+
+Pi = P_iny + rho_int * (z_crit_ft * fill_int) / 144
+Po = Pext_surface + rho_ext * (z_crit_ft * fill_ext) / 144
 
 if Condition == "Free":
 
@@ -766,17 +923,17 @@ c1, c2, c3, c4 = st.columns(4)
 
 c1.metric(
     "σ axial [ksi]",
-    round(sx,2)
+    round(sx,1)
 )
 
 c1.metric(
     "σ hoop [ksi]",
-    round(sy,2)
+    round(sy,1)
 )
 
 c1.metric(
     "τ torque [ksi]",
-    round(tau/1000, 2)
+    round(tau/1000, 1)
 )
 
 # color dinámico
@@ -809,11 +966,7 @@ collapse_util = max(
     0,
     (Po - Pi) / collapse_api * 100
 )
-fail_vm = vm_crit > SMYS
 
-fail_burst = burst_util > 100
-
-fail_collapse = collapse_util > 100
 
 status = "FAIL" if (
     fail_vm
@@ -821,20 +974,34 @@ status = "FAIL" if (
     or fail_collapse
 ) else "PASS"
 
-c2.metric(
-    "Estado",
-    status
-)
+color_estado = "red" if status == "FAIL" else "green"
+
+c2.markdown(f"""
+<div style="
+    background-color:#ffffff;
+    border-radius:10px;
+    padding:15px;
+">
+    <div style="font-size:14px;">Estado</div>
+    <div style="
+        font-size:42px;
+        font-weight:900;
+        color:{color_estado};
+    ">
+        {status}
+    </div>
+</div>
+""", unsafe_allow_html=True)
 causas = []
 
 if fail_vm:
-    causas.append("Von Mises")
+    causas.append("VM")
 
 if fail_burst:
     causas.append("Burst")
 
 if fail_collapse:
-    causas.append("Collapse")
+    causas.append("Coll")
 
 if len(causas) == 0:
     causas.append("None")
@@ -845,25 +1012,56 @@ c2.metric(
 )
 util = vm_crit / SMYS * 100
 
-c3.metric(
-    "Utilización [%]",
-    round(util,1)
-)
+
+color_vm_util = "red" if util > 100 else "black"
+
+c3.markdown(f"""
+<div style="
+    background-color:#ffffff;
+    border-radius:10px;
+    padding:15px;
+">
+    <div style="font-size:14px;">VM Utilization [%]</div>
+    <div style="
+        font-size:38px;
+        font-weight:bold;
+        color:{color_vm_util};
+    ">
+        {util:.0f}
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+color_burst = "red" if burst_util > 100 else "black"
+
+c3.markdown(f"""
+<div style="
+    background-color:#ffffff;
+    border-radius:10px;
+    padding:15px;
+">
+    <div style="font-size:14px;">Burst Utilization [%]</div>
+    <div style="
+        font-size:38px;
+        font-weight:bold;
+        color:{color_burst};
+    ">
+        {burst_util:.0f}
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 
 
-c3.metric(
-    "Burst Utilization [%]",
-    round(burst_util,1)
-)
 c3.metric(
     "Collapse Utilization [%]",
     round(collapse_util,1)
 )
 c3.metric(
-    "Ballooning [lbf]",
-    round(ballooning_lbf,0)
+    "Ballooning [Klb]",
+    f"{ballooning_lbf/1000:.0f}"
 )
+
 
 
 
