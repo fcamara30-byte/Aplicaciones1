@@ -317,7 +317,9 @@ F_ext = st.sidebar.number_input(
 
 depth_m = st.sidebar.number_input(
     "Depth [m]",
-    value=3000.0
+    value=3000.0,
+    step=100.0,
+    format="%.0f"
 )
 
 depth_ft = m_to_ft(depth_m)
