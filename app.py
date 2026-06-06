@@ -408,9 +408,9 @@ for i in range(200):
        F_ext_eff = F_ext
 
     F_total = (
-     F_weight
-    - F_buoy
-    + F_ext_eff
+      F_weight
+      - F_buoy
+      + F_ext_eff
 )
 
 
