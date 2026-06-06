@@ -728,10 +728,17 @@ for i_p, Piny in enumerate(presiones):
             or burst_util_tab > 100
             or collapse_util_tab > 100
         ):
+      
+   
             tabla_fail[i_p, i_z] = 1
 
+tabla_display = tabla_vm.copy()
+
+tabla_display[tabla_fail == 1] = -1
+
 df_vm = pd.DataFrame(
-    tabla_vm,
+    tabla_display,
+    
     index=[f"{p} psi" for p in presiones],
     columns=[f"{p} m" for p in profundidades]
 )
