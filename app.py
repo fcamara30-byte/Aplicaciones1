@@ -787,7 +787,49 @@ ax.grid(True)
 ax.set_xlabel("σ axial [ksi]")
 ax.set_ylabel("σ hoop [ksi]")
 
-st.pyplot(fig)
+placeholder = st.empty()
+progress_bar = st.progress(0)
+
+for i in range(10, len(z_list), 5):
+
+    fig_anim, ax_anim = plt.subplots(figsize=(8,8))
+
+    # envelope VM (igual que tu gráfico original)
+    ax_anim.fill(x_vm, y1, alpha=0.15)
+    ax_anim.plot(x_vm, y1, lw=2)
+    ax_anim.plot(x_vm, y2, lw=2)
+
+    # puntos hasta la profundidad actual
+    ax_anim.scatter(
+        sig_ax[:i],
+        sig_hoop[:i],
+        c=util_profile[:i],
+        cmap=cmap,
+        norm=norm,
+        s=25
+    )
+
+    # punto “activo”
+    ax_anim.scatter(
+        sig_ax[i-1],
+        sig_hoop[i-1],
+        s=200,
+        color="cyan",
+        edgecolors="white",
+        linewidths=2
+    )
+
+    ax_anim.set_xlim(-lim, lim)
+    ax_anim.set_ylim(-lim, lim)
+    ax_anim.set_aspect("equal")
+    ax_anim.grid(True)
+
+    ax_anim.set_title(f"Running Tubing - Step {i}/{len(z_list)}")
+
+    placeholder.pyplot(fig_anim)
+    progress_bar.progress(i / len(z_list))
+
+
 
 # =========================================
 # TABLA VM
