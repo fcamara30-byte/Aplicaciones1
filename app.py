@@ -795,7 +795,7 @@ c3.metric(
     "Collapse Utilization [%]",
     round(collapse_util,1)
 )
-    c4, c5 = st.columns(2)
+c4, c5 = st.columns(2)
 
 c4.metric(
     "Burst Rating [psi]",
