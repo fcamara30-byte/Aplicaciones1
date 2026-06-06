@@ -377,6 +377,15 @@ sig_ax = []
 sig_hoop = []
 vm_list = []
 z_list = []
+# =========================================
+# GEOMETRIA (PRECOMPUTADA)
+# =========================================
+A = area_metal(OD, ID)
+ri = ID / 2
+ro = OD / 2
+t = (OD - ID) / 2
+A_ext_ft2 = (np.pi * OD**2 / 4) / 144
+
 
 for i in range(200):
 
