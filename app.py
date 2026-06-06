@@ -893,17 +893,17 @@ c1, c2, c3, c4 = st.columns(4)
 
 c1.metric(
     "σ axial [ksi]",
-    round(sx,2)
+    round(sx,1)
 )
 
 c1.metric(
     "σ hoop [ksi]",
-    round(sy,2)
+    round(sy,1)
 )
 
 c1.metric(
     "τ torque [ksi]",
-    round(tau/1000, 2)
+    round(tau/1000, 1)
 )
 
 # color dinámico
