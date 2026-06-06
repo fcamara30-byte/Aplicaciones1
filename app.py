@@ -5,28 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-st.markdown("""
-<style>
-.stApp {
-    background-color: #0e1117;
-    color: #e6e6e6;
-}
-
-[data-testid="stSidebar"] {
-    background-color: #161b22;
-}
-
-h1, h2, h3 {
-    color: #58a6ff;
-}
-
-/* Dataframe oscuro */
-[data-testid="stDataFrame"] {
-    background-color: #161b22;
-    color: white;
-}
-</style>
-""", unsafe_allow_html=True)
 st.session_state.setdefault("run_id", 0)
 
 st.markdown("""
