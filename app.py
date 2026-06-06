@@ -806,7 +806,7 @@ c4.metric(
     "Burst Utilization [%]",
     round(burst_util,1)
 )
-)
+
 st.markdown(
     "<p style='font-size:11px; color:gray;'>"
     "Developed by FCAM & Pro-Eng - June 2026 "
