@@ -648,12 +648,12 @@ cbar.ax.plot(
     [0.5],
     [util_pt],
     marker='o',
-    markersize=8,
+    markersize=6,
     color='black'
 )
 
 cbar.ax.text(
-    1.2,
+    1.8,
     util_pt,
     f"{util_pt:.0f}%",
     va='center'
