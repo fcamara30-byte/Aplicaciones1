@@ -114,6 +114,16 @@ def color_vm(val):
 
 
 st.set_page_config(layout="wide")
+st.markdown("""
+<style>
+.block-container {
+    padding-top: 1rem !important;
+    padding-bottom: 0rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 def keep_alive():
     while True:
         try:
