@@ -130,7 +130,7 @@ threading.Thread(target=keep_alive, daemon=True).start()
 st.markdown(
     """
     <h1 style="
-        color:#5DADE2;
+        color:#0072CE;
         text-align:center;
         font-weight:bold;
     ">
