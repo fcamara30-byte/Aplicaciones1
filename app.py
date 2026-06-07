@@ -461,15 +461,25 @@ for i in range(200):
     if Condition == "Free":
 
         sigma_pressure = 0
+   
+    elif Condition == "Anchored":
 
-    else:
+      sigma_pressure = 0.5 * (
+        Pi * ri**2
+        - Po * ro**2
+      ) / (
+        ro**2 - ri**2
+      )
 
-        sigma_pressure = (
-            Pi * ri**2
-            - Po * ro**2
-        ) / (
-            ro**2 - ri**2
-        )
+    elif Condition == "Packer":
+
+      sigma_pressure = (
+        Pi * ri**2
+        - Po * ro**2
+      ) / (
+        ro**2 - ri**2
+      )
+
 
     sa = sigma_ax + sigma_pressure
 
