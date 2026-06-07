@@ -191,7 +191,7 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
     # Axial mecánico
     F_weight = peso * depth_ft
 
-    F_buoy = rho_ext * fill_ext * z * (np.pi / 4 * OD**2)
+    F_buoy = rho_ext * A_ext_ft2 * z * fill_ext
 
 
     sigma_ax = (F_weight - F_buoy + F_ext) / A
@@ -465,7 +465,7 @@ for i in range(200):
 
     F_weight = peso * z
 
-    F_buoy = rho_ext * fill_ext * z * (np.pi / 4 * OD**2)
+    F_buoy = rho_ext * A_ext_ft2 * z * fill_ext
 
 
 # distribución progresiva de carga externa (sin romper modelo)
