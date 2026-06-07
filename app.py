@@ -986,8 +986,9 @@ else:
 
 def tubo_3d_coloreado(tipo, vm_list, SMYS):
 
-    theta = np.linspace(0, 2*np.pi, 60)
-    z = np.linspace(0, 1, len(vm_list))
+    theta = np.linspace(0, 2*np.pi, 25)
+    z = np.linspace(0, 1, 30)
+
     theta, z = np.meshgrid(theta, z)
 
     # distribución de esfuerzos (normalizada)
