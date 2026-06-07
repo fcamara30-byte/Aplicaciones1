@@ -461,7 +461,7 @@ elif Condition == "Packer":
         / (ro**2 - ri**2)
     )
 
-# ✅ ESTA LINEA VA AFUERA DEL IF (CLAVE)
+
 sa = sigma_ax + sigma_pressure
 
 
@@ -471,7 +471,7 @@ sa = sigma_ax + sigma_pressure
     # ==========================
  
 
-    sh = (
+sh = (
         (Pi - Po)
         * OD
         / (2*t)
