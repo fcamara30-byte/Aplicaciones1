@@ -464,7 +464,7 @@ for i in range(200):
    
     elif Condition == "Anchored":
 
-      sigma_pressure = 0.5 * (
+        sigma_pressure = 0.5 * (
         Pi * ri**2
         - Po * ro**2
       ) / (
@@ -473,7 +473,7 @@ for i in range(200):
 
     elif Condition == "Packer":
 
-      sigma_pressure = (
+        sigma_pressure = (
         Pi * ri**2
         - Po * ro**2
       ) / (
