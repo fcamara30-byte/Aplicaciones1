@@ -180,7 +180,8 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
     # Axial mecánico
     F_weight = peso * depth_ft
 
-    F_buoy = rho_ext * fill_ext * depth * (np.pi / 4 * OD**2)
+    F_buoy = rho_ext * fill_ext * depth_ft * (np.pi / 4 * OD**2)
+
 
     sigma_ax = (F_weight - F_buoy + F_ext) / A
 
