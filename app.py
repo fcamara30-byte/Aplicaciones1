@@ -1159,6 +1159,6 @@ interpretation, or reliance upon the calculations presented herein.
 
 Use of this application constitutes acceptance of these limitations.
 federico.camara@tubosapolo.com.br //   https://tubosapolo.com.br/ 
-🇦🇷 🇧🇷
+st.write("🇦🇷 Argentina")
 </div>
 """, unsafe_allow_html=True)
