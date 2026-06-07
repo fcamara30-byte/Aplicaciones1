@@ -985,50 +985,53 @@ elif fail_vm:
 else:
     tipo_falla = "OK"
 
-def tubo_3d_coloreado(vm_list, SMYS, tipo):
+def tubo_3d(vm_list, SMYS, tipo):
 
-    # resolución liviana
-    n_theta = 25
-    n_z = 30
+    n_theta = 30
+    n_z = 40
 
     theta = np.linspace(0, 2*np.pi, n_theta)
-    z_vals = np.linspace(0, 1, n_z)
+    z_vals = np.linspace(0, 10, n_z)   # ✅ escala real (vertical)
 
     theta, z = np.meshgrid(theta, z_vals)
 
-    # ajustar vm al tamaño del tubo
-    vm_small = np.interp(
+    # VM → reducir y normalizar
+    vm_interp = np.interp(
         np.linspace(0, len(vm_list)-1, n_z),
         np.arange(len(vm_list)),
         vm_list
     )
 
-    vm_norm = vm_small / SMYS
-    vm_norm = np.clip(vm_norm, 0, 1.2)
+    vm_norm = vm_interp / SMYS
+
+    # ✅ evitar todo rojo
+    vm_norm = np.clip(vm_norm, 0, 1.0)
 
     vm_surface = np.tile(vm_norm.reshape(-1,1), (1, n_theta))
 
-    # 🔥 GEOMETRÍA VISUAL (EXAGERADA PARA QUE SE NOTE)
+    # ✅ RADIO BASE REAL
+    r_base = 1.0
 
+    # ✅ DEFORMACIONES VISUALES
     if tipo == "Burst":
-        r = 1 + 1.2 * z   # inflado fuerte
-
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
+        r = r_base * (1 + 0.8 * (z_vals / max(z_vals)))[:, None]
 
     elif tipo == "Collapse":
-        x = 0.35 * np.cos(theta)   # aplastado fuerte
-        y = 1.2 * np.sin(theta)
+        r = r_base * (1 - 0.6 * (z_vals / max(z_vals)))[:, None]
 
     elif tipo == "VM":
-        r = 1 + 0.4*np.sin(3*theta) * z   # deformación irregular
-
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
+        r = r_base * (1 + 0.25*np.sin(3*theta))
 
     else:
-        x = np.cos(theta)
-        y = np.sin(theta)
+        r = r_base
+
+    # ✅ coordenadas correctas
+    if tipo == "Collapse":
+        x = r * np.cos(theta)
+        y = r_base * 1.2 * np.sin(theta)
+    else:
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
 
     fig = go.Figure(data=[
         go.Surface(
@@ -1038,9 +1041,8 @@ def tubo_3d_coloreado(vm_list, SMYS, tipo):
             surfacecolor=vm_surface,
             colorscale="RdYlGn_r",
             cmin=0,
-            cmax=1.2,
-            showscale=True,
-            colorbar=dict(title="VM/SMYS", thickness=10)
+            cmax=1,
+            showscale=True
         )
     ])
 
@@ -1050,17 +1052,18 @@ def tubo_3d_coloreado(vm_list, SMYS, tipo):
             xaxis_visible=False,
             yaxis_visible=False,
             zaxis_visible=False,
-            aspectratio=dict(x=1, y=1, z=2)
+            aspectratio=dict(x=1, y=1, z=2),
+            camera=dict(eye=dict(x=1.8, y=1.8, z=1.5))  # ✅ centra bien
         )
     )
 
     return fig
 
-# ✅ título más chico
+# ✅ título chico
 st.markdown("### Failure Visualization")
 
-# mostrar
-st.plotly_chart(tubo_3d_coloreado(vm_list, SMYS, tipo_falla), use_container_width=True)
+st.plotly_chart(tubo_3d(vm_list, SMYS, tipo_falla), use_container_width=True)
+
 
 
 
