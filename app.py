@@ -163,8 +163,11 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
     A_ext_ft2 = (np.pi * OD**2 / 4) / 144
 
     # Presiones
-    Pi = Piny + rho_int * depth_ft * fill_int / 144
-    Po = Pext_surface + rho_ext * depth_ft * fill_ext / 144
+    z_int = depth_ft * fill_int
+    z_ext = depth_ft * fill_ext
+
+    Pi = Piny + rho_int * z_int / 144
+    Po = Pext_surface + rho_ext * z_ext / 144
 
     # Axial mecánico
     F_weight = peso * depth_ft
