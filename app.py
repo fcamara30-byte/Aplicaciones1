@@ -1162,4 +1162,5 @@ federico.camara@tubosapolo.com.br //   https://tubosapolo.com.br/
 
 </div>
 """, unsafe_allow_html=True)
-st.image("https://flagcdn.com/w40/br.png") st.image("https://flagcdn.com/w40/ar.png")
+st.image("https://flagcdn.com/w40/br.png")
+st.image("https://flagcdn.com/w40/ar.png")
