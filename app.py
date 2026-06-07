@@ -1145,7 +1145,7 @@ st.plotly_chart(
     tubo_pro(vm_list, SMYS, sx, sy, tau/1000, modo_fail),
     use_container_width=True
 )
-``
+
 
 
 
