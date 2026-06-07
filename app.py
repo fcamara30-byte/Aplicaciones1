@@ -975,26 +975,30 @@ st.subheader("Conclusions")
 
 import plotly.graph_objects as go
 
+# modo dominante
 if fail_burst:
-    tipo = "Burst"
+    modo = "Burst"
 elif fail_collapse:
-    tipo = "Collapse"
+    modo = "Collapse"
 elif fail_vm:
-    tipo = "VM"
+    modo = "VM"
+elif abs(Torque) > 0:
+    modo = "Torque"
+elif abs(F_ext) > 0:
+    modo = "Axial"
 else:
-    tipo = "OK"
+    modo = "OK"
 
 
-def tubo_real(vm_list, SMYS, tipo):
+def tubo_pro(vm_list, SMYS, modo):
 
     theta = np.linspace(0, 2*np.pi, 60)
-    z_vals = np.linspace(0, 10, 50)
-
+    z_vals = np.linspace(0, 10, 60)
     theta, z = np.meshgrid(theta, z_vals)
 
-    # ------------------------
-    # estrés (color)
-    # ------------------------
+    # =========================
+    # COLOR (estrés)
+    # =========================
     vm_interp = np.interp(
         np.linspace(0, len(vm_list)-1, len(z_vals)),
         np.arange(len(vm_list)),
@@ -1004,91 +1008,146 @@ def tubo_real(vm_list, SMYS, tipo):
     vm_norm = np.clip(vm_interp / SMYS, 0, 1)
     vm_surface = np.tile(vm_norm.reshape(-1,1), (1, len(theta[0])))
 
-    # ------------------------
-    # RADIO BASE
-    # ------------------------
     R = 1.0
 
-    # ------------------------
-    # FALLAS VISUALES REALES
-    # ------------------------
+    # =========================
+    # GEOMETRÍA POR MODO
+    # =========================
 
-    # BURST = balón + ruptura
-    if tipo == "Burst":
+    # 🔴 BURST → balón + ruptura + fuga
+    if modo == "Burst":
 
-        center = 5  # mitad del tubo
-        sigma = 1.5
-
-        deform = 1 + 1.2 * np.exp(-((z_vals - center)**2)/(2*sigma**2))
-
+        deform = 1 + 1.3*np.exp(-((z_vals-5)**2)/2)
         r = deform[:, None]
 
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
-        # 🔥 grieta
-        mask = (theta > 5.8) & (theta < 6.2)
-        x[mask] *= 1.5
-        y[mask] *= 1.5
+        # grieta
+        crack = (theta > 5.6) & (theta < 6.0)
+        x[crack] *= 1.5
+        y[crack] *= 1.5
 
-    # COLLAPSE = abollado real
-    elif tipo == "Collapse":
+        # jet de presión
+        jet_x = [2.5]*20
+        jet_y = [0]*20
+        jet_z = np.linspace(4,6,20)
 
-        deform = 1 - 0.7 * np.exp(-((z_vals-6)**2)/2)
+    # 🔵 COLLAPSE → abollado + doblez
+    elif modo == "Collapse":
 
+        deform = 1 - 0.7*np.exp(-((z_vals-6)**2)/2)
         r = deform[:, None]
 
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
         # ovalización fuerte
-        x *= 0.5
+        x *= 0.4
 
-    # VM = pandeo + grieta
-    elif tipo == "VM":
+        jet_x, jet_y, jet_z = [], [], []
 
-        r = 1 + 0.3*np.sin(3*theta) * np.exp(-((z_vals-5)**2)/4)[:, None]
+    # 🟡 VM → pandeo + grieta
+    elif modo == "VM":
+
+        r = 1 + 0.3*np.sin(4*theta)*np.exp(-((z_vals-5)**2)/3)[:, None]
 
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
-        # grieta lateral
-        crack_zone = (theta > 2.5) & (theta < 3.0)
-        x[crack_zone] *= 1.3
+        # fisura lateral
+        crack = (theta > 2.5) & (theta < 3.0)
+        x[crack] *= 1.4
+
+        jet_x = [2]*20
+        jet_y = [0]*20
+        jet_z = np.linspace(4,6,20)
+
+    # 🟣 TORQUE → tubo torsionado 45°
+    elif modo == "Torque":
+
+        twist = (z_vals / max(z_vals)) * np.pi/4  # 45°
+        x = R * np.cos(theta + twist[:, None])
+        y = R * np.sin(theta + twist[:, None])
+
+        jet_x, jet_y, jet_z = [], [], []
+
+    # 🟢 AXIAL → estirado + cuello
+    elif modo == "Axial":
+
+        stretch = 1.7
+        z = z * stretch
+
+        r = R * 1/(1 + 0.8*(z_vals/max(z_vals)))[:, None]
+
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+        jet_x, jet_y, jet_z = [], [], []
 
     # OK
     else:
-        x = R * np.cos(theta)
-        y = R * np.sin(theta)
+        x = R*np.cos(theta)
+        y = R*np.sin(theta)
+        jet_x, jet_y, jet_z = [], [], []
 
-    # ------------------------
-    # PLOT
-    # ------------------------
-    fig = go.Figure(data=[
-        go.Surface(
-            x=x,
-            y=y,
-            z=z,
-            surfacecolor=vm_surface,
-            colorscale="RdYlGn_r",
-            cmin=0,
-            cmax=1,
-            showscale=True
+    # =========================
+    # SUPERFICIE PRINCIPAL
+    # =========================
+    fig = go.Figure()
+
+    fig.add_trace(go.Surface(
+        x=x,
+        y=y,
+        z=z,
+        surfacecolor=vm_surface,
+        colorscale="RdYlGn_r",
+        showscale=False,
+
+        # 🔥 SOMBRAS REALISTAS
+        lighting=dict(
+            ambient=0.3,
+            diffuse=0.9,
+            specular=0.8,
+            roughness=0.3,
+            fresnel=0.4
+        ),
+
+        lightposition=dict(
+            x=100,
+            y=200,
+            z=300
         )
-    ])
+    ))
 
+    # =========================
+    # JET DE PRESIÓN
+    # =========================
+    if len(jet_x) > 0:
+        fig.add_trace(go.Scatter3d(
+            x=jet_x,
+            y=jet_y,
+            z=jet_z,
+            mode="markers+lines",
+            marker=dict(size=4, color="blue"),
+            line=dict(width=3, color="cyan")
+        ))
+
+    # =========================
+    # LAYOUT (perspectiva real)
+    # =========================
     fig.update_layout(
         margin=dict(l=0, r=0, b=0, t=0),
         scene=dict(
             aspectratio=dict(x=1, y=1, z=3),
 
             camera=dict(
-                eye=dict(x=3, y=2, z=1.8)  # ✅ perspectiva fuerte
+                eye=dict(x=3.5, y=2.2, z=1.8)
             ),
 
-            xaxis_visible=False,
-            yaxis_visible=False,
-            zaxis_visible=False
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False),
+            zaxis=dict(visible=False)
         )
     )
 
@@ -1098,10 +1157,9 @@ def tubo_real(vm_list, SMYS, tipo):
 st.markdown("### Failure Visualization")
 
 st.plotly_chart(
-    tubo_real(vm_list, SMYS, tipo),
+    tubo_pro(vm_list, SMYS, modo),
     use_container_width=True
 )
-
 
 
 
