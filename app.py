@@ -596,7 +596,7 @@ sy = sig_hoop[i_crit]
 vm_crit = vm_list[i_crit]
 
 z_crit = ft_to_m(z_list[i_crit])
-st.write("Z crítico real", z_cr)
+st.write("Z crítico real", z_crit)
 # =========================================
 # ELIPSE VM
 # =========================================
