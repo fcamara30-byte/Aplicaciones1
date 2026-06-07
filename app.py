@@ -975,124 +975,121 @@ st.subheader("Conclusions")
 
 import plotly.graph_objects as go
 
-# modo dominante
-if fail_burst:
-    modo = "Burst"
-elif fail_collapse:
-    modo = "Collapse"
+# =========================
+# MODO DOMINANTE
+# =========================
+if fail_collapse:
+    modo_fail = "Collapse"
+elif fail_burst:
+    modo_fail = "Burst"
 elif fail_vm:
-    modo = "VM"
+    modo_fail = "VM"
 elif abs(Torque) > 0:
-    modo = "Torque"
+    modo_fail = "Torque"
 elif abs(F_ext) > 0:
-    modo = "Axial"
+    modo_fail = "Axial"
 else:
-    modo = "OK"
+    modo_fail = "OK"
 
 
-def tubo_pro(vm_list, SMYS, modo):
+def tubo_pro(vm_list, SMYS, sa, sh, tau, modo_fail):
 
-    theta = np.linspace(0, 2*np.pi, 60)
-    z_vals = np.linspace(0, 10, 60)
+    # resolución liviana
+    n_theta = 30
+    n_z = 35
+
+    theta = np.linspace(0, 2*np.pi, n_theta)
+    z_vals = np.linspace(0, 10, n_z)
+
     theta, z = np.meshgrid(theta, z_vals)
 
     # =========================
-    # COLOR (estrés)
+    # COMPONENTE DOMINANTE REAL
     # =========================
-    vm_interp = np.interp(
-        np.linspace(0, len(vm_list)-1, len(z_vals)),
-        np.arange(len(vm_list)),
-        vm_list
-    )
+    comp_ax = abs(sa)
+    comp_hoop = abs(sh)
+    comp_tau = abs(tau)
 
-    vm_norm = np.clip(vm_interp / SMYS, 0, 1)
-    vm_surface = np.tile(vm_norm.reshape(-1,1), (1, len(theta[0])))
+    if modo_fail == "Collapse":
+        modo = "Collapse"
+
+    elif comp_tau > comp_ax and comp_tau > comp_hoop:
+        modo = "Torque"
+
+    elif comp_ax > comp_hoop:
+        modo = "Axial"
+
+    else:
+        modo = "Burst"
 
     R = 1.0
 
     # =========================
-    # GEOMETRÍA POR MODO
+    # DEFORMACIONES
     # =========================
 
-    # 🔴 BURST → balón + ruptura + fuga
+    # 🔴 BURST (presión interna dominante)
     if modo == "Burst":
 
-        deform = 1 + 1.3*np.exp(-((z_vals-5)**2)/2)
+        deform = 1 + 0.8*np.exp(-((z_vals-5)**2)/2)
         r = deform[:, None]
 
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
-        # grieta
-        crack = (theta > 5.6) & (theta < 6.0)
-        x[crack] *= 1.5
-        y[crack] *= 1.5
-
-        # jet de presión
-        jet_x = [2.5]*20
-        jet_y = [0]*20
-        jet_z = np.linspace(4,6,20)
-
-    # 🔵 COLLAPSE → abollado + doblez
+    # 🔵 COLLAPSE
     elif modo == "Collapse":
 
-        deform = 1 - 0.7*np.exp(-((z_vals-6)**2)/2)
+        deform = 1 - 0.7*np.exp(-((z_vals-6)**2)/1.5)
         r = deform[:, None]
 
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
-        # ovalización fuerte
+        # ovalización
         x *= 0.4
 
-        jet_x, jet_y, jet_z = [], [], []
-
-    # 🟡 VM → pandeo + grieta
-    elif modo == "VM":
-
-        r = 1 + 0.3*np.sin(4*theta)*np.exp(-((z_vals-5)**2)/3)[:, None]
-
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
-
-        # fisura lateral
-        crack = (theta > 2.5) & (theta < 3.0)
-        x[crack] *= 1.4
-
-        jet_x = [2]*20
-        jet_y = [0]*20
-        jet_z = np.linspace(4,6,20)
-
-    # 🟣 TORQUE → tubo torsionado 45°
+    # 🟣 TORQUE
     elif modo == "Torque":
 
         twist = (z_vals / max(z_vals)) * np.pi/4  # 45°
         x = R * np.cos(theta + twist[:, None])
         y = R * np.sin(theta + twist[:, None])
 
-        jet_x, jet_y, jet_z = [], [], []
-
-    # 🟢 AXIAL → estirado + cuello
+    # 🟢 AXIAL
     elif modo == "Axial":
 
-        stretch = 1.7
+        signo = 1 if sa > 0 else -1
+
+        stretch = 1 + 0.6 * signo
+
         z = z * stretch
 
-        r = R * 1/(1 + 0.8*(z_vals/max(z_vals)))[:, None]
+        # reducción de diámetro por volumen
+        r = R / (abs(stretch)**0.5)
 
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
-        jet_x, jet_y, jet_z = [], [], []
-
-    # OK
     else:
-        x = R*np.cos(theta)
-        y = R*np.sin(theta)
-        jet_x, jet_y, jet_z = [], [], []
+        x = R * np.cos(theta)
+        y = R * np.sin(theta)
 
     # =========================
-    # SUPERFICIE PRINCIPAL
+    # COLOR (VM)
+    # =========================
+    vm_norm = np.clip(vm_list / SMYS, 0, 1)
+
+    vm_small = np.interp(
+        np.linspace(0, len(vm_list)-1, n_z),
+        np.arange(len(vm_list)),
+        vm_norm
+    )
+
+    color = np.tile(vm_small.reshape(-1,1), (1, n_theta))
+
+    # =========================
+    # PLOT
     # =========================
     fig = go.Figure()
 
@@ -1100,49 +1097,34 @@ def tubo_pro(vm_list, SMYS, modo):
         x=x,
         y=y,
         z=z,
-        surfacecolor=vm_surface,
+        surfacecolor=color,
         colorscale="RdYlGn_r",
         showscale=False,
 
-        # 🔥 SOMBRAS REALISTAS
         lighting=dict(
-            ambient=0.3,
+            ambient=0.35,
             diffuse=0.9,
-            specular=0.8,
-            roughness=0.3,
-            fresnel=0.4
+            specular=0.7,
+            roughness=0.4
         ),
 
         lightposition=dict(
             x=100,
             y=200,
-            z=300
+            z=150
         )
     ))
 
-    # =========================
-    # JET DE PRESIÓN
-    # =========================
-    if len(jet_x) > 0:
-        fig.add_trace(go.Scatter3d(
-            x=jet_x,
-            y=jet_y,
-            z=jet_z,
-            mode="markers+lines",
-            marker=dict(size=4, color="blue"),
-            line=dict(width=3, color="cyan")
-        ))
-
-    # =========================
-    # LAYOUT (perspectiva real)
-    # =========================
     fig.update_layout(
         margin=dict(l=0, r=0, b=0, t=0),
+
+        height=320,  # 🔥 más chico = menos memoria
+
         scene=dict(
-            aspectratio=dict(x=1, y=1, z=3),
+            aspectratio=dict(x=1, y=1, z=2.5),
 
             camera=dict(
-                eye=dict(x=3.5, y=2.2, z=1.8)
+                eye=dict(x=2.5, y=2.0, z=1.5)
             ),
 
             xaxis=dict(visible=False),
@@ -1154,13 +1136,16 @@ def tubo_pro(vm_list, SMYS, modo):
     return fig
 
 
+# =========================
+# RENDER
+# =========================
 st.markdown("### Failure Visualization")
 
 st.plotly_chart(
-    tubo_pro(vm_list, SMYS, modo),
+    tubo_pro(vm_list, SMYS, sx, sy, tau/1000, modo_fail),
     use_container_width=True
 )
-
+``
 
 
 
