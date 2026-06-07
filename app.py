@@ -972,6 +972,7 @@ else:
 
 ballooning_ksi = ballooning_lbf / A / 1000
 st.subheader("Conclusions")
+
 import plotly.graph_objects as go
 
 # tipo de falla
@@ -984,37 +985,44 @@ elif fail_vm:
 else:
     tipo_falla = "OK"
 
-def tubo_3d_coloreado(tipo, vm_list, SMYS):
+def tubo_3d_coloreado(vm_list, SMYS, tipo):
 
-    theta = np.linspace(0, 2*np.pi, 25)
-    z = np.linspace(0, 1, 30)
+    # resolución liviana
+    n_theta = 25
+    n_z = 30
 
-    theta, z = np.meshgrid(theta, z)
+    theta = np.linspace(0, 2*np.pi, n_theta)
+    z_vals = np.linspace(0, 1, n_z)
 
-    # distribución de esfuerzos (normalizada)
-    vm_norm = np.array(vm_list) / SMYS
+    theta, z = np.meshgrid(theta, z_vals)
+
+    # VM reducido (ajuste tamaño)
+    vm_small = np.interp(
+        np.linspace(0, len(vm_list)-1, n_z),
+        np.arange(len(vm_list)),
+        vm_list
+    )
+
+    vm_norm = vm_small / SMYS
     vm_norm = np.clip(vm_norm, 0, 1.2)
 
-    vm_surface = np.tile(vm_norm.reshape(-1,1), (1,60))
+    vm_surface = np.tile(vm_norm.reshape(-1,1), (1, n_theta))
 
     # geometría
     if tipo == "Burst":
-        r = 1 + 0.4*z
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
+        r = 1 + 0.3*z
 
     elif tipo == "Collapse":
-        x = 0.6 * np.cos(theta)
-        y = np.sin(theta)
+        r = 0.6
 
     elif tipo == "VM":
-        r = 1 + 0.2*np.sin(3*theta)
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
+        r = 1 + 0.1*np.sin(3*theta)
 
     else:
-        x = np.cos(theta)
-        y = np.sin(theta)
+        r = 1
+
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
 
     fig = go.Figure(data=[
         go.Surface(
@@ -1023,9 +1031,9 @@ def tubo_3d_coloreado(tipo, vm_list, SMYS):
             z=z,
             surfacecolor=vm_surface,
             colorscale="RdYlGn_r",
+            showscale=True,
             cmin=0,
-            cmax=1.2,
-            colorbar=dict(title="VM/SMYS"),
+            cmax=1.2
         )
     ])
 
@@ -1034,8 +1042,7 @@ def tubo_3d_coloreado(tipo, vm_list, SMYS):
         scene=dict(
             xaxis_visible=False,
             yaxis_visible=False,
-            zaxis_visible=False,
-            aspectratio=dict(x=1, y=1, z=2)
+            zaxis_visible=False
         )
     )
 
@@ -1043,7 +1050,7 @@ def tubo_3d_coloreado(tipo, vm_list, SMYS):
 
 # mostrar
 st.subheader("Failure Visualization (Stress Map)")
-fig3d = tubo_3d_coloreado(tipo_falla, vm_list, SMYS)
+st.plotly_chart(tubo_3d_coloreado(vm_list, SMYS, tipo_falla), use_container_width=True)
 
 
 
