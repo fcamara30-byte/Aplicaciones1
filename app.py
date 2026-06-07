@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import threading
 import time
 import requests
+import plotly.graph_objects as go
 
 st.session_state.setdefault("run_id", 0)
 
@@ -971,6 +972,82 @@ else:
 
 ballooning_ksi = ballooning_lbf / A / 1000
 st.subheader("Conclusions")
+import plotly.graph_objects as go
+
+# tipo de falla
+if fail_burst:
+    tipo_falla = "Burst"
+elif fail_collapse:
+    tipo_falla = "Collapse"
+elif fail_vm:
+    tipo_falla = "VM"
+else:
+    tipo_falla = "OK"
+
+def tubo_3d_coloreado(tipo, vm_list, SMYS):
+
+    theta = np.linspace(0, 2*np.pi, 60)
+    z = np.linspace(0, 1, len(vm_list))
+    theta, z = np.meshgrid(theta, z)
+
+    # distribución de esfuerzos (normalizada)
+    vm_norm = np.array(vm_list) / SMYS
+    vm_norm = np.clip(vm_norm, 0, 1.2)
+
+    vm_surface = np.tile(vm_norm.reshape(-1,1), (1,60))
+
+    # geometría
+    if tipo == "Burst":
+        r = 1 + 0.4*z
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+    elif tipo == "Collapse":
+        x = 0.6 * np.cos(theta)
+        y = np.sin(theta)
+
+    elif tipo == "VM":
+        r = 1 + 0.2*np.sin(3*theta)
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+    else:
+        x = np.cos(theta)
+        y = np.sin(theta)
+
+    fig = go.Figure(data=[
+        go.Surface(
+            x=x,
+            y=y,
+            z=z,
+            surfacecolor=vm_surface,
+            colorscale="RdYlGn_r",
+            cmin=0,
+            cmax=1.2,
+            colorbar=dict(title="VM/SMYS"),
+        )
+    ])
+
+    fig.update_layout(
+        margin=dict(l=0, r=0, b=0, t=0),
+        scene=dict(
+            xaxis_visible=False,
+            yaxis_visible=False,
+            zaxis_visible=False,
+            aspectratio=dict(x=1, y=1, z=2)
+        )
+    )
+
+    return fig
+
+# mostrar
+st.subheader("Failure Visualization (Stress Map)")
+fig3d = tubo_3d_coloreado(tipo_falla, vm_list, SMYS)
+
+
+
+
+
 
 c1, c2, c3, c4 = st.columns(4)
 
