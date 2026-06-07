@@ -454,12 +454,8 @@ for i in range(200):
 
     F_weight = peso * z
 
-    F_buoy = (
-        rho_ext *
-        fill_ext *
-        z *
-        A_ext_ft2
-    )
+    F_buoy = rho_ext * fill_ext * depth_ft * (np.pi / 4 * OD**2)
+
 
 # distribución progresiva de carga externa (sin romper modelo)
     if F_ext < 0:
