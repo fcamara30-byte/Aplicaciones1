@@ -173,24 +173,7 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
 
     sigma_ax = (F_weight - F_buoy + F_ext) / A
 
-    # Axial por presión
-    if Condition == "Free":
-        sigma_pressure = 0
 
-    elif Condition == "Anchored":
-        sigma_pressure = 0.5 * (
-            (Pi * ri**2 - Po * ro**2)
-            / (ro**2 - ri**2)
-        )
-
-    elif Condition == "Packer":
-        sigma_pressure = (
-            (Pi * ri**2 - Po * ro**2)
-            / (ro**2 - ri**2)
-        )
-
-    else:
-        sigma_pressure = 0
 
     # Axial total
     sa = sigma_ax + sigma_pressure
