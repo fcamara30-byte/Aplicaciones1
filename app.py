@@ -985,17 +985,17 @@ elif fail_vm:
 else:
     tipo_falla = "OK"
 
-def tubo_3d(vm_list, SMYS, tipo):
+def tubo_3d_real(vm_list, SMYS, tipo):
 
-    n_theta = 30
-    n_z = 40
+    n_theta = 40
+    n_z = 50
 
     theta = np.linspace(0, 2*np.pi, n_theta)
-    z_vals = np.linspace(0, 10, n_z)   # ✅ escala real (vertical)
+    z_vals = np.linspace(0, 10, n_z)
 
     theta, z = np.meshgrid(theta, z_vals)
 
-    # VM → reducir y normalizar
+    # VM interpolado
     vm_interp = np.interp(
         np.linspace(0, len(vm_list)-1, n_z),
         np.arange(len(vm_list)),
@@ -1004,34 +1004,46 @@ def tubo_3d(vm_list, SMYS, tipo):
 
     vm_norm = vm_interp / SMYS
 
-    # ✅ evitar todo rojo
-    vm_norm = np.clip(vm_norm, 0, 1.0)
+    # HACER CONTRASTE DE COLOR
+    vm_norm = np.clip(vm_norm, 0, 1)
+    vm_norm = vm_norm**2   # 🔥 mejora contraste visual
 
     vm_surface = np.tile(vm_norm.reshape(-1,1), (1, n_theta))
 
-    # ✅ RADIO BASE REAL
-    r_base = 1.0
+    R0 = 1.0
 
-    # ✅ DEFORMACIONES VISUALES
+    # =========================
+    # DEFORMACIONES VISUALES FUERTES
+    # =========================
     if tipo == "Burst":
-        r = r_base * (1 + 0.8 * (z_vals / max(z_vals)))[:, None]
 
-    elif tipo == "Collapse":
-        r = r_base * (1 - 0.6 * (z_vals / max(z_vals)))[:, None]
+        # expansión hacia el fondo
+        factor = (z_vals / max(z_vals))
+        r = R0 * (1 + 1.5 * factor[:, None])
 
-    elif tipo == "VM":
-        r = r_base * (1 + 0.25*np.sin(3*theta))
-
-    else:
-        r = r_base
-
-    # ✅ coordenadas correctas
-    if tipo == "Collapse":
-        x = r * np.cos(theta)
-        y = r_base * 1.2 * np.sin(theta)
-    else:
         x = r * np.cos(theta)
         y = r * np.sin(theta)
+
+    elif tipo == "Collapse":
+
+        # colapso fuerte + ovalización
+        factor = (z_vals / max(z_vals))
+        r = R0 * (1 - 0.8 * factor[:, None])
+
+        x = r * np.cos(theta) * 0.4  # 🔥 aplasta fuerte
+        y = r * np.sin(theta) * 1.3
+
+    elif tipo == "VM":
+
+        # deformación tipo pandeo
+        r = R0 * (1 + 0.4*np.sin(4*theta)* (z/max(z_vals)))
+
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+    else:
+        x = R0 * np.cos(theta)
+        y = R0 * np.sin(theta)
 
     fig = go.Figure(data=[
         go.Surface(
@@ -1048,21 +1060,32 @@ def tubo_3d(vm_list, SMYS, tipo):
 
     fig.update_layout(
         margin=dict(l=0, r=0, b=0, t=0),
+
         scene=dict(
-            xaxis_visible=False,
-            yaxis_visible=False,
-            zaxis_visible=False,
-            aspectratio=dict(x=1, y=1, z=2),
-            camera=dict(eye=dict(x=1.8, y=1.8, z=1.5))  # ✅ centra bien
+            aspectmode="manual",
+            aspectratio=dict(x=1, y=1, z=2.5),
+
+            camera=dict(
+                eye=dict(x=2.5, y=2.0, z=1.8)  # 🔥 perspectiva real
+            ),
+
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False),
+            zaxis=dict(visible=False)
         )
     )
 
     return fig
 
-# ✅ título chico
+# título chico
 st.markdown("### Failure Visualization")
 
-st.plotly_chart(tubo_3d(vm_list, SMYS, tipo_falla), use_container_width=True)
+# render
+st.plotly_chart(
+    tubo_3d_real(vm_list, SMYS, tipo_falla),
+    use_container_width=True
+)
+
 
 
 
