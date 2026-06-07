@@ -455,21 +455,26 @@ for i in range(200):
 
     sigma_ax = F_total / A
 
-    # ==========================
-    # AXIAL POR PRESION
-    # ==========================
-    if Condition == "Free":
+# ==========================
+# AXIAL POR PRESION
+# ==========================
+if Condition == "Free":
 
-        sigma_pressure = 0
+    sigma_pressure = 0
 
-    else:
+elif Condition == "Anchored":
 
-        sigma_pressure = (
-            Pi * ri**2
-            - Po * ro**2
-        ) / (
-            ro**2 - ri**2
-        )
+    sigma_pressure = 0.5 * (
+        (Pi * ri**2 - Po * ro**2)
+        / (ro**2 - ri**2)
+    )
+
+elif Condition == "Packer":
+
+    sigma_pressure = (
+        (Pi * ri**2 - Po * ro**2)
+        / (ro**2 - ri**2)
+    )
 
     sa = sigma_ax + sigma_pressure
 
