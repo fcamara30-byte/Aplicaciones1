@@ -206,7 +206,16 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
     tau = T * ro / J if J > 0 else 0
 
     # Von Mises
-    vm = np.sqrt(sa**2 + sh**2 - sa * sh + 3 * tau**2)
+
+    Sr=-Pi           
+    vm = np.sqrt(
+    (
+        (sa - sh)**2 +
+        (sh - sr)**2 +
+        (sr - sa)**2
+    ) / 2
+    + 3 * tau**2
+)
 
     return vm / 1000
 
