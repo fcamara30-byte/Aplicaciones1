@@ -996,7 +996,7 @@ def tubo_3d_coloreado(vm_list, SMYS, tipo):
 
     theta, z = np.meshgrid(theta, z_vals)
 
-    # VM reducido (ajuste tamaño)
+    # ajustar vm al tamaño del tubo
     vm_small = np.interp(
         np.linspace(0, len(vm_list)-1, n_z),
         np.arange(len(vm_list)),
@@ -1008,21 +1008,27 @@ def tubo_3d_coloreado(vm_list, SMYS, tipo):
 
     vm_surface = np.tile(vm_norm.reshape(-1,1), (1, n_theta))
 
-    # geometría
+    # 🔥 GEOMETRÍA VISUAL (EXAGERADA PARA QUE SE NOTE)
+
     if tipo == "Burst":
-        r = 1 + 0.3*z
+        r = 1 + 1.2 * z   # inflado fuerte
+
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
 
     elif tipo == "Collapse":
-        r = 0.6
+        x = 0.35 * np.cos(theta)   # aplastado fuerte
+        y = 1.2 * np.sin(theta)
 
     elif tipo == "VM":
-        r = 1 + 0.1*np.sin(3*theta)
+        r = 1 + 0.4*np.sin(3*theta) * z   # deformación irregular
+
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
 
     else:
-        r = 1
-
-    x = r * np.cos(theta)
-    y = r * np.sin(theta)
+        x = np.cos(theta)
+        y = np.sin(theta)
 
     fig = go.Figure(data=[
         go.Surface(
@@ -1031,9 +1037,10 @@ def tubo_3d_coloreado(vm_list, SMYS, tipo):
             z=z,
             surfacecolor=vm_surface,
             colorscale="RdYlGn_r",
-            showscale=True,
             cmin=0,
-            cmax=1.2
+            cmax=1.2,
+            showscale=True,
+            colorbar=dict(title="VM/SMYS", thickness=10)
         )
     ])
 
@@ -1042,14 +1049,17 @@ def tubo_3d_coloreado(vm_list, SMYS, tipo):
         scene=dict(
             xaxis_visible=False,
             yaxis_visible=False,
-            zaxis_visible=False
+            zaxis_visible=False,
+            aspectratio=dict(x=1, y=1, z=2)
         )
     )
 
     return fig
 
+# ✅ título más chico
+st.markdown("### Failure Visualization")
+
 # mostrar
-st.subheader("Failure Visualization (Stress Map)")
 st.plotly_chart(tubo_3d_coloreado(vm_list, SMYS, tipo_falla), use_container_width=True)
 
 
