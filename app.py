@@ -173,19 +173,25 @@ def calc_vm(depth_m, Piny, OD, ID, peso, rho_int, rho_ext,
     Po = Pext_surface + rho_ext * z_ext / 144
 
     # Axial mecánico
-    F_weight = peso * depth_ft
+z = depth_ft
 
-    F_buoy = rho_ext * depth_ft * fill_ext * A_ext_ft2
+F_weight = peso * z
 
-   
-    ratio = 1.0
+F_buoy = rho_ext * fill_ext * z * A_ext_ft2
 
-    if F_ext < 0:
-      F_ext_eff = F_ext * (1 - ratio)
-    else:
-      F_ext_eff = F_ext
+if F_ext < 0:
+    F_ext_eff = F_ext * (1 - z / depth_ft)
+else:
+    F_ext_eff = F_ext
 
-    sigma_ax = (F_weight - F_buoy + F_ext_eff) / A
+F_total = (
+    F_weight
+    - F_buoy
+    + F_ext_eff
+)
+
+sigma_ax = F_total / A
+
 
                 
     # Axial por presión
