@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import threading
 import time
 import requests
-import plotly.graph_objects as go
+
 
 st.session_state.setdefault("run_id", 0)
 
