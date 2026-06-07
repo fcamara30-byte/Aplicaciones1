@@ -127,7 +127,18 @@ threading.Thread(target=keep_alive, daemon=True).start()
 
 
 
-st.title("OCTG - Von Misses Calculation")
+st.markdown(
+    """
+    <h1 style="
+        color:#5DADE2;
+        text-align:center;
+        font-weight:bold;
+    ">
+    OCTG - Von Mises Calculation
+    </h1>
+    """,
+    unsafe_allow_html=True
+)
 
 # =========================================
 # CONVERSIONES
