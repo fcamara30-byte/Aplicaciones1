@@ -3,7 +3,9 @@ from io import BytesIO
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-
+import threading
+import time
+import requests
 
 st.session_state.setdefault("run_id", 0)
 
@@ -112,6 +114,19 @@ def color_vm(val):
 
 
 st.set_page_config(layout="wide")
+def keep_alive():
+    while True:
+        try:
+            requests.get("https://tubovonmisses.streamlit.app/")
+            print("Self ping OK")
+        except:
+            print("Self ping failed")
+        time.sleep(240)  # cada 4 minutos
+
+threading.Thread(target=keep_alive, daemon=True).start()
+
+
+
 st.title("OCTG - Von Misses Calculation")
 
 # =========================================
