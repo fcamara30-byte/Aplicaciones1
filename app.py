@@ -975,76 +975,95 @@ st.subheader("Conclusions")
 
 import plotly.graph_objects as go
 
-# tipo de falla
 if fail_burst:
-    tipo_falla = "Burst"
+    tipo = "Burst"
 elif fail_collapse:
-    tipo_falla = "Collapse"
+    tipo = "Collapse"
 elif fail_vm:
-    tipo_falla = "VM"
+    tipo = "VM"
 else:
-    tipo_falla = "OK"
+    tipo = "OK"
 
-def tubo_3d_real(vm_list, SMYS, tipo):
 
-    n_theta = 40
-    n_z = 50
+def tubo_real(vm_list, SMYS, tipo):
 
-    theta = np.linspace(0, 2*np.pi, n_theta)
-    z_vals = np.linspace(0, 10, n_z)
+    theta = np.linspace(0, 2*np.pi, 60)
+    z_vals = np.linspace(0, 10, 50)
 
     theta, z = np.meshgrid(theta, z_vals)
 
-    # VM interpolado
+    # ------------------------
+    # estrés (color)
+    # ------------------------
     vm_interp = np.interp(
-        np.linspace(0, len(vm_list)-1, n_z),
+        np.linspace(0, len(vm_list)-1, len(z_vals)),
         np.arange(len(vm_list)),
         vm_list
     )
 
-    vm_norm = vm_interp / SMYS
+    vm_norm = np.clip(vm_interp / SMYS, 0, 1)
+    vm_surface = np.tile(vm_norm.reshape(-1,1), (1, len(theta[0])))
 
-    # HACER CONTRASTE DE COLOR
-    vm_norm = np.clip(vm_norm, 0, 1)
-    vm_norm = vm_norm**2   # 🔥 mejora contraste visual
+    # ------------------------
+    # RADIO BASE
+    # ------------------------
+    R = 1.0
 
-    vm_surface = np.tile(vm_norm.reshape(-1,1), (1, n_theta))
+    # ------------------------
+    # FALLAS VISUALES REALES
+    # ------------------------
 
-    R0 = 1.0
-
-    # =========================
-    # DEFORMACIONES VISUALES FUERTES
-    # =========================
+    # BURST = balón + ruptura
     if tipo == "Burst":
 
-        # expansión hacia el fondo
-        factor = (z_vals / max(z_vals))
-        r = R0 * (1 + 1.5 * factor[:, None])
+        center = 5  # mitad del tubo
+        sigma = 1.5
+
+        deform = 1 + 1.2 * np.exp(-((z_vals - center)**2)/(2*sigma**2))
+
+        r = deform[:, None]
 
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
+        # 🔥 grieta
+        mask = (theta > 5.8) & (theta < 6.2)
+        x[mask] *= 1.5
+        y[mask] *= 1.5
+
+    # COLLAPSE = abollado real
     elif tipo == "Collapse":
 
-        # colapso fuerte + ovalización
-        factor = (z_vals / max(z_vals))
-        r = R0 * (1 - 0.8 * factor[:, None])
+        deform = 1 - 0.7 * np.exp(-((z_vals-6)**2)/2)
 
-        x = r * np.cos(theta) * 0.4  # 🔥 aplasta fuerte
-        y = r * np.sin(theta) * 1.3
-
-    elif tipo == "VM":
-
-        # deformación tipo pandeo
-        r = R0 * (1 + 0.4*np.sin(4*theta)* (z/max(z_vals)))
+        r = deform[:, None]
 
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
-    else:
-        x = R0 * np.cos(theta)
-        y = R0 * np.sin(theta)
+        # ovalización fuerte
+        x *= 0.5
 
+    # VM = pandeo + grieta
+    elif tipo == "VM":
+
+        r = 1 + 0.3*np.sin(3*theta) * np.exp(-((z_vals-5)**2)/4)[:, None]
+
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+        # grieta lateral
+        crack_zone = (theta > 2.5) & (theta < 3.0)
+        x[crack_zone] *= 1.3
+
+    # OK
+    else:
+        x = R * np.cos(theta)
+        y = R * np.sin(theta)
+
+    # ------------------------
+    # PLOT
+    # ------------------------
     fig = go.Figure(data=[
         go.Surface(
             x=x,
@@ -1060,32 +1079,28 @@ def tubo_3d_real(vm_list, SMYS, tipo):
 
     fig.update_layout(
         margin=dict(l=0, r=0, b=0, t=0),
-
         scene=dict(
-            aspectmode="manual",
-            aspectratio=dict(x=1, y=1, z=2.5),
+            aspectratio=dict(x=1, y=1, z=3),
 
             camera=dict(
-                eye=dict(x=2.5, y=2.0, z=1.8)  # 🔥 perspectiva real
+                eye=dict(x=3, y=2, z=1.8)  # ✅ perspectiva fuerte
             ),
 
-            xaxis=dict(visible=False),
-            yaxis=dict(visible=False),
-            zaxis=dict(visible=False)
+            xaxis_visible=False,
+            yaxis_visible=False,
+            zaxis_visible=False
         )
     )
 
     return fig
 
-# título chico
+
 st.markdown("### Failure Visualization")
 
-# render
 st.plotly_chart(
-    tubo_3d_real(vm_list, SMYS, tipo_falla),
+    tubo_real(vm_list, SMYS, tipo),
     use_container_width=True
 )
-
 
 
 
