@@ -441,6 +441,8 @@ for i in range(200):
 # ==========================
 # AXIAL POR PRESION
 # ==========================
+sigma_pressure = 0
+
 if Condition == "Free":
 
     sigma_pressure = 0
@@ -459,8 +461,8 @@ elif Condition == "Packer":
         / (ro**2 - ri**2)
     )
 
-    sa = sigma_ax + sigma_pressure
-
+# ✅ ESTA LINEA VA AFUERA DEL IF (CLAVE)
+sa = sigma_ax + sigma_pressure
 
 
 
