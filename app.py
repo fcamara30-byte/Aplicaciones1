@@ -1159,7 +1159,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
 # =========================
 # LAYOUT: RESULTADOS + 3D
 # =========================
-
+status = "FAIL" if (fail_vm or fail_burst or collapse_util > 100) else "PASS"
 st.markdown("## Conclusions")
 
 col_left, col_right = st.columns([2, 1])
