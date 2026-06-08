@@ -978,19 +978,20 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse):
 
     theta = np.linspace(0, 2*np.pi, n_theta)
     z_vals = np.linspace(0, 10, n_z)
+
     theta, z = np.meshgrid(theta, z_vals)
 
     R = 1.0
 
     # =========================
-    # CONTRIBUCIONES NORMALIZADAS (CLAVE)
+    # COMPONENTES NORMALIZADAS
     # =========================
     ax_ratio = abs(sa) / SMYS
     hoop_ratio = abs(sh) / SMYS
     tau_ratio = abs(tau) / SMYS
 
     # =========================
-    # MODO DOMINANTE REAL
+    # MODO DOMINANTE
     # =========================
     if fail_collapse:
         modo = "Collapse"
@@ -1000,74 +1001,77 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse):
 
         if max_comp == ax_ratio:
             modo = "Axial"
-
         elif max_comp == tau_ratio:
             modo = "Torque"
-
         else:
             modo = "Hoop"
 
     # =========================
-    # GEOMETRÍA BASE (SIEMPRE definida)
+    # GEOMETRIA BASE
     # =========================
-    x = R * np.cos(theta)
-    y = R * np.sin(theta)
+    x = R*np.cos(theta)
+    y = R*np.sin(theta)
 
     # =========================
-    # DEFORMACIONES
+    # AXIAL (🔥 NUEVO NECKING)
     # =========================
-
-    # 🟢 AXIAL (ahora SIEMPRE responde bien)
     if modo == "Axial":
 
         signo = np.sign(sa)
-
-        # escala proporcional (NO fijo)
         mag = min(ax_ratio, 2.0)
 
-        stretch = 1 + 0.8 * signo * mag
-
+        # elongación global
+        stretch = 1 + 1.2 * signo * mag
         z = z * stretch
 
-        r = R / (abs(stretch)**0.6)
+        # 🔥 necking en el centro
+        deform = 1 - 0.5 * mag * np.exp(-((z_vals-5)**2)/1.5)
 
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
-
-    # 🟣 TORQUE (no desaparece abruptamente)
-    elif modo == "Torque":
-
-        mag = min(tau_ratio, 2.0)
-
-        twist = (z_vals / max(z_vals)) * np.pi * (1 + 2*mag)  # 🔥 progresivo
-
-        x = np.cos(theta + twist[:, None])
-        y = np.sin(theta + twist[:, None])
-
-        r_mod = 1 + 0.3 * mag * np.sin(4*theta)
-
-        x *= r_mod
-        y *= r_mod
-
-    # 🔴 HOOP / BURST
-    elif modo == "Hoop":
-
-        mag = min(hoop_ratio, 2.0)
-
-        deform = 1 + 1.2 * mag * np.exp(-((z_vals-5)**2)/2)
         r = deform[:, None]
 
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
-    # 🔵 COLLAPSE
+    # =========================
+    # TORQUE (más visible)
+    # =========================
+    elif modo == "Torque":
+
+        mag = min(tau_ratio, 2.0)
+
+        twist = (z_vals / max(z_vals)) * np.pi * (1 + 3*mag)
+
+        x = np.cos(theta + twist[:, None])
+        y = np.sin(theta + twist[:, None])
+
+        r_mod = 1 + 0.35 * mag * np.sin(4*theta)
+
+        x *= r_mod
+        y *= r_mod
+
+    # =========================
+    # BURST
+    # =========================
+    elif modo == "Hoop":
+
+        mag = min(hoop_ratio, 2.0)
+
+        deform = 1 + 1.5 * mag * np.exp(-((z_vals-5)**2)/2)
+        r = deform[:, None]
+
+        x = r*np.cos(theta)
+        y = r*np.sin(theta)
+
+    # =========================
+    # COLLAPSE
+    # =========================
     elif modo == "Collapse":
 
         deform = 1 - 0.85*np.exp(-((z_vals-6)**2)/1.2)
         r = deform[:, None]
 
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
+        x = r*np.cos(theta)
+        y = r*np.sin(theta)
 
         x *= 0.25
 
@@ -1090,9 +1094,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse):
     fig = go.Figure()
 
     fig.add_trace(go.Surface(
-        x=x,
-        y=y,
-        z=z,
+        x=x, y=y, z=z,
         surfacecolor=color,
         colorscale="RdYlGn_r",
         showscale=False,
@@ -1103,7 +1105,6 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse):
             specular=0.7,
             roughness=0.4
         ),
-
         lightposition=dict(x=100, y=200, z=150)
     ))
 
@@ -1114,7 +1115,6 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse):
         scene=dict(
             aspectratio=dict(x=1, y=1, z=2.5),
             camera=dict(eye=dict(x=2.5, y=2.0, z=1.5)),
-
             xaxis_visible=False,
             yaxis_visible=False,
             zaxis_visible=False
