@@ -1139,7 +1139,10 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
 
     fig.update_layout(
         margin=dict(l=0, r=0, b=0, t=0),
-        height=320,
+        height=300,        
+    
+        width=280
+
 
         scene=dict(
             aspectratio=dict(x=1, y=1, z=2.5),
