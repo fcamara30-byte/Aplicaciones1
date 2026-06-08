@@ -1261,7 +1261,6 @@ with col_left:
 # =========================
 with col_right:
 
-    st.markdown("### Simulation")
 
     st.plotly_chart(
         tubo_pro(
