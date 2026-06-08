@@ -684,7 +684,12 @@ ax.plot(
     linewidth=1
 )
 
-cbar = plt.colorbar(sc, ax=ax)
+cbar = plt.colorbar(
+    sc,
+    ax=ax,
+    fraction=0.035,   # 👈 más angosta
+    pad=0.02          # 👈 más cerca del gráfico
+)
 
 
 cbar.set_ticks([0, 60, 80, 100, 120])
