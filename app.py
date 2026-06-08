@@ -470,16 +470,7 @@ for i in range(200):
 
 
 # distribución progresiva de carga externa (sin romper modelo)
-    if F_ext < 0:
-       F_ext_eff = F_ext * (1 - z / depth_ft)
-    else:
-       F_ext_eff = F_ext
-
-    F_total = (
-      F_weight
-      - F_buoy
-      + F_ext_eff
-)
+    F_total = F_weight - F_buoy + F_ext
 
 
     sigma_ax = F_total / A
