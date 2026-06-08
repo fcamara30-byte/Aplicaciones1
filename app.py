@@ -1064,41 +1064,39 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
         r = R * (1 - 0.4 * mag * neck[:, None])
 
 
-    # =========================
-    # 🟡 HOOP
-    # =========================
-    elif modo == "Hoop":
+   # =========================
+# 🟡 HOOP
+# =========================
+elif modo == "Hoop":
 
-        signo = np.sign(sh)
-        mag = min(abs(sh)/SMYS, 1.5)
+    signo = np.sign(sh)
+    mag = min(abs(sh)/SMYS, 1.5)
 
-        deform = 1 + signo * 1.2 * np.exp(-((z_vals - 5)**2)/2)
-        r = deform[:, None]
+    deform = 1 + signo * 1.2 * np.exp(-((z_vals - 5)**2)/2)
+    r = deform[:, None]
+
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
 
 
-    # =========================
-    # 🟣 TORQUE
-    # =========================
-   
-
+# =========================
+# 🟣 TORQUE
+# =========================
 elif modo == "Torque":
 
     mag = min(abs(tau) / SMYS, 2.0)
 
-    # ✅ torsión fuerte (define la hélice)
     twist_max = np.pi * (2 + 4 * mag)
     twist = (z_vals / max(z_vals)) * twist_max
 
     theta_mod = theta + twist[:, None]
 
-    # ✅ CLAVE: patrón helicoidal real (acoplado en z)
     helix_pattern = np.sin(3 * theta_mod + 2 * z)
 
     radial_wave = 1 + 0.05 * mag * helix_pattern
 
     x = R * radial_wave * np.cos(theta_mod)
     y = R * radial_wave * np.sin(theta_mod)
-
 
 
 
