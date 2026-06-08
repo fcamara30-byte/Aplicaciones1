@@ -1191,7 +1191,7 @@ with col_right:
             fail_burst,
             collapse_util
         ),
-        use_container_width=True
+        use_container_width=False
     )
 
 
