@@ -687,7 +687,7 @@ ax.plot(
 cbar = plt.colorbar(
     sc,
     ax=ax,
-    fraction=0.04,   # 👈 más angosta
+    fraction=0.047,   # 👈 más angosta
     pad=0.03          # 👈 más cerca del gráfico
 )
 
