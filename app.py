@@ -1021,26 +1021,25 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
         # =========================
         # 🔴 COLAPSO FUERTE (NUEVO)
         # =========================
-        if modo == "Collapse":
+    if modo == "Collapse":
 
-            deform = 1 - 0.85 * np.exp(-((z_vals - 6)**2) / 1.2)
-            r = deform[:, None]
+    if collapse_severo:
 
-            # ✅ aplastamiento tipo oval
-            if collapse_severo:
-                x = r * np.cos(theta)
-                y = r * np.sin(theta)
+        # 🔥 aplastamiento lateral (tipo prensa)
+        a = 0.3   # eje comprimido
+        b = 1.2   # eje expandido
 
-                # 🔥 CLAVE: aplastado fuerte
-                x *= 0.2
-                y *= 1.2
+        x = a * np.cos(theta)
+        y = b * np.sin(theta)
 
-                # 🔥 leve irregularidad (abollado)
-                x *= (1 + 0.2*np.sin(3*theta))
+    else:
+        # colapso leve (ligera ovalización)
+        a = 0.6
+        b = 1.05
 
-            else:
-                x = r * np.cos(theta)
-                y = r * np.sin(theta)
+        x = a * np.cos(theta)
+        y = b * np.sin(theta)
+
 
                 x *= 0.4
 
