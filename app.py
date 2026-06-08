@@ -1141,7 +1141,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
         margin=dict(l=0, r=0, b=0, t=0),
         height=300,        
     
-        width=280
+        width=280,
 
 
         scene=dict(
