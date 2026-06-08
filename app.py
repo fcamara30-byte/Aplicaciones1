@@ -1079,13 +1079,26 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
     # =========================
     # 🟣 TORQUE
     # =========================
+   
+
     elif modo == "Torque":
 
-        mag = min(abs(tau)/SMYS, 1.5)
+      mag = min(abs(tau) / SMYS, 2.0)
 
-        twist = (z_vals / max(z_vals)) * np.pi * (0.4 + 1.0 * mag)
+      # 🔥 1. torsión más agresiva
+      twist_max = np.pi * (0.8 + 2.5 * mag)
+      twist = (z_vals / max(z_vals)) * twist_max
 
-        theta = theta + twist[:, None]
+    # 🔥 2. patrón helicoidal más visible
+      theta_mod = theta + twist[:, None]
+
+    # 🔥 3. leve deformación estructural (sin colapsar)
+      radial_wave = 1 + 0.08 * mag * np.sin(6 * theta_mod)
+
+    # coordenadas finales
+      x = R * radial_wave * np.cos(theta_mod)
+      y = R * radial_wave * np.sin(theta_mod)
+
 
 
     # =========================
