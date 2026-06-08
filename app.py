@@ -1073,8 +1073,7 @@ elif modo == "Hoop":
     mag = min(abs(sh)/SMYS, 1.5)
 
     deform = 1 + signo * 1.2 * np.exp(-((z_vals - 5)**2)/2)
-    r = deform[:, None]
-
+    r = deform.reshape(-1,1)
     x = r * np.cos(theta)
     y = r * np.sin(theta)
 
