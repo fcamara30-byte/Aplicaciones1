@@ -986,7 +986,7 @@ if modo == "Collapse":
 
         x = a * np.cos(theta)
         y = b * np.sin(theta)
-``
+
 
 
 c1, c2, c3, c4 = st.columns(4)
