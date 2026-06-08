@@ -1163,7 +1163,7 @@ util = vm_crit / SMYS * 100
 status = "FAIL" if (fail_vm or fail_burst or collapse_util > 100) else "PASS"
 st.markdown("## Conclusions")
 
-col_left, col_right = st.columns([2, 1])
+col_left, col_right = st.columns([1.4, 1])
 
 # =========================
 # IZQUIERDA: RESULTADOS
