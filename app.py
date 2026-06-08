@@ -1092,7 +1092,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
       theta_mod = theta + twist[:, None]
 
  
-      radial_wave = 1 + 0.15 * mag * np.sin(10 * theta_mod)
+      radial_wave = 1 + 0.05 * mag * np.sin(4 * theta_mod)
 
     # ✅ coordenadas finales (NO se deben sobreescribir después)
       x = R * radial_wave * np.cos(theta_mod)
