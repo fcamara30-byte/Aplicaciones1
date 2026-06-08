@@ -1172,15 +1172,6 @@ with col_left:
 
     c1, c2, c3 = st.columns(3)
 
-    c1.metric("σ axial [ksi]", round(sx,1))
-    c1.metric("σ hoop [ksi]", round(sy,1))
-
-    c2.metric("Von Mises [ksi]", round(vm_crit,1))
-    c2.metric("Estado", status)
-
-    c3.metric("VM Util [%]", round(util,0))
-    c3.metric("Burst Util [%]", round(burst_util,0))
-    c3.metric("Collapse Util [%]", round(collapse_util,0))
 
 
 # =========================
