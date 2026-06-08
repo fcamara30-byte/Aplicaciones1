@@ -1164,9 +1164,9 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
 # =========================
 util = vm_crit / SMYS * 100
 status = "FAIL" if (fail_vm or fail_burst or collapse_util > 100) else "PASS"
-st.markdown("## Conclusions")
 
-st.markdown("## Conclusions")
+
+
 
 col_left, col_right = st.columns([2.3, 1])
 
