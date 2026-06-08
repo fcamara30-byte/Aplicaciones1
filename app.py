@@ -994,17 +994,12 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
 
     R = 1.0
 
-    # radio base
     r = np.ones_like(theta) * R
 
-    # =========================
-    # DEFINIR MODO
-    # =========================
     modo = "None"
 
     if hay_falla:
 
-        # ✅ PRIORIDAD REAL
         if collapse_util > 100:
             modo = "Collapse"
 
@@ -1012,7 +1007,6 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
             modo = "Burst"
 
         else:
-            # ✅ mayor tensión absoluta
             valores = {
                 "Axial": abs(sa),
                 "Hoop": abs(sh),
@@ -1021,95 +1015,91 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
             modo = max(valores, key=valores.get)
 
     # =========================
-    # 🔴 COLLAPSE REALISTA (ABOLLADO)
+    # COLLAPSE
     # =========================
     if modo == "Collapse":
 
         mag = min(collapse_util / 150, 1.5)
 
-        # zona de daño
-        z0 = 5
-        sigma_z = 1.2
-
-        # abolladura localizada
-        dent = np.exp(-((z - z0)**2)/sigma_z) * \
+        dent = np.exp(-((z - 5)**2)/1.2) * \
                np.exp(-((theta - np.pi/2)**2)/0.3)
 
-        # 🔥 deformación real hacia ADENTRO
         r = R - 0.6 * mag * dent
 
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
 
     # =========================
-    # 🔵 BURST
+    # BURST
     # =========================
     elif modo == "Burst":
 
         deform = 1 + 1.3 * np.exp(-((z_vals - 5)**2)/2)
-        r = deform[:, None]
+        r = deform.reshape(-1,1)
 
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
 
     # =========================
-    # 🟢 AXIAL
+    # AXIAL
     # =========================
     elif modo == "Axial":
 
         signo = np.sign(sa)
         mag = min(abs(sa)/SMYS, 1.5)
 
-        # elongación
         z = z * (1 + 1.2 * signo * mag)
 
-        # necking
         neck = np.exp(-((z_vals - 5)**2)/1.5)
-        r = R * (1 - 0.4 * mag * neck[:, None])
+        r = R * (1 - 0.4 * mag * neck.reshape(-1,1))
 
-
-   # =========================
-# 🟡 HOOP
-# =========================
-elif modo == "Hoop":
-
-    signo = np.sign(sh)
-    mag = min(abs(sh)/SMYS, 1.5)
-
-    deform = 1 + signo * 1.2 * np.exp(-((z_vals - 5)**2)/2)
-    r = deform.reshape(-1,1)
-    x = r * np.cos(theta)
-    y = r * np.sin(theta)
-
-
-# =========================
-# 🟣 TORQUE
-# =========================
-elif modo == "Torque":
-
-    mag = min(abs(tau) / SMYS, 2.0)
-
-    twist_max = np.pi * (2 + 4 * mag)
-    twist = (z_vals / max(z_vals)) * twist_max
-
-    theta_mod = theta + twist[:, None]
-
-    helix_pattern = np.sin(3 * theta_mod + 2 * z)
-
-    radial_wave = 1 + 0.05 * mag * helix_pattern
-
-    x = R * radial_wave * np.cos(theta_mod)
-    y = R * radial_wave * np.sin(theta_mod)
-
-
-
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
 
     # =========================
-    # COORDENADAS
+    # HOOP
     # =========================
-    if modo != "Torque":             
-      x = r * np.cos(theta)
-      y = r * np.sin(theta)
+    elif modo == "Hoop":
 
+        signo = np.sign(sh)
+        mag = min(abs(sh)/SMYS, 1.5)
+
+        deform = 1 + signo * 1.2 * np.exp(-((z_vals - 5)**2)/2)
+        r = deform.reshape(-1,1)
+
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
 
     # =========================
-    # COLOR VM
+    # TORQUE ✅ HELICE REAL
+    # =========================
+    elif modo == "Torque":
+
+        mag = min(abs(tau) / SMYS, 2.0)
+
+        # torsión
+        twist_max = np.pi * (2 + 4 * mag)
+        twist = (z_vals / max(z_vals)) * twist_max
+
+        theta_mod = theta + twist.reshape(-1,1)
+
+        # patrón helicoidal a ~45°
+        helix_pattern = np.sin(3 * theta_mod + 2 * z)
+
+        radial_wave = 1 + 0.05 * mag * helix_pattern
+
+        x = R * radial_wave * np.cos(theta_mod)
+        y = R * radial_wave * np.sin(theta_mod)
+
+    # =========================
+    # COORDENADAS DEFAULT
+    # =========================
+    if modo != "Torque":
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+    # =========================
+    # COLOR
     # =========================
     vm_norm = np.clip(vm_list / SMYS, 0, 1)
 
@@ -1121,9 +1111,8 @@ elif modo == "Torque":
 
     color = np.tile(vm_small.reshape(-1,1), (1, n_theta))
 
-
     # =========================
-    # GRAFICO (SOMBRAS PRO)
+    # GRAFICO
     # =========================
     fig = go.Figure()
 
@@ -1152,14 +1141,14 @@ elif modo == "Torque":
 
     fig.update_layout(
         margin=dict(l=0, r=0, b=0, t=0),
-        height=300,        
-    
+        height=300,
         width=280,
-
 
         scene=dict(
             aspectratio=dict(x=1, y=1, z=2.5),
-            camera=dict(eye=dict(x=2.2, y=2.0, z=1.5)),
+            camera=dict(
+                eye=dict(x=2.2, y=2.0, z=1.5)
+            ),
             xaxis_visible=False,
             yaxis_visible=False,
             zaxis_visible=False
@@ -1167,6 +1156,11 @@ elif modo == "Torque":
     )
 
     return fig
+
+
+
+
+
 
 
 # =========================
