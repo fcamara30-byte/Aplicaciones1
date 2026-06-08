@@ -1081,22 +1081,24 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
     # =========================
    
 
-    elif modo == "Torque":
+elif modo == "Torque":
 
-      mag = min(abs(tau) / SMYS, 2.0)
+    mag = min(abs(tau) / SMYS, 2.0)
 
-   
-      twist_max = np.pi * (3 + 6 * mag)
-      twist = (z_vals / max(z_vals)) * twist_max
+    # ✅ torsión fuerte (define la hélice)
+    twist_max = np.pi * (2 + 4 * mag)
+    twist = (z_vals / max(z_vals)) * twist_max
 
-      theta_mod = theta + twist[:, None]
+    theta_mod = theta + twist[:, None]
 
- 
-      radial_wave = 1 + 0.05 * mag * np.sin(4 * theta_mod)
+    # ✅ CLAVE: patrón helicoidal real (acoplado en z)
+    helix_pattern = np.sin(3 * theta_mod + 2 * z)
 
-    # ✅ coordenadas finales (NO se deben sobreescribir después)
-      x = R * radial_wave * np.cos(theta_mod)
-      y = R * radial_wave * np.sin(theta_mod)
+    radial_wave = 1 + 0.05 * mag * helix_pattern
+
+    x = R * radial_wave * np.cos(theta_mod)
+    y = R * radial_wave * np.sin(theta_mod)
+
 
 
 
