@@ -972,7 +972,9 @@ st.subheader("Conclusions")
 import plotly.graph_objects as go
 import numpy as np
 
+# condición de falla
 hay_falla = fail_vm or fail_burst or fail_collapse
+
 
 def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
 
@@ -987,10 +989,10 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
     R = 1.0
 
     # =========================
-    # BASE (SIN DEFORMACION)
+    # GEOMETRIA BASE
     # =========================
-    x = R*np.cos(theta)
-    y = R*np.sin(theta)
+    x = R * np.cos(theta)
+    y = R * np.sin(theta)
 
     # =========================
     # SOLO SI HAY FALLA
@@ -998,7 +1000,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
     if hay_falla:
 
         # =========================
-        # PRIORIDAD FISICA
+        # PRIORIDAD
         # =========================
         if fail_collapse:
             modo = "Collapse"
@@ -1007,94 +1009,84 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
             modo = "Burst"
 
         else:
-            # VM → elegir componente dominante REAL
-
-            ax_eff   = abs(sa)
-            hoop_eff = abs(sh)
-            tau_eff  = np.sqrt(3) * abs(tau)
-
+            # ✅ comparación directa (como pediste)
             valores = {
-                "Axial": ax_eff,
-                "Hoop": hoop_eff,
-                "Torque": tau_eff
+                "Axial": abs(sa),
+                "Hoop": abs(sh),
+                "Torque": abs(tau)
             }
 
             modo = max(valores, key=valores.get)
 
         # =========================
-        # DEFORMACIONES
+        # 👉 COLLAPSE
         # =========================
-
-        # 🔵 COLLAPSE
         if modo == "Collapse":
 
-            deform = 1 - 0.85*np.exp(-((z_vals-6)**2)/1.2)
+            deform = 1 - 0.85 * np.exp(-((z_vals - 6)**2) / 1.2)
             r = deform[:, None]
 
-            x = r*np.cos(theta)
-            y = r*np.sin(theta)
+            x = r * np.cos(theta)
+            y = r * np.sin(theta)
 
             x *= 0.25
 
-
-        # 🔴 BURST
+        # =========================
+        # 👉 BURST
+        # =========================
         elif modo == "Burst":
 
-            deform = 1 + 1.3*np.exp(-((z_vals-5)**2)/2)
+            deform = 1 + 1.3 * np.exp(-((z_vals - 5)**2) / 2)
             r = deform[:, None]
 
-            x = r*np.cos(theta)
-            y = r*np.sin(theta)
+            x = r * np.cos(theta)
+            y = r * np.sin(theta)
 
-
-        # 🟢 AXIAL (RESPETA SIGNO)
+        # =========================
+        # 👉 AXIAL (RESPETA SIGNO)
+        # =========================
         elif modo == "Axial":
 
             signo = np.sign(sa)
-            mag = min(abs(sa)/SMYS, 1.5)
+            mag = min(abs(sa) / SMYS, 1.5)
 
             stretch = 1 + 1.2 * signo * mag
             z = z * stretch
 
             # necking
-            deform = 1 - 0.5 * mag * np.exp(-((z_vals-5)**2)/1.5)
+            deform = 1 - 0.5 * mag * np.exp(-((z_vals - 5)**2) / 1.5)
             r = deform[:, None]
 
-            x = r*np.cos(theta)
-            y = r*np.sin(theta)
+            x = r * np.cos(theta)
+            y = r * np.sin(theta)
 
-
-        # 🟡 HOOP (RESPETA SIGNO 🔥 IMPORTANTE)
+        # =========================
+        # 👉 HOOP (RESPETA SIGNO)
+        # =========================
         elif modo == "Hoop":
 
             signo = np.sign(sh)
-            mag = min(abs(sh)/SMYS, 1.5)
+            mag = min(abs(sh) / SMYS, 1.5)
 
-            deform = 1 + signo * 1.0 * mag * np.exp(-((z_vals-5)**2)/2)
-
+            deform = 1 + signo * 1.2 * mag * np.exp(-((z_vals - 5)**2) / 2)
             r = deform[:, None]
 
-            x = r*np.cos(theta)
-            y = r*np.sin(theta)
+            x = r * np.cos(theta)
+            y = r * np.sin(theta)
 
-
-        # 🟣 TORQUE (CORRECTO)
+        # =========================
+        # 👉 TORQUE (SOLO ROTACION)
+        # =========================
         elif modo == "Torque":
 
-            tau_eff = np.sqrt(3) * abs(tau)
-            mag = min(tau_eff / SMYS, 1.2)
+            mag = min(abs(tau) / SMYS, 1.5)
 
-            twist_max = np.pi * (0.5 + 1.5 * mag)
-
+            twist_max = np.pi * (0.4 + 1.0 * mag)
             twist = (z_vals / max(z_vals)) * twist_max
 
-            x = np.cos(theta + twist[:, None])
-            y = np.sin(theta + twist[:, None])
-
-            r_mod = 1 + 0.15 * mag * np.sin(3*theta)
-
-            x *= r_mod
-            y *= r_mod
+            # ✅ CLAVE: NO CAMBIA RADIO
+            x = R * np.cos(theta + twist[:, None])
+            y = R * np.sin(theta + twist[:, None])
 
     # =========================
     # COLOR VM
@@ -1102,7 +1094,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
     vm_norm = np.clip(vm_list / SMYS, 0, 1)
 
     vm_small = np.interp(
-        np.linspace(0, len(vm_list)-1, n_z),
+        np.linspace(0, len(vm_list) - 1, n_z),
         np.arange(len(vm_list)),
         vm_norm
     )
@@ -1139,6 +1131,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
         scene=dict(
             aspectratio=dict(x=1, y=1, z=2.5),
             camera=dict(eye=dict(x=2.5, y=2.0, z=1.5)),
+
             xaxis_visible=False,
             yaxis_visible=False,
             zaxis_visible=False
@@ -1166,8 +1159,6 @@ st.plotly_chart(
     ),
     use_container_width=True
 )
-
-
 
 
 
