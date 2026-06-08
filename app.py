@@ -968,25 +968,212 @@ else:
 
 ballooning_ksi = ballooning_lbf / A / 1000
 st.subheader("Conclusions")
-if modo == "Collapse":
 
-    if collapse_severo:
+import plotly.graph_objects as go
+import numpy as np
 
-        # 🔥 aplastamiento lateral (tipo prensa)
-        a = 0.3   # eje comprimido
-        b = 1.2   # eje expandido
+# =========================
+# CONDICIONES
+# =========================
+hay_falla = fail_vm or fail_burst or fail_collapse
+collapse_severo = collapse_util > 100
 
-        x = a * np.cos(theta)
-        y = b * np.sin(theta)
 
-    else:
-        # colapso leve (ligera ovalización)
-        a = 0.6
-        b = 1.05
+# =========================
+# FUNCION PRINCIPAL
+# =========================
+def tubo_pro(vm_list, SMYS, sa, sh, tau,
+             fail_burst, fail_collapse, hay_falla, collapse_severo):
 
-        x = a * np.cos(theta)
-        y = b * np.sin(theta)
+    n_theta = 30
+    n_z = 35
 
+    theta_1d = np.linspace(0, 2*np.pi, n_theta)
+    z_vals = np.linspace(0, 10, n_z)
+
+    theta, z = np.meshgrid(theta_1d, z_vals)
+
+    R = 1.0
+
+    # =========================
+    # BASE (tubo normal)
+    # =========================
+    x = R * np.cos(theta)
+    y = R * np.sin(theta)
+
+    # =========================
+    # SOLO SI HAY FALLA
+    # =========================
+    if hay_falla:
+
+        # -------------------------
+        # DEFINICION DE MODO
+        # -------------------------
+        if fail_collapse:
+            modo = "Collapse"
+
+        elif fail_burst:
+            modo = "Burst"
+
+        else:
+            # criterio: mayor tensión absoluta
+            ax_val = abs(sa)
+            hoop_val = abs(sh)
+            tau_val = abs(tau)
+
+            valores = {
+                "Axial": ax_val,
+                "Hoop": hoop_val,
+                "Torque": tau_val
+            }
+
+            modo = max(valores, key=valores.get)
+
+        # =========================
+        # DEFORMACIONES
+        # =========================
+
+        # 🔴 COLLAPSE
+        if modo == "Collapse":
+
+            if collapse_severo:
+                # ✅ aplastado tipo prensa (SIN necking)
+                a = 0.25  # eje comprimido
+                b = 1.2   # eje expandido
+
+                x = a * np.cos(theta)
+                y = b * np.sin(theta)
+
+            else:
+                # ovalización leve
+                a = 0.6
+                b = 1.05
+
+                x = a * np.cos(theta)
+                y = b * np.sin(theta)
+
+        # 🔵 BURST
+        elif modo == "Burst":
+
+            deform = 1 + 1.3 * np.exp(-((z_vals - 5)**2) / 2)
+            r = deform[:, None]
+
+            x = r * np.cos(theta)
+            y = r * np.sin(theta)
+
+        # 🟢 AXIAL
+        elif modo == "Axial":
+
+            signo = np.sign(sa)
+            mag = min(abs(sa) / SMYS, 1.5)
+
+            stretch = 1 + 1.2 * signo * mag
+            z = z * stretch
+
+            # necking (correcto para tensión)
+            deform = 1 - 0.5 * mag * np.exp(-((z_vals - 5)**2) / 1.5)
+            r = deform[:, None]
+
+            x = r * np.cos(theta)
+            y = r * np.sin(theta)
+
+        # 🟡 HOOP
+        elif modo == "Hoop":
+
+            signo = np.sign(sh)
+            mag = min(abs(sh) / SMYS, 1.5)
+
+            deform = 1 + signo * 1.2 * mag * np.exp(-((z_vals - 5)**2) / 2)
+            r = deform[:, None]
+
+            x = r * np.cos(theta)
+            y = r * np.sin(theta)
+
+        # 🟣 TORQUE
+        elif modo == "Torque":
+
+            mag = min(abs(tau) / SMYS, 1.5)
+
+            twist_max = np.pi * (0.4 + 1.0 * mag)
+            twist = (z_vals / max(z_vals)) * twist_max
+
+            # ✅ SOLO rotación
+            x = R * np.cos(theta + twist[:, None])
+            y = R * np.sin(theta + twist[:, None])
+
+    # =========================
+    # COLOR VM
+    # =========================
+    vm_norm = np.clip(vm_list / SMYS, 0, 1)
+
+    vm_small = np.interp(
+        np.linspace(0, len(vm_list)-1, n_z),
+        np.arange(len(vm_list)),
+        vm_norm
+    )
+
+    color = np.tile(vm_small.reshape(-1,1), (1, n_theta))
+
+    # =========================
+    # GRAFICO
+    # =========================
+    fig = go.Figure()
+
+    fig.add_trace(go.Surface(
+        x=x,
+        y=y,
+        z=z,
+        surfacecolor=color,
+        colorscale="RdYlGn_r",
+        showscale=False,
+
+        lighting=dict(
+            ambient=0.35,
+            diffuse=0.9,
+            specular=0.7,
+            roughness=0.4
+        ),
+
+        lightposition=dict(x=100, y=200, z=150)
+    ))
+
+    fig.update_layout(
+        margin=dict(l=0, r=0, b=0, t=0),
+        height=300,
+
+        scene=dict(
+            aspectratio=dict(x=1, y=1, z=2.5),
+            camera=dict(eye=dict(x=2.5, y=2.0, z=1.5)),
+
+            xaxis_visible=False,
+            yaxis_visible=False,
+            zaxis_visible=False
+        )
+    )
+
+    return fig
+
+
+# =========================
+# RENDER
+# =========================
+st.markdown("### Failure Visualization")
+
+st.plotly_chart(
+    tubo_pro(
+        vm_list,
+        SMYS,
+        sx,
+        sy,
+        tau/1000,
+        fail_burst,
+        fail_collapse,
+        hay_falla,
+        collapse_severo
+    ),
+    use_container_width=True
+)
+``
 
 
 c1, c2, c3, c4 = st.columns(4)
@@ -1187,4 +1374,3 @@ with col1:
 
 with col2:
     st.image("https://flagcdn.com/w40/ar.png")
-
