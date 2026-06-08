@@ -1166,19 +1166,91 @@ util = vm_crit / SMYS * 100
 status = "FAIL" if (fail_vm or fail_burst or collapse_util > 100) else "PASS"
 st.markdown("## Conclusions")
 
-col_left, col_right = st.columns([3, 1])
+st.markdown("## Conclusions")
+
+col_left, col_right = st.columns([2.3, 1])
 
 # =========================
-# IZQUIERDA: RESULTADOS
+# IZQUIERDA (TODO JUNTO ARRIBA ✅)
 # =========================
 with col_left:
 
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3, c4 = st.columns(4)
 
+    # columna 1
+    with c1:
+        st.metric("σ axial [ksi]", round(sx,1))
+        st.metric("σ hoop [ksi]", round(sy,1))
+        st.metric("τ torque [ksi]", round(tau/1000,1))
+
+    # columna 2
+    with c2:
+        color_vm = "green" if vm_crit < SMYS else "red"
+        st.markdown(f"""
+        <div style="background-color:#fff; border-radius:10px; padding:15px;">
+            <div style="font-size:14px;">Von Mises [ksi]</div>
+            <div style="font-size:40px; font-weight:bold; color:{color_vm};">
+                {vm_crit:.1f}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        status = "FAIL" if (fail_vm or fail_burst or collapse_util > 100) else "PASS"
+        color_estado = "red" if status == "FAIL" else "green"
+
+        st.markdown(f"""
+        <div style="background-color:#fff; border-radius:10px; padding:15px;">
+            <div style="font-size:14px;">Estado</div>
+            <div style="font-size:42px; font-weight:900; color:{color_estado};">
+                {status}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        causas = []
+        if fail_vm: causas.append("VM")
+        if fail_burst: causas.append("Burst")
+        if fail_collapse: causas.append("Coll")
+        if not causas: causas.append("None")
+
+        st.metric("Failure Mode", ", ".join(causas))
+
+    # columna 3
+    with c3:
+        util = vm_crit / SMYS * 100
+        color_vm_util = "red" if util > 100 else "black"
+
+        st.markdown(f"""
+        <div style="background-color:#fff; border-radius:10px; padding:15px;">
+            <div style="font-size:14px;">VM Utilization [%]</div>
+            <div style="font-size:38px; font-weight:bold; color:{color_vm_util};">
+                {util:.0f}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        burst_util = max(0, (Pi - Po) / burst_api * 100)
+        color_burst = "red" if burst_util > 100 else "black"
+
+        st.markdown(f"""
+        <div style="background-color:#fff; border-radius:10px; padding:15px;">
+            <div style="font-size:14px;">Burst Utilization [%]</div>
+            <div style="font-size:38px; font-weight:bold; color:{color_burst};">
+                {burst_util:.0f}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # columna 4
+    with c4:
+        collapse_util = max(0, (Po - Pi) / collapse_api * 100)
+
+        st.metric("Collapse Util [%]", round(collapse_util,1))
+        st.metric("Ballooning [Klb]", f"{ballooning_lbf/1000:.0f}")
 
 
 # =========================
-# DERECHA: ANIMACION
+# DERECHA (SIMULATION)
 # =========================
 with col_right:
 
@@ -1196,163 +1268,6 @@ with col_right:
         ),
         use_container_width=False
     )
-
-
-
-
-
-
-
-
-c1, c2, c3, c4 = st.columns(4)
-
-c1.metric(
-    "σ axial [ksi]",
-    round(sx,1)
-)
-
-c1.metric(
-    "σ hoop [ksi]",
-    round(sy,1)
-)
-
-c1.metric(
-    "τ torque [ksi]",
-    round(tau/1000, 1)
-)
-
-# color dinámico
-color_vm = "green" if vm_crit < SMYS else "red"
-
-# VON MISES CUSTOM
-c2.markdown(f"""
-<div style="
-    background-color: #ffffff;
-    border-radius: 10px;
-    padding: 15px;
-">
-    <div style="font-size:14px;">Von Mises [ksi]</div>
-    <div style="
-        font-size:40px;
-        font-weight:bold;
-        color:{color_vm};
-    ">
-        {vm_crit:.1f}
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-burst_util = max(
-    0,
-    (Pi - Po) / burst_api * 100
-)
-
-collapse_util = max(
-    0,
-    (Po - Pi) / collapse_api * 100
-)
-
-
-status = "FAIL" if (
-    fail_vm
-    or fail_burst
-    or fail_collapse
-) else "PASS"
-
-color_estado = "red" if status == "FAIL" else "green"
-
-c2.markdown(f"""
-<div style="
-    background-color:#ffffff;
-    border-radius:10px;
-    padding:15px;
-">
-    <div style="font-size:14px;">Estado</div>
-    <div style="
-        font-size:42px;
-        font-weight:900;
-        color:{color_estado};
-    ">
-        {status}
-    </div>
-</div>
-""", unsafe_allow_html=True)
-causas = []
-
-if fail_vm:
-    causas.append("VM")
-
-if fail_burst:
-    causas.append("Burst")
-
-if fail_collapse:
-    causas.append("Coll")
-
-if len(causas) == 0:
-    causas.append("None")
-
-c2.metric(
-    "Failure Mode",
-    ", ".join(causas)
-)
-util = vm_crit / SMYS * 100
-
-
-color_vm_util = "red" if util > 100 else "black"
-
-c3.markdown(f"""
-<div style="
-    background-color:#ffffff;
-    border-radius:10px;
-    padding:15px;
-">
-    <div style="font-size:14px;">VM Utilization [%]</div>
-    <div style="
-        font-size:38px;
-        font-weight:bold;
-        color:{color_vm_util};
-    ">
-        {util:.0f}
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-color_burst = "red" if burst_util > 100 else "black"
-
-c3.markdown(f"""
-<div style="
-    background-color:#ffffff;
-    border-radius:10px;
-    padding:15px;
-">
-    <div style="font-size:14px;">Burst Utilization [%]</div>
-    <div style="
-        font-size:38px;
-        font-weight:bold;
-        color:{color_burst};
-    ">
-        {burst_util:.0f}
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-
-
-c3.metric(
-    "Collapse Utilization [%]",
-    round(collapse_util,1)
-)
-c3.metric(
-    "Ballooning [Klb]",
-    f"{ballooning_lbf/1000:.0f}"
-)
-
-
-
-
-
-
-
 st.markdown(
     "<p style='font-size:11px; color:gray;'>"
     "Developed by FCAM & Pro-Eng - June 2026 "
