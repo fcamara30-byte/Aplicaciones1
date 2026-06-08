@@ -356,7 +356,7 @@ Pext_surface = st.sidebar.number_input(
 rho_int = st.sidebar.number_input(
     "ρ int.[kg/m³]",
     value=1090.0,
-    
+    min_value=0.1
     step=100.0,
     format="%.0f"
 
@@ -365,7 +365,7 @@ rho_int = st.sidebar.number_input(
 rho_ext = st.sidebar.number_input(
     "ρ Ext. [kg/m³]",
     value=1000.0,
-    
+     min_value=0.1
     step=100.0,
     format="%.0f"
 
