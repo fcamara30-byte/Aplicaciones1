@@ -969,60 +969,124 @@ else:
 ballooning_ksi = ballooning_lbf / A / 1000
 st.subheader("Conclusions")
 
-import plotly.graph_objects as goimport plotly mag = min(collapse_util / 150, 1.5)
+import plotly.graph_objects as go
+import numpy as np
 
-        # ubicación del daño
-        z0 = 5
-        width_z = 1.5
+# =========================
+# CONDICIONES
+# =========================
+hay_falla = (fail_vm or fail_burst or collapse_util > 100)
 
-        # 🌟 abolladura lateral
-        dent = np.exp(-((z - z0)**2)/width_z) \
-             * np.exp(-((theta - np.pi/2)**2)/0.4)
 
-        r = R - 0.7 * mag * dent   # 🔥 entra hacia adentro
+# =========================
+# FUNCIÓN PRINCIPAL
+# =========================
+def tubo_pro(vm_list, SMYS, sa, sh, tau,
+             fail_burst, collapse_util):
+
+    n_theta = 40
+    n_z = 60
+
+    theta_1d = np.linspace(0, 2*np.pi, n_theta)
+    z_vals = np.linspace(0, 10, n_z)
+
+    theta, z = np.meshgrid(theta_1d, z_vals)
+
+    R = 1.0
+
+    # radio base
+    r = np.ones_like(theta) * R
 
     # =========================
-    # BURST
+    # DEFINIR MODO
+    # =========================
+    modo = "None"
+
+    if hay_falla:
+
+        # ✅ PRIORIDAD REAL
+        if collapse_util > 100:
+            modo = "Collapse"
+
+        elif fail_burst:
+            modo = "Burst"
+
+        else:
+            # ✅ mayor tensión absoluta
+            valores = {
+                "Axial": abs(sa),
+                "Hoop": abs(sh),
+                "Torque": abs(tau)
+            }
+            modo = max(valores, key=valores.get)
+
+    # =========================
+    # 🔴 COLLAPSE REALISTA (ABOLLADO)
+    # =========================
+    if modo == "Collapse":
+
+        mag = min(collapse_util / 150, 1.5)
+
+        # zona de daño
+        z0 = 5
+        sigma_z = 1.2
+
+        # abolladura localizada
+        dent = np.exp(-((z - z0)**2)/sigma_z) * \
+               np.exp(-((theta - np.pi/2)**2)/0.3)
+
+        # 🔥 deformación real hacia ADENTRO
+        r = R - 0.6 * mag * dent
+
+
+    # =========================
+    # 🔵 BURST
     # =========================
     elif modo == "Burst":
 
-        deform = 1 + 1.2*np.exp(-((z_vals-5)**2)/2)
+        deform = 1 + 1.3 * np.exp(-((z_vals - 5)**2)/2)
         r = deform[:, None]
 
+
     # =========================
-    # AXIAL
+    # 🟢 AXIAL
     # =========================
     elif modo == "Axial":
 
         signo = np.sign(sa)
-        mag = min(abs(sa) / SMYS, 1.5)
+        mag = min(abs(sa)/SMYS, 1.5)
 
-        z = z * (1 + 1.2*signo*mag)
+        # elongación
+        z = z * (1 + 1.2 * signo * mag)
 
-        neck = np.exp(-((z_vals-5)**2)/1.5)
-        r = R * (1 - 0.4*mag*neck[:, None])
+        # necking
+        neck = np.exp(-((z_vals - 5)**2)/1.5)
+        r = R * (1 - 0.4 * mag * neck[:, None])
+
 
     # =========================
-    # HOOP
+    # 🟡 HOOP
     # =========================
     elif modo == "Hoop":
 
         signo = np.sign(sh)
         mag = min(abs(sh)/SMYS, 1.5)
 
-        deform = 1 + signo * 1.2 * np.exp(-((z_vals-5)**2)/2)
+        deform = 1 + signo * 1.2 * np.exp(-((z_vals - 5)**2)/2)
         r = deform[:, None]
 
+
     # =========================
-    # TORQUE
+    # 🟣 TORQUE
     # =========================
     elif modo == "Torque":
 
         mag = min(abs(tau)/SMYS, 1.5)
 
-        twist = (z_vals / max(z_vals)) * np.pi*(0.5 + 1.0*mag)
+        twist = (z_vals / max(z_vals)) * np.pi * (0.4 + 1.0 * mag)
 
         theta = theta + twist[:, None]
+
 
     # =========================
     # COORDENADAS
@@ -1030,8 +1094,9 @@ import plotly.graph_objects as goimport plotly mag = min(collapse_util / 150, 1.
     x = r * np.cos(theta)
     y = r * np.sin(theta)
 
+
     # =========================
-    # COLOR
+    # COLOR VM
     # =========================
     vm_norm = np.clip(vm_list / SMYS, 0, 1)
 
@@ -1043,8 +1108,9 @@ import plotly.graph_objects as goimport plotly mag = min(collapse_util / 150, 1.
 
     color = np.tile(vm_small.reshape(-1,1), (1, n_theta))
 
+
     # =========================
-    # GRAFICO
+    # GRAFICO (SOMBRAS PRO)
     # =========================
     fig = go.Figure()
 
@@ -1056,19 +1122,18 @@ import plotly.graph_objects as goimport plotly mag = min(collapse_util / 150, 1.
         colorscale="RdYlGn_r",
         showscale=False,
 
-        # 🔥 ILUMINACION PRO
         lighting=dict(
             ambient=0.25,
             diffuse=0.9,
             specular=1.0,
-            roughness=0.2,
+            roughness=0.25,
             fresnel=0.6
         ),
 
         lightposition=dict(
             x=200,
             y=150,
-            z=200
+            z=180
         )
     ))
 
@@ -1078,11 +1143,7 @@ import plotly.graph_objects as goimport plotly mag = min(collapse_util / 150, 1.
 
         scene=dict(
             aspectratio=dict(x=1, y=1, z=2.5),
-
-            camera=dict(
-                eye=dict(x=2.2, y=2.0, z=1.6)
-            ),
-
+            camera=dict(eye=dict(x=2.2, y=2.0, z=1.5)),
             xaxis_visible=False,
             yaxis_visible=False,
             zaxis_visible=False
@@ -1092,6 +1153,9 @@ import plotly.graph_objects as goimport plotly mag = min(collapse_util / 150, 1.
     return fig
 
 
+# =========================
+# RENDER
+# =========================
 st.markdown("### Failure Visualization")
 
 st.plotly_chart(
@@ -1106,50 +1170,6 @@ st.plotly_chart(
     ),
     use_container_width=True
 )
-
-import numpy as np
-
-hay_falla = fail_vm or fail_burst or (collapse_util > 100)
-
-def tubo_pro(vm_list, SMYS, sa, sh, tau,
-             fail_burst, collapse_util):
-
-    n_theta = 40
-    n_z = 60
-
-    theta_1d = np.linspace(0, 2*np.pi, n_theta)
-    z_vals = np.linspace(0, 10, n_z)
-
-    theta, z = np.meshgrid(theta_1d, z_vals)
-
-    R = 1.0
-
-    # BASE
-    r = np.ones_like(theta) * R
-
-    modo = "None"
-
-    if hay_falla:
-
-        # PRIORIDAD CORRECTA
-        if collapse_util > 100:
-            modo = "Collapse"
-
-        elif fail_burst:
-            modo = "Burst"
-
-        else:
-            valores = {
-                "Axial": abs(sa),
-                "Hoop": abs(sh),
-                "Torque": abs(tau)
-            }
-            modo = max(valores, key=valores.get)
-
-    # =========================
-    # 🔴 COLLAPSO REALISTA
-    # =========================
-    if modo == "Collapse":
 
 
 
