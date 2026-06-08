@@ -1104,8 +1104,9 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
     # =========================
     # COORDENADAS
     # =========================
-    x = r * np.cos(theta)
-    y = r * np.sin(theta)
+    if modo != "Torque":             
+      x = r * np.cos(theta)
+      y = r * np.sin(theta)
 
 
     # =========================
