@@ -795,12 +795,8 @@ if txt != "":
 ax.annotate(
     f"VM={vm_crit:.1f} ksi",
     (sx, sy),
-    xytext=(15,15),
+    xytext=(-60,15),   # 👈 clave: negativo en X
     textcoords="offset points",
-    bbox=dict(
-        boxstyle="round",
-        fc="white"
-    )
 )
 
 ax.axhline(0, color="black", lw=2)
