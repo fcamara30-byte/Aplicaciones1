@@ -971,54 +971,31 @@ st.subheader("Conclusions")
 
 import plotly.graph_objects as go
 
-# =========================
-# MODO FAIL
-# =========================
-if fail_collapse:
-    modo_fail = "Collapse"
-elif fail_burst:
-    modo_fail = "Burst"
-elif fail_vm:
-    modo_fail = "VM"
-else:
-    modo_fail = "OK"
+def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse):
 
-
-# =========================
-# FUNCION 3D
-# =========================
-def tubo_pro(vm_list, SMYS, sa, sh, tau, modo_fail,
-             fail_vm, fail_burst, fail_collapse):
-
-    # resolución liviana
     n_theta = 30
     n_z = 35
 
     theta = np.linspace(0, 2*np.pi, n_theta)
     z_vals = np.linspace(0, 10, n_z)
-
     theta, z = np.meshgrid(theta, z_vals)
 
     R = 1.0
 
     # =========================
-    # PRIORIDAD LOGICA (CLAVE)
+    # COMPONENTES (clave correcto)
     # =========================
-    if not (fail_vm or fail_burst or fail_collapse):
-        modo = "OK"
+    comp_ax = abs(sa)
+    comp_hoop = abs(sh)
+    comp_tau = abs(tau)
 
-    elif fail_collapse:
+    # =========================
+    # MODO DOMINANTE REAL
+    # =========================
+    if fail_collapse:
         modo = "Collapse"
 
-    elif fail_burst:
-        modo = "Burst"
-
-    elif fail_vm:
-
-        comp_ax = abs(sa)
-        comp_hoop = abs(sh)
-        comp_tau = abs(tau)
-
+    else:
         if comp_tau > comp_ax and comp_tau > comp_hoop:
             modo = "Torque"
 
@@ -1026,74 +1003,78 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, modo_fail,
             modo = "Axial"
 
         else:
-            modo = "Burst"
-
-    else:
-        modo = "OK"
+            modo = "Hoop"
 
     # =========================
-    # GEOMETRIA
+    # GEOMETRIA BASE
+    # =========================
+    x = R*np.cos(theta)
+    y = R*np.sin(theta)
+
+    # =========================
+    # DEFORMACIONES
     # =========================
 
-    # NORMAL
-    x = R * np.cos(theta)
-    y = R * np.sin(theta)
+    # 🟣 TORQUE (NO depende de fail)
+    if modo == "Torque":
 
-
-    # 🔴 BURST (inflado)
-    if modo == "Burst":
-
-        deform = 1 + 1.0*np.exp(-((z_vals-5)**2)/2)
-        r = deform[:, None]
-
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
-
-
-    # 🔵 COLLAPSE (abollado fuerte)
-    elif modo == "Collapse":
-
-        deform = 1 - 0.75*np.exp(-((z_vals-6)**2)/1.2)
-        r = deform[:, None]
-
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
-
-        x *= 0.35  # aplastado
-
-
-    # 🟣 TORQUE (MUY EXAGERADO)
-    elif modo == "Torque":
-
-        twist = (z_vals / max(z_vals)) * (np.pi * 1.5)  # 🔥 270°
+        # más exagerado 🔥
+        twist = (z_vals / max(z_vals)) * np.pi * 2  # 360°
 
         x = np.cos(theta + twist[:, None])
         y = np.sin(theta + twist[:, None])
 
-        # ondulación helicoidal
+        # forma helicoidal visible
         r_mod = 1 + 0.25*np.sin(4*theta)
         x *= r_mod
         y *= r_mod
 
-
-    # 🟢 AXIAL (estiramiento o compresión)
+    # 🟢 AXIAL
     elif modo == "Axial":
 
-        signo = 1 if sa > 0 else -1
+        signo = np.sign(sa)
 
-        stretch = 1 + 0.7 * signo
+        stretch = 1 + 1.0 * signo  # 🔥 fuerte
 
         z = z * stretch
 
         # reducción diámetro
         r = R / (abs(stretch)**0.6)
 
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
+        x = r*np.cos(theta)
+        y = r*np.sin(theta)
 
+    # 🔴 HOOP / BURST
+    elif modo == "Hoop":
+
+        deform = 1 + 1.0*np.exp(-((z_vals-5)**2)/2)
+        r = deform[:, None]
+
+        x = r*np.cos(theta)
+        y = r*np.sin(theta)
+
+    # 🔵 COLLAPSE
+    elif modo == "Collapse":
+
+        deform = 1 - 0.8*np.exp(-((z_vals-6)**2)/1.2)
+        r = deform[:, None]
+
+        x = r*np.cos(theta)
+        y = r*np.sin(theta)
+
+        x *= 0.3
 
     # =========================
-    # COLOR VM (liviano)
+    # RESET SI VM BAJO
+    # =========================
+    if max(vm_list) < SMYS:
+
+        x = R*np.cos(theta)
+        y = R*np.sin(theta)
+        z = np.meshgrid(theta[0], z_vals)[1]
+
+    # =========================
+    # COLOR
     # =========================
     vm_norm = np.clip(vm_list / SMYS, 0, 1)
 
@@ -1134,15 +1115,15 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, modo_fail,
 
     fig.update_layout(
         margin=dict(l=0, r=0, b=0, t=0),
-
-        height=300,  # 🔥 más chico
+        height=300,
 
         scene=dict(
             aspectratio=dict(x=1, y=1, z=2.5),
             camera=dict(eye=dict(x=2.5, y=2.0, z=1.5)),
-            xaxis=dict(visible=False),
-            yaxis=dict(visible=False),
-            zaxis=dict(visible=False)
+
+            xaxis_visible=False,
+            yaxis_visible=False,
+            zaxis_visible=False
         )
     )
 
@@ -1155,17 +1136,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, modo_fail,
 st.markdown("### Failure Visualization")
 
 st.plotly_chart(
-    tubo_pro(
-        vm_list,
-        SMYS,
-        sx,
-        sy,
-        tau/1000,
-        modo_fail,
-        fail_vm,
-        fail_burst,
-        fail_collapse
-    ),
+    tubo_pro(vm_list, SMYS, sx, sy, tau/1000, fail_collapse),
     use_container_width=True
 )
 
