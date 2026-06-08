@@ -972,18 +972,12 @@ st.subheader("Conclusions")
 import plotly.graph_objects as go
 import numpy as np
 
-# =========================
-# CONDICIONES
-# =========================
-hay_falla = fail_vm or fail_burst or fail_collapse
+hay_falla = fail_vm or fail_burst or (collapse_util > 100)
 collapse_severo = collapse_util > 100
 
 
-# =========================
-# FUNCION PRINCIPAL
-# =========================
 def tubo_pro(vm_list, SMYS, sa, sh, tau,
-             fail_burst, fail_collapse, hay_falla, collapse_severo):
+             fail_burst, collapse_util, hay_falla):
 
     n_theta = 30
     n_z = 35
@@ -995,115 +989,97 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
 
     R = 1.0
 
-    # =========================
-    # BASE (tubo normal)
-    # =========================
+    # BASE
     x = R * np.cos(theta)
     y = R * np.sin(theta)
 
-    # =========================
-    # SOLO SI HAY FALLA
-    # =========================
     if hay_falla:
 
-        # -------------------------
-        # DEFINICION DE MODO
-        # -------------------------
-        if fail_collapse:
+        # ✅ PRIORIDAD REAL (FIX)
+        if collapse_util > 100:
             modo = "Collapse"
 
         elif fail_burst:
             modo = "Burst"
 
         else:
-            # criterio: mayor tensión absoluta
-            ax_val = abs(sa)
-            hoop_val = abs(sh)
-            tau_val = abs(tau)
-
             valores = {
-                "Axial": ax_val,
-                "Hoop": hoop_val,
-                "Torque": tau_val
+                "Axial": abs(sa),
+                "Hoop": abs(sh),
+                "Torque": abs(tau)
             }
-
             modo = max(valores, key=valores.get)
 
         # =========================
-        # DEFORMACIONES
+        # COLLAPSE (CORRECTO)
         # =========================
-
-        # 🔴 COLLAPSE
         if modo == "Collapse":
 
-            if collapse_severo:
-                # ✅ aplastado tipo prensa (SIN necking)
-                a = 0.25  # eje comprimido
-                b = 1.2   # eje expandido
+            if collapse_util > 100:
+
+                # 🔥 aplastado tipo prensa REAL
+                a = 0.25
+                b = 1.2
 
                 x = a * np.cos(theta)
                 y = b * np.sin(theta)
 
-            else:
-                # ovalización leve
-                a = 0.6
-                b = 1.05
-
-                x = a * np.cos(theta)
-                y = b * np.sin(theta)
-
-        # 🔵 BURST
+        # =========================
+        # BURST
+        # =========================
         elif modo == "Burst":
 
-            deform = 1 + 1.3 * np.exp(-((z_vals - 5)**2) / 2)
+            deform = 1 + 1.3*np.exp(-((z_vals-5)**2)/2)
             r = deform[:, None]
 
             x = r * np.cos(theta)
             y = r * np.sin(theta)
 
-        # 🟢 AXIAL
+        # =========================
+        # AXIAL
+        # =========================
         elif modo == "Axial":
 
             signo = np.sign(sa)
-            mag = min(abs(sa) / SMYS, 1.5)
+            mag = min(abs(sa)/SMYS, 1.5)
 
             stretch = 1 + 1.2 * signo * mag
             z = z * stretch
 
-            # necking (correcto para tensión)
-            deform = 1 - 0.5 * mag * np.exp(-((z_vals - 5)**2) / 1.5)
+            deform = 1 - 0.5 * mag * np.exp(-((z_vals-5)**2)/1.5)
             r = deform[:, None]
 
             x = r * np.cos(theta)
             y = r * np.sin(theta)
 
-        # 🟡 HOOP
+        # =========================
+        # HOOP
+        # =========================
         elif modo == "Hoop":
 
             signo = np.sign(sh)
-            mag = min(abs(sh) / SMYS, 1.5)
+            mag = min(abs(sh)/SMYS, 1.5)
 
-            deform = 1 + signo * 1.2 * mag * np.exp(-((z_vals - 5)**2) / 2)
+            deform = 1 + signo * 1.2 * mag * np.exp(-((z_vals-5)**2)/2)
             r = deform[:, None]
 
             x = r * np.cos(theta)
             y = r * np.sin(theta)
 
-        # 🟣 TORQUE
+        # =========================
+        # TORQUE
+        # =========================
         elif modo == "Torque":
 
-            mag = min(abs(tau) / SMYS, 1.5)
+            mag = min(abs(tau)/SMYS, 1.5)
 
-            twist_max = np.pi * (0.4 + 1.0 * mag)
+            twist_max = np.pi * (0.4 + 1.0*mag)
             twist = (z_vals / max(z_vals)) * twist_max
 
-            # ✅ SOLO rotación
-            x = R * np.cos(theta + twist[:, None])
-            y = R * np.sin(theta + twist[:, None])
+            x = R*np.cos(theta + twist[:, None])
+            y = R*np.sin(theta + twist[:, None])
 
-    # =========================
-    # COLOR VM
-    # =========================
+    # COLOR
     vm_norm = np.clip(vm_list / SMYS, 0, 1)
 
     vm_small = np.interp(
@@ -1114,37 +1090,20 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
 
     color = np.tile(vm_small.reshape(-1,1), (1, n_theta))
 
-    # =========================
-    # GRAFICO
-    # =========================
     fig = go.Figure()
 
     fig.add_trace(go.Surface(
-        x=x,
-        y=y,
-        z=z,
+        x=x, y=y, z=z,
         surfacecolor=color,
         colorscale="RdYlGn_r",
-        showscale=False,
-
-        lighting=dict(
-            ambient=0.35,
-            diffuse=0.9,
-            specular=0.7,
-            roughness=0.4
-        ),
-
-        lightposition=dict(x=100, y=200, z=150)
+        showscale=False
     ))
 
     fig.update_layout(
         margin=dict(l=0, r=0, b=0, t=0),
         height=300,
-
         scene=dict(
             aspectratio=dict(x=1, y=1, z=2.5),
-            camera=dict(eye=dict(x=2.5, y=2.0, z=1.5)),
-
             xaxis_visible=False,
             yaxis_visible=False,
             zaxis_visible=False
@@ -1154,11 +1113,6 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
     return fig
 
 
-# =========================
-# RENDER
-# =========================
-st.markdown("### Failure Visualization")
-
 st.plotly_chart(
     tubo_pro(
         vm_list,
@@ -1167,12 +1121,12 @@ st.plotly_chart(
         sy,
         tau/1000,
         fail_burst,
-        fail_collapse,
-        hay_falla,
-        collapse_severo
+        collapse_util,
+        hay_falla
     ),
     use_container_width=True
 )
+
 
 
 
