@@ -971,9 +971,7 @@ st.subheader("Conclusions")
 
 import plotly.graph_objects as go
 
-# ✅ condición global
 hay_falla = fail_vm or fail_burst or fail_collapse
-
 
 def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse, hay_falla):
 
@@ -987,41 +985,36 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse, hay_falla):
 
     R = 1.0
 
-    # =========================
-    # GEOMETRIA BASE (normal)
-    # =========================
+    # base (normal)
     x = R*np.cos(theta)
     y = R*np.sin(theta)
 
-    # =========================
-    # 👉 SOLO SI HAY FALLA
-    # =========================
     if hay_falla:
 
-        ax_ratio = abs(sa) / SMYS
-        hoop_ratio = abs(sh) / SMYS
-        tau_ratio = abs(tau) / SMYS
+        # ✅ EFECTOS CORRECTOS VM
+        ax_eff   = abs(sa)
+        hoop_eff = abs(sh)
+        tau_eff  = np.sqrt(3) * abs(tau)
 
-        # =========================
-        # MODO DOMINANTE
-        # =========================
+        # ✅ MODO DOMINANTE REAL
         if fail_collapse:
             modo = "Collapse"
+
         else:
             valores = {
-                "Axial": ax_ratio,
-                "Torque": tau_ratio,
-                "Hoop": hoop_ratio
+                "Axial": ax_eff,
+                "Hoop": hoop_eff,
+                "Torque": tau_eff
             }
             modo = max(valores, key=valores.get)
 
         # =========================
-        # AXIAL (necking)
+        # AXIAL → necking
         # =========================
         if modo == "Axial":
 
             signo = np.sign(sa)
-            mag = min(ax_ratio, 2.0)
+            mag = min(ax_eff / SMYS, 2)
 
             stretch = 1 + 1.2 * signo * mag
             z = z * stretch
@@ -1029,39 +1022,39 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse, hay_falla):
             deform = 1 - 0.6 * mag * np.exp(-((z_vals-5)**2)/1.5)
             r = deform[:, None]
 
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
+            x = r*np.cos(theta)
+            y = r*np.sin(theta)
 
         # =========================
-        # TORQUE
+        # TORQUE → helicoidal ✅
         # =========================
         elif modo == "Torque":
 
-            mag = min(tau_ratio, 2.0)
+            mag = min(tau_eff / SMYS, 2)
 
-            twist = (z_vals / max(z_vals)) * np.pi * (1 + 3*mag)
+            twist = (z_vals / max(z_vals)) * np.pi * (1 + 4*mag)
 
             x = np.cos(theta + twist[:, None])
             y = np.sin(theta + twist[:, None])
 
-            r_mod = 1 + 0.3 * mag * np.sin(4*theta)
+            r_mod = 1 + 0.35 * mag * np.sin(4*theta)
 
             x *= r_mod
             y *= r_mod
 
         # =========================
-        # BURST
+        # HOOP → burst
         # =========================
         elif modo == "Hoop":
 
-            mag = min(hoop_ratio, 2.0)
+            mag = min(hoop_eff / SMYS, 2)
 
             deform = 1 + 1.5 * mag * np.exp(-((z_vals-5)**2)/2)
 
             r = deform[:, None]
 
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
+            x = r*np.cos(theta)
+            y = r*np.sin(theta)
 
         # =========================
         # COLLAPSE
@@ -1078,7 +1071,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse, hay_falla):
             x *= 0.25
 
     # =========================
-    # COLOR VM
+    # COLOR
     # =========================
     vm_norm = np.clip(vm_list / SMYS, 0, 1)
 
@@ -1127,15 +1120,13 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse, hay_falla):
     return fig
 
 
-# =========================
-# RENDER
-# =========================
 st.markdown("### Failure Visualization")
 
 st.plotly_chart(
     tubo_pro(vm_list, SMYS, sx, sy, tau/1000, fail_collapse, hay_falla),
     use_container_width=True
 )
+
 
 
 
