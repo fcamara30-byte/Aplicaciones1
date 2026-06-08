@@ -1156,20 +1156,52 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
 # =========================
 # RENDER
 # =========================
-st.markdown("### Failure Visualization")
+# =========================
+# LAYOUT: RESULTADOS + 3D
+# =========================
 
-st.plotly_chart(
-    tubo_pro(
-        vm_list,
-        SMYS,
-        sx,
-        sy,
-        tau/1000,
-        fail_burst,
-        collapse_util
-    ),
-    use_container_width=True
-)
+st.markdown("## Conclusions")
+
+col_left, col_right = st.columns([2, 1])
+
+# =========================
+# IZQUIERDA: RESULTADOS
+# =========================
+with col_left:
+
+    c1, c2, c3 = st.columns(3)
+
+    c1.metric("σ axial [ksi]", round(sx,1))
+    c1.metric("σ hoop [ksi]", round(sy,1))
+
+    c2.metric("Von Mises [ksi]", round(vm_crit,1))
+    c2.metric("Estado", status)
+
+    c3.metric("VM Util [%]", round(util,0))
+    c3.metric("Burst Util [%]", round(burst_util,0))
+    c3.metric("Collapse Util [%]", round(collapse_util,0))
+
+
+# =========================
+# DERECHA: ANIMACION
+# =========================
+with col_right:
+
+    st.markdown("### Simulation")
+
+    st.plotly_chart(
+        tubo_pro(
+            vm_list,
+            SMYS,
+            sx,
+            sy,
+            tau/1000,
+            fail_burst,
+            collapse_util
+        ),
+        use_container_width=True
+    )
+
 
 
 
