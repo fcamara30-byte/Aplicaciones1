@@ -975,8 +975,12 @@ import numpy as np
 # condición de falla
 hay_falla = fail_vm or fail_burst or fail_collapse
 
+# 👉 NUEVO: colapso severo
+collapse_severo = collapse_util > 100
 
-def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
+
+def tubo_pro(vm_list, SMYS, sa, sh, tau,
+             fail_burst, fail_collapse, hay_falla, collapse_severo):
 
     n_theta = 30
     n_z = 35
@@ -988,9 +992,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
 
     R = 1.0
 
-    # =========================
-    # GEOMETRIA BASE
-    # =========================
+    # base
     x = R * np.cos(theta)
     y = R * np.sin(theta)
 
@@ -999,9 +1001,9 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
     # =========================
     if hay_falla:
 
-        # =========================
-        # PRIORIDAD
-        # =========================
+        # -------------------------
+        # PRIORIDADES
+        # -------------------------
         if fail_collapse:
             modo = "Collapse"
 
@@ -1009,30 +1011,42 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
             modo = "Burst"
 
         else:
-            # ✅ comparación directa (como pediste)
             valores = {
                 "Axial": abs(sa),
                 "Hoop": abs(sh),
                 "Torque": abs(tau)
             }
-
             modo = max(valores, key=valores.get)
 
         # =========================
-        # 👉 COLLAPSE
+        # 🔴 COLAPSO FUERTE (NUEVO)
         # =========================
         if modo == "Collapse":
 
             deform = 1 - 0.85 * np.exp(-((z_vals - 6)**2) / 1.2)
             r = deform[:, None]
 
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
+            # ✅ aplastamiento tipo oval
+            if collapse_severo:
+                x = r * np.cos(theta)
+                y = r * np.sin(theta)
 
-            x *= 0.25
+                # 🔥 CLAVE: aplastado fuerte
+                x *= 0.2
+                y *= 1.2
+
+                # 🔥 leve irregularidad (abollado)
+                x *= (1 + 0.2*np.sin(3*theta))
+
+            else:
+                x = r * np.cos(theta)
+                y = r * np.sin(theta)
+
+                x *= 0.4
+
 
         # =========================
-        # 👉 BURST
+        # 🔵 BURST
         # =========================
         elif modo == "Burst":
 
@@ -1042,8 +1056,9 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
             x = r * np.cos(theta)
             y = r * np.sin(theta)
 
+
         # =========================
-        # 👉 AXIAL (RESPETA SIGNO)
+        # 🟢 AXIAL
         # =========================
         elif modo == "Axial":
 
@@ -1053,15 +1068,15 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
             stretch = 1 + 1.2 * signo * mag
             z = z * stretch
 
-            # necking
             deform = 1 - 0.5 * mag * np.exp(-((z_vals - 5)**2) / 1.5)
             r = deform[:, None]
 
             x = r * np.cos(theta)
             y = r * np.sin(theta)
 
+
         # =========================
-        # 👉 HOOP (RESPETA SIGNO)
+        # 🟡 HOOP
         # =========================
         elif modo == "Hoop":
 
@@ -1074,8 +1089,9 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
             x = r * np.cos(theta)
             y = r * np.sin(theta)
 
+
         # =========================
-        # 👉 TORQUE (SOLO ROTACION)
+        # 🟣 TORQUE
         # =========================
         elif modo == "Torque":
 
@@ -1084,7 +1100,6 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
             twist_max = np.pi * (0.4 + 1.0 * mag)
             twist = (z_vals / max(z_vals)) * twist_max
 
-            # ✅ CLAVE: NO CAMBIA RADIO
             x = R * np.cos(theta + twist[:, None])
             y = R * np.sin(theta + twist[:, None])
 
@@ -1131,7 +1146,6 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_burst, fail_collapse, hay_falla):
         scene=dict(
             aspectratio=dict(x=1, y=1, z=2.5),
             camera=dict(eye=dict(x=2.5, y=2.0, z=1.5)),
-
             xaxis_visible=False,
             yaxis_visible=False,
             zaxis_visible=False
@@ -1155,7 +1169,8 @@ st.plotly_chart(
         tau/1000,
         fail_burst,
         fail_collapse,
-        hay_falla
+        hay_falla,
+        collapse_severo
     ),
     use_container_width=True
 )
