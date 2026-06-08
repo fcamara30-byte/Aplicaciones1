@@ -355,7 +355,7 @@ Pext_surface = st.sidebar.number_input(
 
 rho_int = st.sidebar.number_input(
     "ρ int.[kg/m³]",
-    value=1090.0,
+    value=1000.0,
     min_value=0.1,
     step=100.0,
     format="%.0f"
@@ -392,7 +392,7 @@ fill_ext = (
 Torque = st.sidebar.number_input(
     "Torque [lb-ft]",
     value=0.0,
-    
+    min_value=0.0,
     step=100.0,
     format="%.0f"
 
@@ -410,6 +410,7 @@ F_ext = st.sidebar.number_input(
 depth_m = st.sidebar.number_input(
     "Depth [m]",
     value=2000.0,
+    min_value=0.0,
     step=100.0,
     format="%.0f"
 )
