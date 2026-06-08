@@ -983,11 +983,11 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse):
     R = 1.0
 
     # =========================
-    # COMPONENTES (clave correcto)
+    # CONTRIBUCIONES NORMALIZADAS (CLAVE)
     # =========================
-    comp_ax = abs(sa)
-    comp_hoop = abs(sh)
-    comp_tau = abs(tau)
+    ax_ratio = abs(sa) / SMYS
+    hoop_ratio = abs(sh) / SMYS
+    tau_ratio = abs(tau) / SMYS
 
     # =========================
     # MODO DOMINANTE REAL
@@ -996,85 +996,83 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse):
         modo = "Collapse"
 
     else:
-        if comp_tau > comp_ax and comp_tau > comp_hoop:
-            modo = "Torque"
+        max_comp = max(ax_ratio, hoop_ratio, tau_ratio)
 
-        elif comp_ax > comp_hoop:
+        if max_comp == ax_ratio:
             modo = "Axial"
+
+        elif max_comp == tau_ratio:
+            modo = "Torque"
 
         else:
             modo = "Hoop"
 
     # =========================
-    # GEOMETRIA BASE
+    # GEOMETRÍA BASE (SIEMPRE definida)
     # =========================
-    x = R*np.cos(theta)
-    y = R*np.sin(theta)
+    x = R * np.cos(theta)
+    y = R * np.sin(theta)
 
     # =========================
     # DEFORMACIONES
     # =========================
 
-    # 🟣 TORQUE (NO depende de fail)
-    if modo == "Torque":
+    # 🟢 AXIAL (ahora SIEMPRE responde bien)
+    if modo == "Axial":
 
-        # más exagerado 🔥
-        twist = (z_vals / max(z_vals)) * np.pi * 2  # 360°
+        signo = np.sign(sa)
+
+        # escala proporcional (NO fijo)
+        mag = min(ax_ratio, 2.0)
+
+        stretch = 1 + 0.8 * signo * mag
+
+        z = z * stretch
+
+        r = R / (abs(stretch)**0.6)
+
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+    # 🟣 TORQUE (no desaparece abruptamente)
+    elif modo == "Torque":
+
+        mag = min(tau_ratio, 2.0)
+
+        twist = (z_vals / max(z_vals)) * np.pi * (1 + 2*mag)  # 🔥 progresivo
 
         x = np.cos(theta + twist[:, None])
         y = np.sin(theta + twist[:, None])
 
-        # forma helicoidal visible
-        r_mod = 1 + 0.25*np.sin(4*theta)
+        r_mod = 1 + 0.3 * mag * np.sin(4*theta)
+
         x *= r_mod
         y *= r_mod
-
-    # 🟢 AXIAL
-    elif modo == "Axial":
-
-        signo = np.sign(sa)
-
-        stretch = 1 + 1.0 * signo  # 🔥 fuerte
-
-        z = z * stretch
-
-        # reducción diámetro
-        r = R / (abs(stretch)**0.6)
-
-        x = r*np.cos(theta)
-        y = r*np.sin(theta)
 
     # 🔴 HOOP / BURST
     elif modo == "Hoop":
 
-        deform = 1 + 1.0*np.exp(-((z_vals-5)**2)/2)
+        mag = min(hoop_ratio, 2.0)
+
+        deform = 1 + 1.2 * mag * np.exp(-((z_vals-5)**2)/2)
         r = deform[:, None]
 
-        x = r*np.cos(theta)
-        y = r*np.sin(theta)
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
 
     # 🔵 COLLAPSE
     elif modo == "Collapse":
 
-        deform = 1 - 0.8*np.exp(-((z_vals-6)**2)/1.2)
+        deform = 1 - 0.85*np.exp(-((z_vals-6)**2)/1.2)
         r = deform[:, None]
 
-        x = r*np.cos(theta)
-        y = r*np.sin(theta)
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
 
-        x *= 0.3
-
-    # =========================
-    # RESET SI VM BAJO
-    # =========================
-    if max(vm_list) < SMYS:
-
-        x = R*np.cos(theta)
-        y = R*np.sin(theta)
-        z = np.meshgrid(theta[0], z_vals)[1]
+        x *= 0.25
 
     # =========================
-    # COLOR
+    # COLOR VM
     # =========================
     vm_norm = np.clip(vm_list / SMYS, 0, 1)
 
@@ -1106,11 +1104,7 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau, fail_collapse):
             roughness=0.4
         ),
 
-        lightposition=dict(
-            x=100,
-            y=200,
-            z=150
-        )
+        lightposition=dict(x=100, y=200, z=150)
     ))
 
     fig.update_layout(
