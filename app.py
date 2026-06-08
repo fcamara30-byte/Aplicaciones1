@@ -969,18 +969,153 @@ else:
 ballooning_ksi = ballooning_lbf / A / 1000
 st.subheader("Conclusions")
 
-import plotly.graph_objects as go
+import plotly.graph_objects as goimport plotly mag = min(collapse_util / 150, 1.5)
+
+        # ubicación del daño
+        z0 = 5
+        width_z = 1.5
+
+        # 🌟 abolladura lateral
+        dent = np.exp(-((z - z0)**2)/width_z) \
+             * np.exp(-((theta - np.pi/2)**2)/0.4)
+
+        r = R - 0.7 * mag * dent   # 🔥 entra hacia adentro
+
+    # =========================
+    # BURST
+    # =========================
+    elif modo == "Burst":
+
+        deform = 1 + 1.2*np.exp(-((z_vals-5)**2)/2)
+        r = deform[:, None]
+
+    # =========================
+    # AXIAL
+    # =========================
+    elif modo == "Axial":
+
+        signo = np.sign(sa)
+        mag = min(abs(sa) / SMYS, 1.5)
+
+        z = z * (1 + 1.2*signo*mag)
+
+        neck = np.exp(-((z_vals-5)**2)/1.5)
+        r = R * (1 - 0.4*mag*neck[:, None])
+
+    # =========================
+    # HOOP
+    # =========================
+    elif modo == "Hoop":
+
+        signo = np.sign(sh)
+        mag = min(abs(sh)/SMYS, 1.5)
+
+        deform = 1 + signo * 1.2 * np.exp(-((z_vals-5)**2)/2)
+        r = deform[:, None]
+
+    # =========================
+    # TORQUE
+    # =========================
+    elif modo == "Torque":
+
+        mag = min(abs(tau)/SMYS, 1.5)
+
+        twist = (z_vals / max(z_vals)) * np.pi*(0.5 + 1.0*mag)
+
+        theta = theta + twist[:, None]
+
+    # =========================
+    # COORDENADAS
+    # =========================
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+
+    # =========================
+    # COLOR
+    # =========================
+    vm_norm = np.clip(vm_list / SMYS, 0, 1)
+
+    vm_small = np.interp(
+        np.linspace(0, len(vm_list)-1, n_z),
+        np.arange(len(vm_list)),
+        vm_norm
+    )
+
+    color = np.tile(vm_small.reshape(-1,1), (1, n_theta))
+
+    # =========================
+    # GRAFICO
+    # =========================
+    fig = go.Figure()
+
+    fig.add_trace(go.Surface(
+        x=x,
+        y=y,
+        z=z,
+        surfacecolor=color,
+        colorscale="RdYlGn_r",
+        showscale=False,
+
+        # 🔥 ILUMINACION PRO
+        lighting=dict(
+            ambient=0.25,
+            diffuse=0.9,
+            specular=1.0,
+            roughness=0.2,
+            fresnel=0.6
+        ),
+
+        lightposition=dict(
+            x=200,
+            y=150,
+            z=200
+        )
+    ))
+
+    fig.update_layout(
+        margin=dict(l=0, r=0, b=0, t=0),
+        height=320,
+
+        scene=dict(
+            aspectratio=dict(x=1, y=1, z=2.5),
+
+            camera=dict(
+                eye=dict(x=2.2, y=2.0, z=1.6)
+            ),
+
+            xaxis_visible=False,
+            yaxis_visible=False,
+            zaxis_visible=False
+        )
+    )
+
+    return fig
+
+
+st.markdown("### Failure Visualization")
+
+st.plotly_chart(
+    tubo_pro(
+        vm_list,
+        SMYS,
+        sx,
+        sy,
+        tau/1000,
+        fail_burst,
+        collapse_util
+    ),
+    use_container_width=True
+)
+
 import numpy as np
 
 hay_falla = fail_vm or fail_burst or (collapse_util > 100)
-collapse_severo = collapse_util > 100
-
 
 def tubo_pro(vm_list, SMYS, sa, sh, tau,
-             fail_burst, collapse_util, hay_falla):
+             fail_burst, collapse_util):
 
-    n_theta = 30
-    n_z = 35
+    n_theta = 40
+    n_z = 60
 
     theta_1d = np.linspace(0, 2*np.pi, n_theta)
     z_vals = np.linspace(0, 10, n_z)
@@ -990,12 +1125,13 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
     R = 1.0
 
     # BASE
-    x = R * np.cos(theta)
-    y = R * np.sin(theta)
+    r = np.ones_like(theta) * R
+
+    modo = "None"
 
     if hay_falla:
 
-        # ✅ PRIORIDAD REAL (FIX)
+        # PRIORIDAD CORRECTA
         if collapse_util > 100:
             modo = "Collapse"
 
@@ -1010,122 +1146,13 @@ def tubo_pro(vm_list, SMYS, sa, sh, tau,
             }
             modo = max(valores, key=valores.get)
 
-        # =========================
-        # COLLAPSE (CORRECTO)
-        # =========================
-        if modo == "Collapse":
-
-            if collapse_util > 100:
-
-                # 🔥 aplastado tipo prensa REAL
-                a = 0.25
-                b = 1.2
-
-                x = a * np.cos(theta)
-                y = b * np.sin(theta)
-
-        # =========================
-        # BURST
-        # =========================
-        elif modo == "Burst":
-
-            deform = 1 + 1.3*np.exp(-((z_vals-5)**2)/2)
-            r = deform[:, None]
-
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
-
-        # =========================
-        # AXIAL
-        # =========================
-        elif modo == "Axial":
-
-            signo = np.sign(sa)
-            mag = min(abs(sa)/SMYS, 1.5)
-
-            stretch = 1 + 1.2 * signo * mag
-            z = z * stretch
-
-            deform = 1 - 0.5 * mag * np.exp(-((z_vals-5)**2)/1.5)
-            r = deform[:, None]
-
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
-
-        # =========================
-        # HOOP
-        # =========================
-        elif modo == "Hoop":
-
-            signo = np.sign(sh)
-            mag = min(abs(sh)/SMYS, 1.5)
-
-            deform = 1 + signo * 1.2 * mag * np.exp(-((z_vals-5)**2)/2)
-            r = deform[:, None]
-
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
-
-        # =========================
-        # TORQUE
-        # =========================
-        elif modo == "Torque":
-
-            mag = min(abs(tau)/SMYS, 1.5)
-
-            twist_max = np.pi * (0.4 + 1.0*mag)
-            twist = (z_vals / max(z_vals)) * twist_max
-
-            x = R*np.cos(theta + twist[:, None])
-            y = R*np.sin(theta + twist[:, None])
-
-    # COLOR
-    vm_norm = np.clip(vm_list / SMYS, 0, 1)
-
-    vm_small = np.interp(
-        np.linspace(0, len(vm_list)-1, n_z),
-        np.arange(len(vm_list)),
-        vm_norm
-    )
-
-    color = np.tile(vm_small.reshape(-1,1), (1, n_theta))
-
-    fig = go.Figure()
-
-    fig.add_trace(go.Surface(
-        x=x, y=y, z=z,
-        surfacecolor=color,
-        colorscale="RdYlGn_r",
-        showscale=False
-    ))
-
-    fig.update_layout(
-        margin=dict(l=0, r=0, b=0, t=0),
-        height=300,
-        scene=dict(
-            aspectratio=dict(x=1, y=1, z=2.5),
-            xaxis_visible=False,
-            yaxis_visible=False,
-            zaxis_visible=False
-        )
-    )
-
-    return fig
+    # =========================
+    # 🔴 COLLAPSO REALISTA
+    # =========================
+    if modo == "Collapse":
 
 
-st.plotly_chart(
-    tubo_pro(
-        vm_list,
-        SMYS,
-        sx,
-        sy,
-        tau/1000,
-        fail_burst,
-        collapse_util,
-        hay_falla
-    ),
-    use_container_width=True
-)
+
 
 
 
