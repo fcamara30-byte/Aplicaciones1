@@ -2,3 +2,7 @@
 streamlit
 matplotlib
 plotly
+imageio
+kaleido
+matplotlib
+numpy
