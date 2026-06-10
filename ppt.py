@@ -1,60 +1,119 @@
-import streamlit as st
 import numpy as np
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import imageio
 
-st.title("Simulación Física PCP - Trayectoria y Desgaste")
+# =========================
+# PERFIL SINTÉTICO
+# =========================
 
-# 1. GENERAR DATOS SIMULADOS DEL POZO (Simulando tu archivo Survey)
-# Creamos una trayectoria curva (un pozo desviado)
-z = np.linspace(0, 100, 100)  # Profundidad
-x = np.sin(z / 10) * 5         # Desvío en X
-y = np.cos(z / 20) * 3         # Desvío en Y
+md = np.linspace(0, 800, 100)
 
-# 2. CALCULAR PUNTOS DE CONTACTO / CENTRALIZADORES
-# Simulamos que en ciertas profundidades ponemos centralizadores (puntos verdes)
-centralizadores_z = [20, 50, 80]
-centralizadores_x = [np.sin(cz / 10) * 5 for cz in centralizadores_z]
-centralizadores_y = [np.cos(cz / 20) * 3 for cz in centralizadores_z]
+inc = np.interp(md, [0,300,600,800],[0,20,35,35])
+az = np.zeros_like(md)
 
-# 3. ARMAR EL GRÁFICO 3D CON PLOTLY
-fig = go.Figure()
+inc_rad = np.radians(inc)
 
-# Dibujar la Tubería (Tubing)
-fig.add_trace(go.Scatter3d(
-    x=x, y=y, z=z,
-    mode='lines',
-    line=dict(color='gray', width=8),
-    name='Tubing (Tubería)'
-))
+# Trayectoria simple
+X = np.sin(inc_rad) * md * 0.1
+Y = np.zeros_like(md)
+Z = -md
 
-# Dibujar la Varilla de Bombeo (Rod)
-fig.add_trace(go.Scatter3d(
-    x=x, y=y, z=z,
-    mode='lines',
-    line=dict(color='red', width=3),
-    name='Varilla (Zona de Fricción)'
-))
+# =========================
+# DLS SIMPLE
+# =========================
+dls = np.gradient(inc) * 0.5
 
-# Dibujar los Centralizadores
-fig.add_trace(go.Scatter3d(
-    x=centralizadores_x, y=centralizadores_y, z=centralizadores_z,
-    mode='markers',
-    marker=dict(color='green', size=8, symbol='diamond'),
-    name='Centralizadores Optimizados'
-))
+# =========================
+# CONTACTO (modelo simple)
+# =========================
+T = md * 50
+kappa = np.abs(dls) / 30
 
-# Configuración de la vista 3D (ejes, rotación, etc.)
-fig.update_layout(
-    scene=dict(
-        xaxis_title='Desvío X (m)',
-        yaxis_title='Desvío Y (m)',
-        zaxis_title='Profundidad (m)',
-        zaxis=dict(autorange="reverse") # Los pozos van hacia abajo
-    ),
-    margin=dict(l=0, r=0, b=0, t=0),
-    height=600
-)
+N = T * kappa
 
-# 4. MOSTRARLO EN STREAMLIT
-# Esto renderiza el gráfico interactivo en 3D que podés girar con el mouse
-st.plotly_chart(fig, use_container_width=True)
+# normalizar para colores
+N_norm = N / max(N)
+
+# colores
+colors = []
+for n in N_norm:
+    if n < 0.2:
+        colors.append("green")
+    elif n < 0.4:
+        colors.append("yellow")
+    elif n < 0.7:
+        colors.append("orange")
+    else:
+        colors.append("red")
+
+# zona crítica
+idx_crit = np.argmax(N)
+
+# =========================
+# CREAR VIDEO
+# =========================
+frames = []
+
+for i in range(60):
+
+    fig = plt.figure(figsize=(6,8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # rotación
+    ax.view_init(elev=20, azim=i*6)
+
+    # tubo
+    ax.plot(X, Y, Z, color='blue', linewidth=2, alpha=0.3)
+
+    # sarta
+    for j in range(len(X)-1):
+        ax.plot(
+            X[j:j+2],
+            Y[j:j+2],
+            Z[j:j+2],
+            color=colors[j],
+            linewidth=3
+        )
+
+    # zona crítica (parpadeo)
+    size = 100 + 100*np.sin(i/5)
+    ax.scatter(X[idx_crit], Y[idx_crit], Z[idx_crit],
+               color='red', s=size)
+
+    # =========================
+    # TEXTO (PORTUGUÉS)
+    # =========================
+
+    if i < 15:
+        texto = "Trajetória do poço"
+    elif i < 30:
+        texto = "Contato lateral das hastes"
+    elif i < 45:
+        texto = "Zona crítica de esforço"
+    else:
+        texto = "Torque e desgaste do sistema"
+
+    ax.text2D(0.05, 0.95, texto,
+              transform=ax.transAxes,
+              fontsize=12,
+              color='black')
+
+    ax.set_xlim(-100,100)
+    ax.set_ylim(-100,100)
+    ax.set_zlim(-800,0)
+
+    ax.set_axis_off()
+
+    filename = f"frame_{i}.png"
+    plt.savefig(filename)
+    plt.close()
+
+    frames.append(imageio.imread(filename))
+
+# =========================
+# EXPORT VIDEO
+# =========================
+imageio.mimsave("pcp_demo.mp4", frames, fps=10)
+
+print("✅ Video generado: pcp_demo.mp4")
