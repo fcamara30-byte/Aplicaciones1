@@ -1,94 +1,60 @@
-from manim import *
+import streamlit as st
+import numpy as np
+import plotly.graph_objects as go
 
-class AnimacionPCP(Scene):
-    def construct(self):
-        # --- ETAPA 1: TÍTULO E INTRODUCCIÓN ---
-        titulo = Text("Simulación de Desgaste PCP", color=BLUE).scale(0.9)
-        subtitulo = Text("Optimización de Centralizadores", color=GRAY).scale(0.6)
-        subtitulo.next_to(titulo, DOWN)
-        
-        self.play(Write(titulo), FadeIn(subtitulo, shift=DOWN))
-        self.wait(1.5)
-        self.play(FadeOut(titulo), FadeOut(subtitulo))
+st.title("Simulación Física PCP - Trayectoria y Desgaste")
 
-        # --- ETAPA 2: CREACIÓN DE LA TUBERÍA (SURVEY DEVIADO) ---
-        # Trayectoria curva basada en los datos de un pozo desviado
-        tuberia_centro = CubicBezier(
-            LEFT * 3 + UP * 3, 
-            LEFT * 3 + DOWN * 1, 
-            RIGHT * 1 + DOWN * 2, 
-            RIGHT * 3 + DOWN * 3
-        )
-        
-        # Paredes del Tubing
-        tuberia_izq = tuberia_centro.copy().shift(LEFT * 0.4)
-        tuberia_der = tuberia_centro.copy().shift(RIGHT * 0.4)
-        tuberia = VGroup(tuberia_izq, tuberia_der).set_color(GRAY_C).set_stroke(width=4)
-        
-        etiqueta_tubing = Text("Tubing (Tubería)", color=GRAY_C).scale(0.5).move_to(LEFT * 3.5 + UP * 2)
+# 1. GENERAR DATOS SIMULADOS DEL POZO (Simulando tu archivo Survey)
+# Creamos una trayectoria curva (un pozo desviado)
+z = np.linspace(0, 100, 100)  # Profundidad
+x = np.sin(z / 10) * 5         # Desvío en X
+y = np.cos(z / 20) * 3         # Desvío en Y
 
-        self.play(Create(tuberia), FadeIn(etiqueta_tubing))
-        self.wait(1)
+# 2. CALCULAR PUNTOS DE CONTACTO / CENTRALIZADORES
+# Simulamos que en ciertas profundidades ponemos centralizadores (puntos verdes)
+centralizadores_z = [20, 50, 80]
+centralizadores_x = [np.sin(cz / 10) * 5 for cz in centralizadores_z]
+centralizadores_y = [np.cos(cz / 20) * 3 for cz in centralizadores_z]
 
-        # --- ETAPA 3: LA COLUMNA DE VARILLAS ---
-        varilla = tuberia_centro.copy().set_color(LIGHT_GREY).set_stroke(width=2)
-        etiqueta_varilla = Text("Varilla de Bombeo", color=LIGHT_GREY).scale(0.5).move_to(RIGHT * 2 + UP * 2)
+# 3. ARMAR EL GRÁFICO 3D CON PLOTLY
+fig = go.Figure()
 
-        self.play(Create(varilla), FadeIn(etiqueta_varilla))
-        self.wait(1)
+# Dibujar la Tubería (Tubing)
+fig.add_trace(go.Scatter3d(
+    x=x, y=y, z=z,
+    mode='lines',
+    line=dict(color='gray', width=8),
+    name='Tubing (Tubería)'
+))
 
-        # --- ETAPA 4: EFECTO DE DESGASTE METAL-METAL ---
-        # La varilla se deforma hacia la pared por la tensión, cambiando a rojo
-        varilla_con_friccion = CubicBezier(
-            LEFT * 3.3 + UP * 3, 
-            LEFT * 2.7 + DOWN * 0.8, 
-            RIGHT * 1.3 + DOWN * 1.8, 
-            RIGHT * 2.7 + DOWN * 3
-        ).set_color(RED).set_stroke(width=2.5)
+# Dibujar la Varilla de Bombeo (Rod)
+fig.add_trace(go.Scatter3d(
+    x=x, y=y, z=z,
+    mode='lines',
+    line=dict(color='red', width=3),
+    name='Varilla (Zona de Fricción)'
+))
 
-        alerta_texto = Text("¡Zona Crítica: Contacto Metal-Metal!", color=RED).scale(0.6).to_edge(UP)
-        punto_contacto = Dot(point=LEFT * 0.4 + DOWN * 1.1, color=RED).scale(2)
-        fuego_friccion = Flash(punto_contacto, color=YELLOW, num_lines=8, flash_radius=0.5)
+# Dibujar los Centralizadores
+fig.add_trace(go.Scatter3d(
+    x=centralizadores_x, y=centralizadores_y, z=centralizadores_z,
+    mode='markers',
+    marker=dict(color='green', size=8, symbol='diamond'),
+    name='Centralizadores Optimizados'
+))
 
-        self.play(
-            Transform(varilla, varilla_con_friccion),
-            FadeIn(alerta_texto),
-            Create(punto_contacto)
-        )
-        self.play(fuego_friccion)
-        self.wait(2)
+# Configuración de la vista 3D (ejes, rotación, etc.)
+fig.update_layout(
+    scene=dict(
+        xaxis_title='Desvío X (m)',
+        yaxis_title='Desvío Y (m)',
+        zaxis_title='Profundidad (m)',
+        zaxis=dict(autorange="reverse") # Los pozos van hacia abajo
+    ),
+    margin=dict(l=0, r=0, b=0, t=0),
+    height=600
+)
 
-        # --- ETAPA 5: SOLUCIÓN CON CENTRALIZADORES ---
-        texto_solucion = Text("Algoritmo: Posicionamiento de Centralizadores", color=GREEN).scale(0.6).to_edge(UP)
-        
-        # Ubicación óptima calculada por tu aplicación
-        centralizador1 = Dot(point=LEFT * 2.4 + UP * 1, color=GREEN).scale(1.8)
-        centralizador2 = Dot(point=LEFT * 0.7 + DOWN * 0.8, color=GREEN).scale(1.8)
-        centralizador3 = Dot(point=RIGHT * 1.2 + DOWN * 2, color=GREEN).scale(1.8)
-        centralizadores = VGroup(centralizador1, centralizador2, centralizador3)
-
-        # La varilla vuelve a su posición segura y centrada
-        varilla_centrada = tuberia_centro.copy().set_color(GREEN).set_stroke(width=2)
-
-        self.play(
-            Transform(alerta_texto, texto_solucion),
-            FadeOut(punto_contacto),
-            Transform(varilla, varilla_centrada),
-            FadeIn(centralizadores)
-        )
-        self.wait(1)
-
-        # Conclusión exitosa
-        exito_txt = Text("Operación Segura & Vida Útil Prolongada", color=GREEN).scale(0.5).next_to(texto_solucion, DOWN)
-        self.play(Write(exito_txt))
-        self.wait(3)
-
-        # Limpieza de pantalla
-        self.play(FadeOut(VGroup(tuberia, varilla, centralizadores, alerta_texto, exito_txt, etiqueta_tubing, etiqueta_varilla)))
-
-# ==============================================================================
-# 3. COMANDO DE REPRODUCCIÓN EN NAVEGADOR (Jupyter / Colab)
-# ==============================================================================
-# Esta línea le dice al entorno web que renderice el video en calidad baja (rápido)
-# y lo muestre directamente en la pantalla.
-%manim -v WARNING --progress_bar None -pql AnimacionPCP
+# 4. MOSTRARLO EN STREAMLIT
+# Esto renderiza el gráfico interactivo en 3D que podés girar con el mouse
+st.plotly_chart(fig, use_container_width=True)
