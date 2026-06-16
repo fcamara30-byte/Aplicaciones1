@@ -31,13 +31,13 @@ TABLA_TORQUE = [
 {"DE":"3 1/2","lbft":7.7,"grado":"N80","rosca":"NU","opt":1700,"min":1280,"max":2130},
 
 {"DE":"3 1/2","lbft":9.2,"grado":"J55","rosca":"NU","opt":1480,"min":1110,"max":1850},
-{"DE":"3 1/2","lbft":9.3,"grado":"J55","rosca":"EU","opt":2280,"min":1710,"max":2850},
+{"DE":"3 1/2","lbft":9.2,"grado":"J55","rosca":"EU","opt":2280,"min":1710,"max":2850},
 {"DE":"3 1/2","lbft":9.2,"grado":"L80","rosca":"NU","opt":2030,"min":1520,"max":2540},
-{"DE":"3 1/2","lbft":9.3,"grado":"L80","rosca":"EU","opt":3130,"min":2350,"max":3910},
+{"DE":"3 1/2","lbft":9.2,"grado":"L80","rosca":"EU","opt":3130,"min":2350,"max":3910},
 {"DE":"3 1/2","lbft":9.2,"grado":"N80","rosca":"NU","opt":2070,"min":1550,"max":2590},
-{"DE":"3 1/2","lbft":9.3,"grado":"N80","rosca":"EU","opt":3200,"min":2400,"max":4000},
+{"DE":"3 1/2","lbft":9.2,"grado":"N80","rosca":"EU","opt":3200,"min":2400,"max":4000},
 {"DE":"3 1/2","lbft":9.2,"grado":"P110","rosca":"NU","opt":2740,"min":2060,"max":3430},
-{"DE":"3 1/2","lbft":9.3,"grado":"P110","rosca":"EU","opt":4230,"min":3170,"max":5290},
+{"DE":"3 1/2","lbft":9.2,"grado":"P110","rosca":"EU","opt":4230,"min":3170,"max":5290},
 
 {"DE":"3 1/2","lbft":10.2,"grado":"J55","rosca":"NU","opt":1720,"min":1290,"max":2150},
 {"DE":"3 1/2","lbft":10.2,"grado":"L80","rosca":"NU","opt":2360,"min":1770,"max":2950},
