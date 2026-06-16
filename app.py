@@ -431,34 +431,7 @@ for row in TABLA_TORQUE:
 
         break
 
-# =========================================
-# ✅ SI NO EXISTE EN TABLA
-# =========================================
 
-if torque_max_rosca is None:
-
-    ax.text(
-        -SMYS * 0.6,
-        SMYS * 0.65,
-        "Not in table",
-        fontsize=10,
-        color="gray",
-        ha="left",
-        bbox=dict(
-            facecolor="white",
-            edgecolor="gray",
-            boxstyle="round,pad=0.3",
-            alpha=0.9
-        )
-    )
-F_ext = st.sidebar.number_input(
-    "Axial Ext Load [lbf]",
-    value=0.0,
-    
-    step=100.0,
-    format="%.0f"
-
-)
 
 depth_m = st.sidebar.number_input(
     "Depth [m]",
