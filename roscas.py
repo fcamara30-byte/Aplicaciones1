@@ -190,7 +190,7 @@ TABLA_TORQUE = [
 {"DE":"9 5/8","lbft":47.0,"grado":"L80","rosca":"BTC","opt":11220,"min":8420,"max":14030},
 {"DE":"9 5/8","lbft":47.0,"grado":"N80","rosca":"BTC","opt":11610,"min":8700,"max":14510},
 {"DE":"9 5/8","lbft":47.0,"grado":"P110","rosca":"BTC","opt":15000,"min":11250,"max":18750},
-TABLA_TORQUE = [
+
 
 # =========================
 # 2 7/8
