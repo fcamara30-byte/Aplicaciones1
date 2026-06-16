@@ -7,13 +7,13 @@ TABLA_TORQUE = [
 # =========================
 # 2 7/8
 # =========================
-{"DE":"2 7/8","lbft":6.4,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
+{"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
 {"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"EU","opt":1650,"min":1240,"max":2060},
-{"DE":"2 7/8","lbft":6.4,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
+{"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
 {"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"EU","opt":2250,"min":1690,"max":2810},
-{"DE":"2 7/8","lbft":6.4,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
+{"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
 {"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"EU","opt":2300,"min":1730,"max":2880},
-{"DE":"2 7/8","lbft":6.4,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
+{"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
 {"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"EU","opt":3040,"min":2280,"max":3800},
 
 {"DE":"2 7/8","lbft":7.8,"grado":"L80","rosca":"NU","opt":1910,"min":1430,"max":2390},
@@ -75,16 +75,16 @@ TABLA_TORQUE = [
 # =========================
 # 2 7/8
 # =========================
-{"DE":"2 7/8","lbft":6.4,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
+{"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
 {"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"EU","opt":1650,"min":1240,"max":2060},
 
-{"DE":"2 7/8","lbft":6.4,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
+{"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
 {"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"EU","opt":2250,"min":1690,"max":2810},
 
-{"DE":"2 7/8","lbft":6.4,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
+{"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
 {"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"EU","opt":2300,"min":1730,"max":2880},
 
-{"DE":"2 7/8","lbft":6.4,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
+{"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
 {"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"EU","opt":3040,"min":2280,"max":3800},
 
 {"DE":"2 7/8","lbft":7.8,"grado":"L80","rosca":"NU","opt":1910,"min":1430,"max":2390},
@@ -195,16 +195,16 @@ TABLA_TORQUE = [
 # =========================
 # 2 7/8
 # =========================
-{"DE":"2 7/8","lbft":6.4,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
+{"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
 {"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"EU","opt":1650,"min":1240,"max":2060},
 
-{"DE":"2 7/8","lbft":6.4,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
+{"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
 {"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"EU","opt":2250,"min":1690,"max":2810},
 
-{"DE":"2 7/8","lbft":6.4,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
+{"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
 {"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"EU","opt":2300,"min":1730,"max":2880},
 
-{"DE":"2 7/8","lbft":6.4,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
+{"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
 {"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"EU","opt":3040,"min":2280,"max":3800},
 
 {"DE":"2 7/8","lbft":7.8,"grado":"L80","rosca":"NU","opt":1910,"min":1430,"max":2390},
@@ -295,13 +295,13 @@ TABLA_TORQUE = [
 # =========================
 # 2 7/8
 # =========================
-{"DE":"2 7/8","lbft":6.4,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
+{"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
 {"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"EU","opt":1650,"min":1240,"max":2060},
-{"DE":"2 7/8","lbft":6.4,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
+{"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
 {"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"EU","opt":2250,"min":1690,"max":2810},
-{"DE":"2 7/8","lbft":6.4,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
+{"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
 {"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"EU","opt":2300,"min":1730,"max":2880},
-{"DE":"2 7/8","lbft":6.4,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
+{"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
 {"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"EU","opt":3040,"min":2280,"max":3800},
 
 {"DE":"2 7/8","lbft":7.8,"grado":"L80","rosca":"NU","opt":1910,"min":1430,"max":2390},
@@ -385,13 +385,13 @@ TABLA_TORQUE = [
 # =========================
 # 2 7/8
 # =========================
-{"DE":"2 7/8","lbft":6.4,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
+{"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"NU","opt":1050,"min":790,"max":1310},
 {"DE":"2 7/8","lbft":6.5,"grado":"J55","rosca":"EU","opt":1650,"min":1240,"max":2060},
-{"DE":"2 7/8","lbft":6.4,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
+{"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"NU","opt":1440,"min":1080,"max":1800},
 {"DE":"2 7/8","lbft":6.5,"grado":"L80","rosca":"EU","opt":2250,"min":1690,"max":2810},
-{"DE":"2 7/8","lbft":6.4,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
+{"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"NU","opt":1470,"min":1100,"max":1840},
 {"DE":"2 7/8","lbft":6.5,"grado":"N80","rosca":"EU","opt":2300,"min":1730,"max":2880},
-{"DE":"2 7/8","lbft":6.4,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
+{"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"NU","opt":1940,"min":1460,"max":2430},
 {"DE":"2 7/8","lbft":6.5,"grado":"P110","rosca":"EU","opt":3040,"min":2280,"max":3800},
 
 {"DE":"2 7/8","lbft":7.8,"grado":"L80","rosca":"NU","opt":1910,"min":1430,"max":2390},
