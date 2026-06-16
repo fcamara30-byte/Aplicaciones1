@@ -422,7 +422,7 @@ for row in TABLA_TORQUE:
         row["DE"] == size_tubo and
         row["grado"] == grado and
         row["rosca"] == tipo_rosca_clean and
-        abs(row["lbft"] - peso) < 0.3   # matching peso
+        abs(row["lbft"] - peso) < 0.6   # matching peso
     ):
         torque_max_rosca = row["max"]
 
