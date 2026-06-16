@@ -269,6 +269,7 @@ tubo = st.sidebar.selectbox(
     list(tubos.keys())
 )
 OD, ID, peso = tubos[tubo]
+peso_nominal = float(tubo.split("#")[1])
 
 reduccion = st.sidebar.slider(
     "Wallthickness Reduction [%]",
