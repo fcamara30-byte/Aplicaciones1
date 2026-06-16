@@ -862,7 +862,7 @@ if torque_max_rosca is not None:
     if Torque <= torque_max_rosca:
         msg = f"Thread Torque OK\nLimit: {torque_max_rosca:.0f} lb-ft"
         color_txt = "green"
-         x_pos = -SMYS * 0.85
+        x_pos = -SMYS * 0.85
     else:
         msg = f"Thread Torque NOT OK\nMax: {torque_max_rosca:.0f} lb-ft"
         color_txt = "red"
