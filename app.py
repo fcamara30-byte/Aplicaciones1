@@ -839,7 +839,7 @@ if txt != "":
 if torque_max_rosca is None:
 
     ax.text(
-        -SMYS * 0.75,
+        -SMYS * 1.0,
         SMYS * 0.65,
         "Not in table",
         fontsize=10,
