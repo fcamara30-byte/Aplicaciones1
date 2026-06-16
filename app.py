@@ -850,8 +850,25 @@ if txt != "":
         ha="center"
     )
 
-# ✅ FALLA POR ROSCA (NO afecta VM)
-# ✅ ESTADO DE TORQUE DE ROSCA
+## =========================================
+# ✅ TORQUE NOT IN TABLE
+# =========================================
+if torque_max_rosca is None:
+
+    ax.text(
+        -SMYS * 0.6,
+        SMYS * 0.65,
+        "Not in table",
+        fontsize=10,
+        color="gray",
+        ha="left",
+        bbox=dict(
+            facecolor="white",
+            edgecolor="gray",
+            boxstyle="round,pad=0.3",
+            alpha=0.9
+        )
+    )
 
 # =========================================
 # ✅ ESTADO TORQUE DE ROSCA (VISUAL)
