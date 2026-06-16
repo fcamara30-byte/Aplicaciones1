@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import threading
 import time
 import requests
-
+from tabla_roscas import TABLA_TORQUE
 
 st.session_state.setdefault("run_id", 0)
 
@@ -284,6 +284,13 @@ ID = OD - 2 * t
 
 
 peso = peso * 1.02
+
+
+tipo_rosca = st.sidebar.selectbox(
+    "Tipo de Rosca",
+    ["NU", "EUE", "BTC"]
+)
+
 liner = st.sidebar.selectbox(
     "Liner?",
     ["No Liner", "With Liner"]
@@ -399,6 +406,31 @@ Torque = st.sidebar.number_input(
 
 )
 
+# =========================
+# ✅ VALIDACIÓN TORQUE ROSCA
+# =========================
+
+torque_limitado = False
+torque_max_rosca = None
+
+# tamaño limpio (ej: '2 7/8')
+size_tubo = tubo.split('"')[0].strip()
+
+for row in TABLA_TORQUE:
+
+    if (
+        row["DE"] == size_tubo and
+        row["grado"] == grado and
+        row["rosca"] == tipo_rosca and
+        abs(row["lbft"] - peso) < 0.5   # matching peso
+    ):
+        torque_max_rosca = row["max"]
+
+        if Torque > torque_max_rosca:
+            torque_limitado = True
+
+        break
+        
 F_ext = st.sidebar.number_input(
     "Axial Ext Load [lbf]",
     value=0.0,
@@ -793,6 +825,18 @@ if txt != "":
         SMYS * 0.85,
         txt,
         color="red",
+        fontsize=14,
+        fontweight="bold",
+        ha="center"
+    )
+
+# ✅ FALLA POR ROSCA (NO afecta VM)
+if torque_limitado:
+    ax.text(
+        0,
+        SMYS * 0.65,
+        f"PLASTIFICACIÓN DE ROSCA\nTorque máx: {torque_max_rosca} lb-ft",
+        color="purple",
         fontsize=14,
         fontweight="bold",
         ha="center"
