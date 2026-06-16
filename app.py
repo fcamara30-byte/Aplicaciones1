@@ -415,13 +415,13 @@ torque_max_rosca = None
 
 # tamaño limpio (ej: '2 7/8')
 size_tubo = tubo.split('"')[0].strip()
-
+tipo_rosca_clean = "EU" if tipo_rosca == "EUE" else tipo_rosca
 for row in TABLA_TORQUE:
 
     if (
         row["DE"] == size_tubo and
         row["grado"] == grado and
-        row["rosca"] == tipo_rosca and
+        row["rosca"] == tipo_rosca_clean and
         abs(row["lbft"] - peso) < 0.3   # matching peso
     ):
         torque_max_rosca = row["max"]
