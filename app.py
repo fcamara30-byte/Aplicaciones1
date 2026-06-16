@@ -833,29 +833,34 @@ if txt != "":
 # ✅ FALLA POR ROSCA (NO afecta VM)
 # ✅ ESTADO DE TORQUE DE ROSCA
 
+# =========================================
+# ✅ ESTADO TORQUE DE ROSCA (VISUAL)
+# =========================================
+
 if torque_max_rosca is not None:
 
     if Torque <= torque_max_rosca:
-        msg = "Thread Torque OK"
+        msg = f"Thread Torque OK\nLimit: {torque_max_rosca:.0f} lb-ft"
         color_txt = "green"
     else:
-        msg = f"Thread Torque NOT OK\nMax: {torque_max_rosca} lb-ft"
+        msg = f"Thread Torque NOT OK\nMax: {torque_max_rosca:.0f} lb-ft"
         color_txt = "red"
 
     ax.text(
-        0,
-        SMYS * 0.65,
+        -SMYS * 0.6,        # 👈 POSICIÓN A LA IZQUIERDA (ajustable)
+        SMYS * 0.65,        # altura
         msg,
         fontsize=10,
         color=color_txt,
-        ha="center",
+        ha="left",          # 👈 importante para que el cuadro crezca bien
         bbox=dict(
             facecolor="white",
             edgecolor=color_txt,
-            boxstyle="round,pad=0.3",
+            boxstyle="round,pad=0.35",
             alpha=0.9
         )
     )
+
 
 ax.annotate(
     f"VM={vm_crit:.1f} ksi",
