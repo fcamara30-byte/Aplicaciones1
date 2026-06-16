@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import threading
 import time
 import requests
-from tabla_roscas import TABLA_TORQUE
+from roscas import TABLA_TORQUE
 
 st.session_state.setdefault("run_id", 0)
 
